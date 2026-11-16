@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 1e07984567098faabf9c8a715a07c7aafe6f30f7d86767a477d0405d5f761343 # shrinks to batches = [[SetParam { track: "t1", param: "eq.2.gain", value: 0.0 }]]

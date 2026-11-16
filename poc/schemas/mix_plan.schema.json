@@ -1,0 +1,303 @@
+{
+  "$defs": {
+    "Compressor": {
+      "additionalProperties": false,
+      "properties": {
+        "attack_ms": {
+          "description": "Attack time in ms.",
+          "maximum": 100.0,
+          "minimum": 0.1,
+          "title": "Attack Ms",
+          "type": "number"
+        },
+        "makeup_db": {
+          "description": "Makeup gain after compression, dB.",
+          "maximum": 12.0,
+          "minimum": 0.0,
+          "title": "Makeup Db",
+          "type": "number"
+        },
+        "ratio": {
+          "description": "Compression ratio.",
+          "maximum": 8.0,
+          "minimum": 1.0,
+          "title": "Ratio",
+          "type": "number"
+        },
+        "release_ms": {
+          "description": "Release time in ms.",
+          "maximum": 1000.0,
+          "minimum": 20.0,
+          "title": "Release Ms",
+          "type": "number"
+        },
+        "threshold_db": {
+          "description": "Threshold in dBFS.",
+          "maximum": 0.0,
+          "minimum": -40.0,
+          "title": "Threshold Db",
+          "type": "number"
+        }
+      },
+      "required": [
+        "threshold_db",
+        "ratio",
+        "attack_ms",
+        "release_ms",
+        "makeup_db"
+      ],
+      "title": "Compressor",
+      "type": "object"
+    },
+    "EqBand": {
+      "additionalProperties": false,
+      "properties": {
+        "freq_hz": {
+          "description": "Centre or corner frequency in Hz.",
+          "maximum": 20000.0,
+          "minimum": 20.0,
+          "title": "Freq Hz",
+          "type": "number"
+        },
+        "gain_db": {
+          "description": "Gain in dB.",
+          "maximum": 9.0,
+          "minimum": -9.0,
+          "title": "Gain Db",
+          "type": "number"
+        },
+        "q": {
+          "description": "Quality factor (RBJ cookbook, Q form).",
+          "maximum": 8.0,
+          "minimum": 0.3,
+          "title": "Q",
+          "type": "number"
+        },
+        "type": {
+          "description": "RBJ biquad type.",
+          "enum": [
+            "peak",
+            "low_shelf",
+            "high_shelf"
+          ],
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "freq_hz",
+        "gain_db",
+        "q"
+      ],
+      "title": "EqBand",
+      "type": "object"
+    },
+    "Reverb": {
+      "additionalProperties": false,
+      "properties": {
+        "damping": {
+          "description": "High-frequency damping, 0-1.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Damping",
+          "type": "number"
+        },
+        "return_gain_db": {
+          "description": "Gain of the return, dB.",
+          "maximum": 0.0,
+          "minimum": -24.0,
+          "title": "Return Gain Db",
+          "type": "number"
+        },
+        "return_hpf_hz": {
+          "description": "High-pass on the return, Hz.",
+          "maximum": 800.0,
+          "minimum": 20.0,
+          "title": "Return Hpf Hz",
+          "type": "number"
+        },
+        "room_size": {
+          "description": "Room size, 0-1.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Room Size",
+          "type": "number"
+        }
+      },
+      "required": [
+        "room_size",
+        "damping",
+        "return_hpf_hz",
+        "return_gain_db"
+      ],
+      "title": "Reverb",
+      "type": "object"
+    },
+    "StemPlan": {
+      "additionalProperties": false,
+      "properties": {
+        "compressor": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Compressor"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Compressor, null = off."
+        },
+        "eq": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/EqBand"
+              },
+              "maxItems": 4,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Up to 4 EQ bands, applied in order; null or [] = off.",
+          "title": "Eq"
+        },
+        "gain_db": {
+          "description": "Fader gain in dB.",
+          "maximum": 12.0,
+          "minimum": -24.0,
+          "title": "Gain Db",
+          "type": "number"
+        },
+        "hpf_hz": {
+          "anyOf": [
+            {
+              "maximum": 400.0,
+              "minimum": 20.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "High-pass cutoff in Hz (12 dB/octave), null = off.",
+          "title": "Hpf Hz"
+        },
+        "lpf_hz": {
+          "anyOf": [
+            {
+              "maximum": 20000.0,
+              "minimum": 2000.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Low-pass cutoff in Hz (12 dB/octave), null = off.",
+          "title": "Lpf Hz"
+        },
+        "pan": {
+          "description": "Pan: -1 left, 0 centre, +1 right.",
+          "maximum": 1.0,
+          "minimum": -1.0,
+          "title": "Pan",
+          "type": "number"
+        },
+        "rationale": {
+          "description": "One or two sentences explaining the choices.",
+          "minLength": 1,
+          "title": "Rationale",
+          "type": "string"
+        },
+        "reverb_send_db": {
+          "anyOf": [
+            {
+              "maximum": -6.0,
+              "minimum": -60.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Send level to the shared reverb in dB, null = no send.",
+          "title": "Reverb Send Db"
+        }
+      },
+      "required": [
+        "gain_db",
+        "pan",
+        "hpf_hz",
+        "lpf_hz",
+        "eq",
+        "compressor",
+        "reverb_send_db",
+        "rationale"
+      ],
+      "title": "StemPlan",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Content of mix_plan.json: a complete set of static mix parameters.",
+  "properties": {
+    "iteration": {
+      "description": "Iteration of the verification loop.",
+      "minimum": 0,
+      "title": "Iteration",
+      "type": "integer"
+    },
+    "reverb": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Reverb"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Shared reverb, null = off."
+    },
+    "stems": {
+      "description": "Parameters for every stem, by stem id.",
+      "maxProperties": 16,
+      "minProperties": 1,
+      "patternProperties": {
+        "^[a-z0-9][a-z0-9_]*$": {
+          "$ref": "#/$defs/StemPlan"
+        }
+      },
+      "propertyNames": {
+        "description": "Stem identifier: lowercase letters, digits and underscores, at most 32.",
+        "maxLength": 32
+      },
+      "title": "Stems",
+      "type": "object"
+    },
+    "summary": {
+      "description": "Summary of the plan.",
+      "minLength": 1,
+      "title": "Summary",
+      "type": "string"
+    },
+    "version": {
+      "const": 1,
+      "description": "Version of the plan format.",
+      "title": "Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "version",
+    "iteration",
+    "summary",
+    "reverb",
+    "stems"
+  ],
+  "title": "MixPlan",
+  "type": "object"
+}

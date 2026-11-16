@@ -1,0 +1,285 @@
+/* Stemwise design tokens — direction "Atelier".
+   Every measure, colour, radius, shadow and duration used by the boards comes from this file.
+   Phase accents are scoped: an element with data-phase="mix" or data-phase="master" resolves --accent. */
+
+:root {
+  /* ---------- Typography (two families, both SIL OFL 1.1) ---------- */
+  --font-display: "Bricolage Grotesque", "Figtree", system-ui, sans-serif; /* titles, project name, module names */
+  --font-ui: "Figtree", system-ui, sans-serif;                               /* everything else, values included */
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;                    /* raw JSON only; system font, not shipped */
+  --num: tabular-nums;                                                      /* font-variant-numeric for every value */
+
+  --fs-0: 9px;   /* clip names only */
+  --fs-1: 11px;  /* hints, units, labels */
+  --fs-2: 13px;  /* controls, lists */
+  --fs-3: 14px;  /* body, rationale */
+  --fs-4: 20px;  /* panel titles, transport position */
+  --fs-5: 24px;  /* dialog and screen titles */
+  --fs-6: 40px;  /* large readouts (LUFS, true peak) */
+
+  --lh-tight: 1.15;
+  --lh-ui: 1.3;
+  --lh-text: 1.5;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-bold: 600;
+  --track-display: -0.01em;
+  --track-clip: 0.01em;
+
+  /* ---------- Spacing ---------- */
+  --sp-0: 0px;
+  --sp-h: 2px;
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --sp-7: 48px;
+  --sp-8: 64px;
+
+  /* ---------- Borders and radii ---------- */
+  --bw-1: 1px;
+  --bw-2: 2px;
+  --r-1: 4px;     /* chips inside panels, chain blocks */
+  --r-2: 8px;     /* tiles, fields, menus */
+  --r-3: 14px;    /* cards, dialogs */
+  --r-ctl: 10px;  /* buttons */
+  --r-tgl: 7px;   /* M / S / lock / bypass */
+  --r-clip: 6px;
+  --r-meter: 3px;
+  --r-cap: 6px;
+  --r-pill: 999px;
+  --r-round: 50%;
+
+  /* ---------- Surfaces (Mix phase; Master overrides below) ---------- */
+  --bg-0: oklch(0.195 0.02 320);   /* window */
+  --bg-1: oklch(0.24 0.022 320);   /* cards and panels */
+  --bg-2: oklch(0.285 0.024 320);  /* tiles, raised rows */
+  --bg-3: oklch(0.335 0.026 320);  /* controls */
+  --bg-well: oklch(0.16 0.018 320);/* meter wells, graphs, inputs */
+  --line: oklch(0.36 0.026 320);
+  --line-soft: oklch(0.275 0.022 320);
+  --line-strong: oklch(0.48 0.028 320);
+  --scrim: oklch(0.12 0.02 320 / 0.72);
+  --tour-dim: oklch(0.12 0.02 320 / 0.62); /* around the lit area of a tour step: lighter than a dialog's scrim */
+
+  /* ---------- Text (AA on bg-0 … bg-3) ---------- */
+  --tx-1: oklch(0.96 0.01 320);
+  --tx-2: oklch(0.84 0.015 320);
+  --tx-3: oklch(0.75 0.018 320);
+  --tx-inv: oklch(0.195 0.02 320); /* text on tints, accents and state colours */
+
+  /* ---------- Phase accents ---------- */
+  --mix: oklch(0.88 0.17 118);     /* lime */
+  --mix-tx: oklch(0.2 0.04 118);
+  --master: oklch(0.81 0.12 300);  /* lilac */
+  --master-tx: oklch(0.2 0.04 300);
+  --accent: var(--mix);
+  --accent-tx: var(--mix-tx);
+  --accent-dim: color-mix(in oklch, var(--accent) 16%, transparent);
+
+  /* ---------- State colours ---------- */
+  --ai: oklch(0.85 0.09 215);      /* everything the assistant wrote or locked */
+  --ai-dim: color-mix(in oklch, var(--ai) 18%, transparent);
+  --auto: oklch(0.8 0.12 345);     /* automated control */
+  --auto-dim: color-mix(in oklch, var(--auto) 18%, transparent);
+  --mute: oklch(0.78 0.15 50);
+  --solo: oklch(0.83 0.12 175);
+  --ok: oklch(0.82 0.13 160);
+  --warn: oklch(0.82 0.14 75);
+  --warn-dim: color-mix(in oklch, var(--warn) 16%, transparent);
+  --danger: oklch(0.7 0.19 22);
+  --danger-dim: color-mix(in oklch, var(--danger) 18%, transparent);
+  --focus: oklch(0.9 0.08 215);
+  --dis: 0.4;                      /* opacity of disabled controls */
+  --muted: 0.5;                    /* opacity of muted clips and locked tracks' clips */
+
+  /* ---------- Meters ---------- */
+  --meter-fill: oklch(0.82 0.13 160);  /* RMS */
+  --meter-peak: oklch(0.48 0.07 160);  /* peak, behind RMS */
+  --meter-hot: oklch(0.82 0.14 75);    /* above -6 dBFS */
+  --meter-over: oklch(0.7 0.19 22);    /* over */
+  --gr: oklch(0.78 0.15 50);           /* gain reduction, grows from the top */
+  --spec: color-mix(in oklch, var(--tx-3) 22%, transparent); /* live spectrum */
+  --ref: var(--tx-1);                  /* reference profile, dashed */
+
+  /* ---------- Track palette (12 tints; alternate lightness so neighbours differ beyond hue) ---------- */
+  --track-1: oklch(0.8 0.1 20);
+  --track-2: oklch(0.74 0.1 50);
+  --track-3: oklch(0.85 0.1 85);
+  --track-4: oklch(0.76 0.1 125);
+  --track-5: oklch(0.85 0.09 160);
+  --track-6: oklch(0.74 0.08 190);
+  --track-7: oklch(0.85 0.07 215);
+  --track-8: oklch(0.74 0.09 245);
+  --track-9: oklch(0.83 0.07 275);
+  --track-10: oklch(0.74 0.1 305);
+  --track-11: oklch(0.85 0.08 335);
+  --track-12: oklch(0.74 0.11 0);
+  --track-bus: var(--tx-3);            /* groups, returns */
+  --clip-body: 26%;                    /* share of the tint mixed into the clip body */
+  --clip-edge: 65%;                    /* share of the tint in the clip outline */
+  --clip-wave: 80%;                    /* share of the tint in the waveform (rest is white) */
+
+  /* ---------- Shadows (static elements only; nothing that moves at 60 fps casts one) ---------- */
+  --shadow-pop: 0 6px 20px oklch(0.1 0.02 320 / 0.55);    /* menus, tooltips, toasts */
+  --shadow-dialog: 0 18px 60px oklch(0.1 0.02 320 / 0.7);
+
+  /* ---------- Motion ---------- */
+  --dur-1: 80ms;    /* hover, press */
+  --dur-2: 140ms;   /* toggles, tabs, menus */
+  --dur-3: 220ms;   /* panels opening and closing, dialogs */
+  --dur-4: 420ms;   /* phase change Mix <-> Master */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.5, 0, 0.2, 1);
+  --ease-linear: linear;
+
+  /* ---------- Control sizes ---------- */
+  --ctl-h: 28px;        /* default control height */
+  --ctl-h-s: 24px;      /* compact (toolbars inside cards) */
+  --ctl-h-l: 36px;      /* dialogs and first-run screens */
+  --tgl: 20px;          /* M / S / lock / bypass */
+  --tgl-s: 18px;        /* same, inside mixer strips */
+  --tag-h: 20px;
+  --badge: 18px;        /* numbered note marker */
+  --icon: 16px;
+  --icon-m: 14px;
+  --icon-s: 12px;
+  --mark: 20px;
+  --play-btn: 38px;
+  --dot: 12px;          /* EQ handle, automation point */
+  --dot-s: 8px;
+  --led: 8px;
+  --seg-pad: var(--sp-3);
+  --seg-pad-s: var(--sp-2);
+  --field-w: 72px;
+  --field-w-l: 240px;
+  --check: 16px;
+  --switch-w: 32px;
+  --switch-h: 18px;
+  --kbd-h: 20px;
+  --progress-h: 6px;
+  --hbar-h: 6px;
+
+  /* ---------- Knobs, faders, meters ---------- */
+  --knob-s: 22px;
+  --knob-m: 30px;
+  --knob-l: 44px;
+  --knob-sw: 4;         /* stroke width in the knob's 40-unit view box */
+  --fader-w: 22px;
+  --fader-slot: 6px;
+  --cap-w: 22px;
+  --strip-fader-w: 30px; /* the fader of a mixer strip and its cap: sized to the 64 px strip (A-073) */
+  --strip-cap-w: 30px;
+  --cap-h: 12px;
+  --meter-w: 5px;
+  --meter-w-gr: 3px;
+  --meter-w-l: 10px;    /* master loudness meters */
+
+  /* ---------- Timeline ---------- */
+  --lane: 38px;         /* default track height; zoom steps below */
+  --lane-s: 26px;
+  --lane-l: 60px;
+  --head-w: 344px;      /* track header, with the glance marks' cell (P-013); 304px at the 1280 minimum */
+  --head-w-min: 304px;
+  --pip: 6px;           /* glance marks (P-013): one dot per return, the automation diamond */
+  --fs-sig: 8px;        /* the chain labels (HP LP EQ CMP SAT) in track headers */
+  --fs-sig-strip: 9.5px; /* same, one under the other in a mixer strip (A-073) */
+  --pip-gap: 2px;
+  --glance-w: 94px;     /* the marks' cell in a track header: the five chain labels */
+  --chain-col-h: 62px;  /* the chain labels one under the other in a strip */
+  --cell-h: 15px;       /* a cell of the mixer's Overview */
+  --rail-w: 92px;       /* row labels on the left of the mixer: one width in both views, so the strips never move (A-074) */
+  --rail-w-wide: 92px;  /* the Overview's, where the labels are whole words: the width the other view takes too */
+  --send-row: 9px;      /* one send per return in a strip */
+  --indent: 14px;       /* per nesting level of a group */
+  --clip-inset: 2px;
+  --clip-head: 13px;    /* name strip of a clip */
+  --ruler-h: 22px;
+  --secs-h: 20px;
+  --auto-h: 56px;
+  --tools-h: 38px;
+  --play-w: 2px;
+  --play-cap: 10px;
+  --fade-handle: 8px;
+  --trim-handle: 6px;
+
+  /* ---------- Shell ---------- */
+  --top-h: 52px;
+  --ph: 44px;           /* panel header */
+  --gap: 8px;           /* gutter between cards */
+  --col-side: 316px;    /* inspector and assistant columns */
+  --col-side-min: 288px;
+  --col-side-max: 380px; /* on windows wider than 1920 */
+  --rail: 44px;         /* a collapsed side column */
+  --bridge-h: 28px;     /* the mixer collapsed to a meter bridge */
+  --mixer-h: 304px;     /* default height: the strips carry the chain labels (P-013), larger since A-073 */
+  --mixer-h-short: 250px; /* same, in a window under 800 px high (1280 x 720) */
+  --mixer-h-min: 168px;
+  --mixer-h-max: 420px;
+  --strip-w: 64px;      /* strip width; the mixer scrolls sideways when they do not fit (40 until A-073) */
+  --strip-w-min: 52px;  /* same, in the compact layout (window narrower than 1360) */
+  --strip-w-max: 80px;  /* strips stop growing here on wide windows */
+  --eq-h: 128px;
+  --curve: 78px;        /* compressor transfer curve */
+  --menu-w: 220px;
+  --col-explain: 496px; /* the text column of “Explain this mix” (P-019); 432px at the 1280 minimum */
+  --col-explain-min: 432px;
+  --map-node: 30px;     /* a track in the mix map; 22px in the compact layout */
+  --map-node-s: 22px;
+  --rack-w: 288px;      /* master chain rack beside the editor */
+  --tip-w: 240px;
+  --toast-w: 360px;
+  --tour-w: 340px;      /* the bubble of the guided tour (P-020) */
+  --tour-card-w: 480px; /* its opening and closing cards, centred */
+  --tour-pad: 4px;      /* room between the lit area and the ring around it */
+  --tour-gap: 12px;     /* between the ring and the bubble (the arrow sits in it) */
+  --tour-edge: 16px;    /* the bubble never comes closer than this to the window edge */
+  --tour-arrow: 12px;   /* side of the square the bubble's arrow is cut from */
+  --dlg-s: 420px;
+  --dlg-m: 560px;
+  --dlg-l: 760px;
+  --nav-w: 200px;       /* settings navigation */
+  --ask-h: 44px;
+  --row-h: 32px;        /* list and table rows */
+  --row-h-s: 20px;      /* diff rows */
+  --swatch: 40px;
+  --frame-w: 1440px;    /* reference window */
+  --frame-h: 900px;
+  --frame-w-min: 1280px;
+  --frame-h-min: 720px;
+
+  /* ---------- Gestures ---------- */
+  --drag-threshold: 3px;  /* movement before a press becomes a drag */
+  --snap-dist: 8px;       /* distance at which an edge snaps */
+  --knob-travel: 200px;   /* vertical drag for the full range of a knob or field */
+  --fine: 0.1;            /* multiplier while Shift is held */
+  --tip-delay: 600ms;
+  --toast-life: 6000ms;
+  --wait-show: 250ms;     /* a background wait shows its overlay only if it lasts longer than this */
+  --wait-min: 600ms;      /* once shown, a wait overlay stays at least this long, so it never flickers */
+
+  /* ---------- Layers ---------- */
+  --z-play: 3;
+  --z-pop: 20;
+  --z-dialog: 30;
+  --z-toast: 40;
+  --z-tour: 45;           /* the guided tour: above dialogs and toasts (toasts wait until it ends) */
+}
+
+/* Master phase: lilac accent and a cooler ground, so the two phases differ at a glance. */
+[data-phase="master"] {
+  --accent: var(--master);
+  --accent-tx: var(--master-tx);
+  --bg-0: oklch(0.19 0.03 290);
+  --bg-1: oklch(0.235 0.032 290);
+  --bg-2: oklch(0.28 0.034 290);
+  --bg-3: oklch(0.33 0.036 290);
+  --bg-well: oklch(0.155 0.026 290);
+  --line: oklch(0.36 0.034 290);
+  --line-soft: oklch(0.27 0.03 290);
+  --line-strong: oklch(0.48 0.036 290);
+  --scrim: oklch(0.12 0.03 290 / 0.72);
+  --tour-dim: oklch(0.12 0.03 290 / 0.62);
+}

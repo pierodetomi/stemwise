@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Content of revision.json: where a revision starts from and what the author asked (D-059).",
+  "properties": {
+    "request": {
+      "description": "The author's request, in natural language.",
+      "maxLength": 1000,
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "Request",
+      "type": "string"
+    },
+    "source_iteration": {
+      "description": "Iteration of the source run's best plan.",
+      "minimum": 0,
+      "title": "Source Iteration",
+      "type": "integer"
+    },
+    "source_plan": {
+      "description": "Path of the starting plan, relative to the source run.",
+      "minLength": 1,
+      "title": "Source Plan",
+      "type": "string"
+    },
+    "source_run": {
+      "description": "Run the revision starts from: its folder name in runs/, or a path.",
+      "minLength": 1,
+      "title": "Source Run",
+      "type": "string"
+    }
+  },
+  "required": [
+    "source_run",
+    "source_iteration",
+    "source_plan",
+    "request"
+  ],
+  "title": "Revision",
+  "type": "object"
+}

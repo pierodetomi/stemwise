@@ -1,0 +1,36 @@
+{
+  "families": [
+    "lead_vocal",
+    "backing_vocal",
+    "drums",
+    "percussion",
+    "bass",
+    "guitars",
+    "keys",
+    "other"
+  ],
+  "of": {
+    "acoustic_guitar": "guitars",
+    "backing_vocal": "backing_vocal",
+    "bass": "bass",
+    "brass": "keys",
+    "choir": "backing_vocal",
+    "drums": "drums",
+    "electric_guitar": "guitars",
+    "fx": "other",
+    "keys": "keys",
+    "kick": "drums",
+    "lead_vocal": "lead_vocal",
+    "other": "other",
+    "overheads": "drums",
+    "pad": "keys",
+    "percussion": "percussion",
+    "piano": "keys",
+    "room": "drums",
+    "snare": "drums",
+    "strings": "keys",
+    "synth": "keys",
+    "toms": "drums",
+    "woodwinds": "keys"
+  }
+}

@@ -1,0 +1,763 @@
+{
+  "$defs": {
+    "CollisionEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "a": {
+          "description": "Stem identifier: lowercase letters, digits and underscores, at most 32.",
+          "maxLength": 32,
+          "pattern": "^[a-z0-9][a-z0-9_]*$",
+          "title": "A",
+          "type": "string"
+        },
+        "b": {
+          "description": "Stem identifier: lowercase letters, digits and underscores, at most 32.",
+          "maxLength": 32,
+          "pattern": "^[a-z0-9][a-z0-9_]*$",
+          "title": "B",
+          "type": "string"
+        },
+        "band": {
+          "enum": [
+            "20-60",
+            "60-120",
+            "120-250",
+            "250-500",
+            "500-2k",
+            "2k-4k",
+            "4k-8k",
+            "8k-20k"
+          ],
+          "title": "Band",
+          "type": "string"
+        },
+        "score": {
+          "description": "Masking score in [0, 1].",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Score",
+          "type": "number"
+        }
+      },
+      "required": [
+        "a",
+        "b",
+        "band",
+        "score"
+      ],
+      "title": "CollisionEntry",
+      "type": "object"
+    },
+    "HygieneEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "clipped_samples": {
+          "description": "Samples at or above 1 - 2^-15 (all channels).",
+          "minimum": 0,
+          "title": "Clipped Samples",
+          "type": "integer"
+        },
+        "dc_offset": {
+          "description": "DC offset in percent of full scale.",
+          "minimum": 0.0,
+          "title": "Dc Offset",
+          "type": "number"
+        },
+        "noise_floor_db": {
+          "anyOf": [
+            {
+              "description": "Level in dB, limited to ±120.",
+              "maximum": 120.0,
+              "minimum": -120.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Median level of the inactive frames, dBFS.",
+          "title": "Noise Floor Db"
+        }
+      },
+      "required": [
+        "dc_offset",
+        "clipped_samples",
+        "noise_floor_db"
+      ],
+      "title": "HygieneEntry",
+      "type": "object"
+    },
+    "MixEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "bands_db": {
+          "anyOf": [
+            {
+              "items": {
+                "description": "Level in dB, limited to ±120.",
+                "maximum": 120.0,
+                "minimum": -120.0,
+                "type": "number"
+              },
+              "maxItems": 8,
+              "minItems": 8,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Bands Db"
+        },
+        "crest_db": {
+          "anyOf": [
+            {
+              "description": "Level in dB, limited to ±120.",
+              "maximum": 120.0,
+              "minimum": -120.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Crest Db"
+        },
+        "dyn_range_lu": {
+          "anyOf": [
+            {
+              "description": "Loudness range in LU.",
+              "maximum": 120.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Dyn Range Lu"
+        },
+        "low_corr": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": -1.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "L/R correlation over 20-120 Hz.",
+          "title": "Low Corr"
+        },
+        "lufs": {
+          "anyOf": [
+            {
+              "description": "Level in dB, limited to ±120.",
+              "maximum": 120.0,
+              "minimum": -120.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Lufs"
+        },
+        "peak_db": {
+          "description": "Level in dB, limited to ±120.",
+          "maximum": 120.0,
+          "minimum": -120.0,
+          "title": "Peak Db",
+          "type": "number"
+        },
+        "rms_db": {
+          "anyOf": [
+            {
+              "description": "Level in dB, limited to ±120.",
+              "maximum": 120.0,
+              "minimum": -120.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Rms Db"
+        },
+        "stereo": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Stereo"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "true_peak_db": {
+          "description": "Level in dB, limited to ±120.",
+          "maximum": 120.0,
+          "minimum": -120.0,
+          "title": "True Peak Db",
+          "type": "number"
+        }
+      },
+      "required": [
+        "lufs",
+        "peak_db",
+        "true_peak_db",
+        "rms_db",
+        "crest_db",
+        "dyn_range_lu",
+        "bands_db",
+        "stereo",
+        "low_corr"
+      ],
+      "title": "MixEntry",
+      "type": "object"
+    },
+    "ProjectInfo": {
+      "additionalProperties": false,
+      "properties": {
+        "duration_s": {
+          "description": "Duration of the (padded) stems in seconds.",
+          "minimum": 0.0,
+          "title": "Duration S",
+          "type": "number"
+        },
+        "sample_rate": {
+          "description": "Sample rate of the project in Hz.",
+          "exclusiveMinimum": 0,
+          "title": "Sample Rate",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "sample_rate",
+        "duration_s"
+      ],
+      "title": "ProjectInfo",
+      "type": "object"
+    },
+    "ReferenceEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "bands_db": {
+          "anyOf": [
+            {
+              "items": {
+                "description": "Level in dB, limited to ±120.",
+                "maximum": 120.0,
+                "minimum": -120.0,
+                "type": "number"
+              },
+              "maxItems": 8,
+              "minItems": 8,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Bands Db"
+        },
+        "crest_db": {
+          "anyOf": [
+            {
+              "description": "Level in dB, limited to ±120.",
+              "maximum": 120.0,
+              "minimum": -120.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Crest Db"
+        },
+        "dyn_range_lu": {
+          "anyOf": [
+            {
+              "description": "Loudness range in LU.",
+              "maximum": 120.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Dyn Range Lu"
+        },
+        "id": {
+          "description": "Neutral label: refN is the N-th reference of project.yaml (no file names).",
+          "pattern": "^ref[1-3]$",
+          "title": "Id",
+          "type": "string"
+        },
+        "low_corr": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": -1.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "L/R correlation over 20-120 Hz.",
+          "title": "Low Corr"
+        },
+        "lufs": {
+          "anyOf": [
+            {
+              "description": "Level in dB, limited to ±120.",
+              "maximum": 120.0,
+              "minimum": -120.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Lufs"
+        },
+        "peak_db": {
+          "description": "Level in dB, limited to ±120.",
+          "maximum": 120.0,
+          "minimum": -120.0,
+          "title": "Peak Db",
+          "type": "number"
+        },
+        "rms_db": {
+          "anyOf": [
+            {
+              "description": "Level in dB, limited to ±120.",
+              "maximum": 120.0,
+              "minimum": -120.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Rms Db"
+        },
+        "stereo": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Stereo"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "true_peak_db": {
+          "description": "Level in dB, limited to ±120.",
+          "maximum": 120.0,
+          "minimum": -120.0,
+          "title": "True Peak Db",
+          "type": "number"
+        }
+      },
+      "required": [
+        "lufs",
+        "peak_db",
+        "true_peak_db",
+        "rms_db",
+        "crest_db",
+        "dyn_range_lu",
+        "bands_db",
+        "stereo",
+        "low_corr",
+        "id"
+      ],
+      "title": "ReferenceEntry",
+      "type": "object"
+    },
+    "StemEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "active_pct": {
+          "description": "Percentage of frames above -50 dBFS.",
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "title": "Active Pct",
+          "type": "number"
+        },
+        "bands_db": {
+          "anyOf": [
+            {
+              "items": {
+                "description": "Level in dB, limited to ±120.",
+                "maximum": 120.0,
+                "minimum": -120.0,
+                "type": "number"
+              },
+              "maxItems": 8,
+              "minItems": 8,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Energy of the 8 bands relative to their sum, dB.",
+          "title": "Bands Db"
+        },
+        "centroid_hz": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Spectral centroid of active frames.",
+          "title": "Centroid Hz"
+        },
+        "channels": {
+          "enum": [
+            1,
+            2
+          ],
+          "title": "Channels",
+          "type": "integer"
+        },
+        "crest_db": {
+          "anyOf": [
+            {
+              "description": "Level in dB, limited to ±120.",
+              "maximum": 120.0,
+              "minimum": -120.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Sample peak minus RMS, dB.",
+          "title": "Crest Db"
+        },
+        "dyn_range_lu": {
+          "anyOf": [
+            {
+              "description": "Loudness range in LU.",
+              "maximum": 120.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Loudness range (P95 - P10 of short-term), LU.",
+          "title": "Dyn Range Lu"
+        },
+        "hygiene": {
+          "$ref": "#/$defs/HygieneEntry"
+        },
+        "lufs": {
+          "anyOf": [
+            {
+              "description": "Level in dB, limited to ±120.",
+              "maximum": 120.0,
+              "minimum": -120.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Integrated loudness, LUFS (BS.1770).",
+          "title": "Lufs"
+        },
+        "onsets_per_s": {
+          "description": "Onsets per second of active time.",
+          "minimum": 0.0,
+          "title": "Onsets Per S",
+          "type": "number"
+        },
+        "peak_db": {
+          "description": "Sample peak, dBFS.",
+          "maximum": 120.0,
+          "minimum": -120.0,
+          "title": "Peak Db",
+          "type": "number"
+        },
+        "rms_db": {
+          "anyOf": [
+            {
+              "description": "Level in dB, limited to ±120.",
+              "maximum": 120.0,
+              "minimum": -120.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "RMS over the active frames, dBFS.",
+          "title": "Rms Db"
+        },
+        "role": {
+          "enum": [
+            "kick",
+            "snare",
+            "toms",
+            "overheads",
+            "drums",
+            "percussion",
+            "bass",
+            "electric_guitar",
+            "acoustic_guitar",
+            "keys",
+            "synth",
+            "pad",
+            "lead_vocal",
+            "backing_vocal",
+            "fx",
+            "other"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "stereo": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Stereo"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Stereo measures; null for a mono stem."
+        },
+        "true_peak_db": {
+          "description": "True peak with 4x oversampling, dBTP.",
+          "maximum": 120.0,
+          "minimum": -120.0,
+          "title": "True Peak Db",
+          "type": "number"
+        }
+      },
+      "required": [
+        "role",
+        "channels",
+        "lufs",
+        "peak_db",
+        "true_peak_db",
+        "rms_db",
+        "crest_db",
+        "dyn_range_lu",
+        "active_pct",
+        "bands_db",
+        "centroid_hz",
+        "onsets_per_s",
+        "stereo",
+        "hygiene"
+      ],
+      "title": "StemEntry",
+      "type": "object"
+    },
+    "Stereo": {
+      "additionalProperties": false,
+      "properties": {
+        "correlation": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": -1.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "L/R correlation, 20 Hz-20 kHz, active frames.",
+          "title": "Correlation"
+        },
+        "side_mid_db": {
+          "anyOf": [
+            {
+              "description": "Level in dB, limited to ±120.",
+              "maximum": 120.0,
+              "minimum": -120.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Side/mid power ratio in dB.",
+          "title": "Side Mid Db"
+        }
+      },
+      "required": [
+        "correlation",
+        "side_mid_db"
+      ],
+      "title": "Stereo",
+      "type": "object"
+    },
+    "TargetEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "bands_db": {
+          "anyOf": [
+            {
+              "items": {
+                "description": "Level in dB, limited to ±120.",
+                "maximum": 120.0,
+                "minimum": -120.0,
+                "type": "number"
+              },
+              "maxItems": 8,
+              "minItems": 8,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Bands Db"
+        },
+        "dyn_range_lu": {
+          "anyOf": [
+            {
+              "description": "Loudness range in LU.",
+              "maximum": 120.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Dyn Range Lu"
+        },
+        "n_references": {
+          "minimum": 1,
+          "title": "N References",
+          "type": "integer"
+        },
+        "side_mid_db": {
+          "anyOf": [
+            {
+              "description": "Level in dB, limited to ±120.",
+              "maximum": 120.0,
+              "minimum": -120.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Side Mid Db"
+        }
+      },
+      "required": [
+        "n_references",
+        "bands_db",
+        "side_mid_db",
+        "dyn_range_lu"
+      ],
+      "title": "TargetEntry",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Content of analysis.json: measures of stems, mix and references (PRD §6.2).",
+  "properties": {
+    "band_share_pct": {
+      "patternProperties": {
+        "^[a-z0-9][a-z0-9_]*$": {
+          "items": {
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "type": "number"
+          },
+          "maxItems": 8,
+          "minItems": 8,
+          "type": "array"
+        }
+      },
+      "propertyNames": {
+        "description": "Stem identifier: lowercase letters, digits and underscores, at most 32.",
+        "maxLength": 32
+      },
+      "title": "Band Share Pct",
+      "type": "object"
+    },
+    "masking_top": {
+      "items": {
+        "$ref": "#/$defs/CollisionEntry"
+      },
+      "maxItems": 10,
+      "title": "Masking Top",
+      "type": "array"
+    },
+    "mix": {
+      "$ref": "#/$defs/MixEntry"
+    },
+    "project": {
+      "$ref": "#/$defs/ProjectInfo"
+    },
+    "references": {
+      "items": {
+        "$ref": "#/$defs/ReferenceEntry"
+      },
+      "maxItems": 3,
+      "title": "References",
+      "type": "array"
+    },
+    "stems": {
+      "patternProperties": {
+        "^[a-z0-9][a-z0-9_]*$": {
+          "$ref": "#/$defs/StemEntry"
+        }
+      },
+      "propertyNames": {
+        "description": "Stem identifier: lowercase letters, digits and underscores, at most 32.",
+        "maxLength": 32
+      },
+      "title": "Stems",
+      "type": "object"
+    },
+    "target": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/TargetEntry"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Mean profile of the references; null if none."
+    },
+    "version": {
+      "const": 1,
+      "default": 1,
+      "title": "Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "project",
+    "stems",
+    "mix",
+    "band_share_pct",
+    "masking_top",
+    "references",
+    "target"
+  ],
+  "title": "Analysis",
+  "type": "object"
+}

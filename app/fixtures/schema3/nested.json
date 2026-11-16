@@ -1,0 +1,1174 @@
+{
+  "schema_version": 3,
+  "name": "Schema3",
+  "sample_rate": 48000,
+  "brief": {
+    "genre": "",
+    "mood": "",
+    "notes": ""
+  },
+  "tempo": null,
+  "media": [
+    {
+      "id": "2ce6c9d2011eefd4f3fcec643373e906",
+      "path": "audio/2ce6c9d2011eefd4f3fcec643373e906.wav",
+      "original_name": "Kick.wav",
+      "format": "wav",
+      "channels": 1,
+      "sample_rate": 48000,
+      "frames": 96000,
+      "encoding": "Float 32-bit",
+      "converted": false
+    },
+    {
+      "id": "fbf12ddf375ad564b1b2df9762e96b86",
+      "path": "audio/fbf12ddf375ad564b1b2df9762e96b86.wav",
+      "original_name": "Bass.wav",
+      "format": "wav",
+      "channels": 1,
+      "sample_rate": 48000,
+      "frames": 96000,
+      "encoding": "Float 32-bit",
+      "converted": false
+    },
+    {
+      "id": "330ce06e8c8cbb6b4b65399782844d1c",
+      "path": "audio/330ce06e8c8cbb6b4b65399782844d1c.wav",
+      "original_name": "Pad.wav",
+      "format": "wav",
+      "channels": 2,
+      "sample_rate": 48000,
+      "frames": 96000,
+      "encoding": "Float 32-bit",
+      "converted": false
+    },
+    {
+      "id": "2fe5f2c5d4e3800e363b768e01ac62c0",
+      "path": "audio/2fe5f2c5d4e3800e363b768e01ac62c0.wav",
+      "original_name": "Vox.wav",
+      "format": "wav",
+      "channels": 1,
+      "sample_rate": 48000,
+      "frames": 96000,
+      "encoding": "Float 32-bit",
+      "converted": false
+    }
+  ],
+  "references": [],
+  "tracks": [
+    {
+      "id": "g11",
+      "kind": "group",
+      "name": "Rhythm",
+      "color": 0,
+      "role": null,
+      "channels": 2,
+      "output": {
+        "kind": "mix_bus"
+      },
+      "clips": [],
+      "chain": {
+        "trim_db": 0.0,
+        "hpf": {
+          "bypass": true,
+          "freq_hz": 80.0
+        },
+        "lpf": {
+          "bypass": true,
+          "freq_hz": 18000.0
+        },
+        "eq": {
+          "bypass": false,
+          "bands": [
+            {
+              "enabled": false,
+              "kind": "low_shelf",
+              "freq_hz": 100.0,
+              "gain_db": 0.0,
+              "q": 0.7
+            },
+            {
+              "enabled": false,
+              "kind": "peak",
+              "freq_hz": 400.0,
+              "gain_db": 0.0,
+              "q": 1.0
+            },
+            {
+              "enabled": false,
+              "kind": "peak",
+              "freq_hz": 2500.0,
+              "gain_db": 0.0,
+              "q": 1.0
+            },
+            {
+              "enabled": false,
+              "kind": "high_shelf",
+              "freq_hz": 8000.0,
+              "gain_db": 0.0,
+              "q": 0.7
+            }
+          ]
+        },
+        "comp": {
+          "bypass": false,
+          "threshold_db": -24.0,
+          "ratio": 3.0,
+          "attack_ms": 10.0,
+          "release_ms": 120.0,
+          "knee_db": 6.0,
+          "makeup_db": 0.0,
+          "mix": 0.35,
+          "sidechain": null
+        },
+        "sat": {
+          "bypass": false,
+          "drive_db": 4.0,
+          "mix": 1.0
+        },
+        "fader_db": 0.0,
+        "pan": 0.0
+      },
+      "ret": null,
+      "sends": [
+        {
+          "target": "r12",
+          "level_db": -14.0
+        }
+      ],
+      "automation": [],
+      "locked": false,
+      "mute": false,
+      "solo": false
+    },
+    {
+      "id": "t3",
+      "kind": "audio",
+      "name": "Kick",
+      "color": 3,
+      "role": "other",
+      "channels": 1,
+      "output": {
+        "kind": "group",
+        "id": "g11"
+      },
+      "clips": [
+        {
+          "id": "c4",
+          "media": "2ce6c9d2011eefd4f3fcec643373e906",
+          "start": 0,
+          "offset": 0,
+          "length": 96000,
+          "gain_db": 0.0,
+          "fade_in": {
+            "length": 0,
+            "shape": "equal_power"
+          },
+          "fade_out": {
+            "length": 0,
+            "shape": "equal_power"
+          },
+          "mute": false
+        }
+      ],
+      "chain": {
+        "trim_db": 0.0,
+        "hpf": {
+          "bypass": true,
+          "freq_hz": 80.0
+        },
+        "lpf": {
+          "bypass": true,
+          "freq_hz": 18000.0
+        },
+        "eq": {
+          "bypass": false,
+          "bands": [
+            {
+              "enabled": false,
+              "kind": "low_shelf",
+              "freq_hz": 100.0,
+              "gain_db": 0.0,
+              "q": 0.7
+            },
+            {
+              "enabled": false,
+              "kind": "peak",
+              "freq_hz": 400.0,
+              "gain_db": 0.0,
+              "q": 1.0
+            },
+            {
+              "enabled": false,
+              "kind": "peak",
+              "freq_hz": 2500.0,
+              "gain_db": 0.0,
+              "q": 1.0
+            },
+            {
+              "enabled": false,
+              "kind": "high_shelf",
+              "freq_hz": 8000.0,
+              "gain_db": 0.0,
+              "q": 0.7
+            }
+          ]
+        },
+        "comp": {
+          "bypass": true,
+          "threshold_db": -18.0,
+          "ratio": 3.0,
+          "attack_ms": 10.0,
+          "release_ms": 120.0,
+          "knee_db": 6.0,
+          "makeup_db": 0.0,
+          "mix": 1.0,
+          "sidechain": null
+        },
+        "sat": {
+          "bypass": true,
+          "drive_db": 6.0,
+          "mix": 1.0
+        },
+        "fader_db": 0.0,
+        "pan": 0.0
+      },
+      "ret": null,
+      "sends": [],
+      "automation": [],
+      "locked": false,
+      "mute": false,
+      "solo": false
+    },
+    {
+      "id": "t5",
+      "kind": "audio",
+      "name": "Bass",
+      "color": 3,
+      "role": "other",
+      "channels": 1,
+      "output": {
+        "kind": "group",
+        "id": "g11"
+      },
+      "clips": [
+        {
+          "id": "c6",
+          "media": "fbf12ddf375ad564b1b2df9762e96b86",
+          "start": 0,
+          "offset": 0,
+          "length": 96000,
+          "gain_db": 0.0,
+          "fade_in": {
+            "length": 0,
+            "shape": "equal_power"
+          },
+          "fade_out": {
+            "length": 0,
+            "shape": "equal_power"
+          },
+          "mute": false
+        }
+      ],
+      "chain": {
+        "trim_db": 0.0,
+        "hpf": {
+          "bypass": true,
+          "freq_hz": 80.0
+        },
+        "lpf": {
+          "bypass": true,
+          "freq_hz": 18000.0
+        },
+        "eq": {
+          "bypass": false,
+          "bands": [
+            {
+              "enabled": false,
+              "kind": "low_shelf",
+              "freq_hz": 100.0,
+              "gain_db": 0.0,
+              "q": 0.7
+            },
+            {
+              "enabled": false,
+              "kind": "peak",
+              "freq_hz": 400.0,
+              "gain_db": 0.0,
+              "q": 1.0
+            },
+            {
+              "enabled": false,
+              "kind": "peak",
+              "freq_hz": 2500.0,
+              "gain_db": 0.0,
+              "q": 1.0
+            },
+            {
+              "enabled": false,
+              "kind": "high_shelf",
+              "freq_hz": 8000.0,
+              "gain_db": 0.0,
+              "q": 0.7
+            }
+          ]
+        },
+        "comp": {
+          "bypass": false,
+          "threshold_db": -18.0,
+          "ratio": 3.0,
+          "attack_ms": 10.0,
+          "release_ms": 120.0,
+          "knee_db": 6.0,
+          "makeup_db": 0.0,
+          "mix": 1.0,
+          "sidechain": {
+            "source": "t3",
+            "hpf_hz": 60.0
+          }
+        },
+        "sat": {
+          "bypass": true,
+          "drive_db": 6.0,
+          "mix": 1.0
+        },
+        "fader_db": 0.0,
+        "pan": 0.0
+      },
+      "ret": null,
+      "sends": [],
+      "automation": [],
+      "locked": false,
+      "mute": false,
+      "solo": false
+    },
+    {
+      "id": "t7",
+      "kind": "audio",
+      "name": "Pad",
+      "color": 3,
+      "role": "other",
+      "channels": 2,
+      "output": {
+        "kind": "mix_bus"
+      },
+      "clips": [
+        {
+          "id": "c8",
+          "media": "330ce06e8c8cbb6b4b65399782844d1c",
+          "start": 0,
+          "offset": 0,
+          "length": 96000,
+          "gain_db": 0.0,
+          "fade_in": {
+            "length": 0,
+            "shape": "equal_power"
+          },
+          "fade_out": {
+            "length": 0,
+            "shape": "equal_power"
+          },
+          "mute": false
+        }
+      ],
+      "chain": {
+        "trim_db": 0.0,
+        "hpf": {
+          "bypass": false,
+          "freq_hz": 80.0
+        },
+        "lpf": {
+          "bypass": true,
+          "freq_hz": 18000.0
+        },
+        "eq": {
+          "bypass": false,
+          "bands": [
+            {
+              "enabled": true,
+              "kind": "low_shelf",
+              "freq_hz": 100.0,
+              "gain_db": -4.0,
+              "q": 0.7
+            },
+            {
+              "enabled": false,
+              "kind": "peak",
+              "freq_hz": 400.0,
+              "gain_db": 0.0,
+              "q": 1.0
+            },
+            {
+              "enabled": false,
+              "kind": "peak",
+              "freq_hz": 2500.0,
+              "gain_db": 0.0,
+              "q": 1.0
+            },
+            {
+              "enabled": false,
+              "kind": "high_shelf",
+              "freq_hz": 8000.0,
+              "gain_db": 0.0,
+              "q": 0.7
+            }
+          ]
+        },
+        "comp": {
+          "bypass": true,
+          "threshold_db": -18.0,
+          "ratio": 3.0,
+          "attack_ms": 10.0,
+          "release_ms": 120.0,
+          "knee_db": 6.0,
+          "makeup_db": 0.0,
+          "mix": 1.0,
+          "sidechain": null
+        },
+        "sat": {
+          "bypass": true,
+          "drive_db": 6.0,
+          "mix": 1.0
+        },
+        "fader_db": 0.0,
+        "pan": 0.0
+      },
+      "ret": null,
+      "sends": [
+        {
+          "target": "r2",
+          "level_db": -12.0
+        }
+      ],
+      "automation": [
+        {
+          "param": "eq.1.freq",
+          "points": [
+            {
+              "frame": 0,
+              "value": 100.0
+            },
+            {
+              "frame": 60000,
+              "value": 400.0
+            }
+          ],
+          "author": "user",
+          "visible": false
+        }
+      ],
+      "locked": false,
+      "mute": false,
+      "solo": false
+    },
+    {
+      "id": "t9",
+      "kind": "audio",
+      "name": "Vox",
+      "color": 3,
+      "role": "other",
+      "channels": 1,
+      "output": {
+        "kind": "mix_bus"
+      },
+      "clips": [
+        {
+          "id": "c10",
+          "media": "2fe5f2c5d4e3800e363b768e01ac62c0",
+          "start": 0,
+          "offset": 0,
+          "length": 96000,
+          "gain_db": 0.0,
+          "fade_in": {
+            "length": 0,
+            "shape": "equal_power"
+          },
+          "fade_out": {
+            "length": 0,
+            "shape": "equal_power"
+          },
+          "mute": false
+        }
+      ],
+      "chain": {
+        "trim_db": 0.0,
+        "hpf": {
+          "bypass": false,
+          "freq_hz": 120.0
+        },
+        "lpf": {
+          "bypass": false,
+          "freq_hz": 9000.0
+        },
+        "eq": {
+          "bypass": false,
+          "bands": [
+            {
+              "enabled": false,
+              "kind": "low_shelf",
+              "freq_hz": 100.0,
+              "gain_db": 0.0,
+              "q": 0.7
+            },
+            {
+              "enabled": true,
+              "kind": "peak",
+              "freq_hz": 400.0,
+              "gain_db": -3.0,
+              "q": 1.0
+            },
+            {
+              "enabled": false,
+              "kind": "peak",
+              "freq_hz": 2500.0,
+              "gain_db": 0.0,
+              "q": 1.0
+            },
+            {
+              "enabled": true,
+              "kind": "high_shelf",
+              "freq_hz": 8000.0,
+              "gain_db": 2.5,
+              "q": 0.7
+            }
+          ]
+        },
+        "comp": {
+          "bypass": false,
+          "threshold_db": -30.0,
+          "ratio": 3.0,
+          "attack_ms": 10.0,
+          "release_ms": 120.0,
+          "knee_db": 6.0,
+          "makeup_db": 0.0,
+          "mix": 0.6,
+          "sidechain": null
+        },
+        "sat": {
+          "bypass": false,
+          "drive_db": 9.0,
+          "mix": 0.7
+        },
+        "fader_db": -2.0,
+        "pan": -0.4
+      },
+      "ret": null,
+      "sends": [
+        {
+          "target": "r1",
+          "level_db": -10.0
+        }
+      ],
+      "automation": [
+        {
+          "param": "eq.2.gain",
+          "points": [
+            {
+              "frame": 0,
+              "value": -3.0
+            },
+            {
+              "frame": 40000,
+              "value": 3.0
+            }
+          ],
+          "author": "user",
+          "visible": false
+        },
+        {
+          "param": "hpf.freq",
+          "points": [
+            {
+              "frame": 10000,
+              "value": 120.0
+            },
+            {
+              "frame": 60000,
+              "value": 400.0
+            }
+          ],
+          "author": "user",
+          "visible": false
+        },
+        {
+          "param": "lpf.freq",
+          "points": [
+            {
+              "frame": 0,
+              "value": 9000.0
+            },
+            {
+              "frame": 80000,
+              "value": 3000.0
+            }
+          ],
+          "author": "user",
+          "visible": false
+        },
+        {
+          "param": "comp.threshold",
+          "points": [
+            {
+              "frame": 0,
+              "value": -30.0
+            },
+            {
+              "frame": 50000,
+              "value": -10.0
+            }
+          ],
+          "author": "user",
+          "visible": false
+        },
+        {
+          "param": "sat.drive",
+          "points": [
+            {
+              "frame": 0,
+              "value": 9.0
+            },
+            {
+              "frame": 70000,
+              "value": 2.0
+            }
+          ],
+          "author": "user",
+          "visible": false
+        },
+        {
+          "param": "fader",
+          "points": [
+            {
+              "frame": 0,
+              "value": -2.0
+            },
+            {
+              "frame": 30000,
+              "value": -8.0
+            },
+            {
+              "frame": 60000,
+              "value": 0.0
+            }
+          ],
+          "author": "user",
+          "visible": false
+        },
+        {
+          "param": "pan",
+          "points": [
+            {
+              "frame": 0,
+              "value": -0.4
+            },
+            {
+              "frame": 90000,
+              "value": 0.6
+            }
+          ],
+          "author": "user",
+          "visible": false
+        },
+        {
+          "param": "send.r1",
+          "points": [
+            {
+              "frame": 0,
+              "value": -10.0
+            },
+            {
+              "frame": 45000,
+              "value": -4.0
+            }
+          ],
+          "author": "user",
+          "visible": false
+        }
+      ],
+      "locked": false,
+      "mute": false,
+      "solo": false
+    },
+    {
+      "id": "r1",
+      "kind": "return",
+      "name": "Reverb",
+      "color": 0,
+      "role": null,
+      "channels": 2,
+      "output": {
+        "kind": "mix_bus"
+      },
+      "clips": [],
+      "chain": {
+        "trim_db": 0.0,
+        "hpf": {
+          "bypass": true,
+          "freq_hz": 80.0
+        },
+        "lpf": {
+          "bypass": true,
+          "freq_hz": 18000.0
+        },
+        "eq": {
+          "bypass": false,
+          "bands": [
+            {
+              "enabled": false,
+              "kind": "low_shelf",
+              "freq_hz": 100.0,
+              "gain_db": 0.0,
+              "q": 0.7
+            },
+            {
+              "enabled": false,
+              "kind": "peak",
+              "freq_hz": 400.0,
+              "gain_db": 0.0,
+              "q": 1.0
+            },
+            {
+              "enabled": false,
+              "kind": "peak",
+              "freq_hz": 2500.0,
+              "gain_db": 0.0,
+              "q": 1.0
+            },
+            {
+              "enabled": false,
+              "kind": "high_shelf",
+              "freq_hz": 8000.0,
+              "gain_db": 0.0,
+              "q": 0.7
+            }
+          ]
+        },
+        "comp": {
+          "bypass": true,
+          "threshold_db": -18.0,
+          "ratio": 3.0,
+          "attack_ms": 10.0,
+          "release_ms": 120.0,
+          "knee_db": 6.0,
+          "makeup_db": 0.0,
+          "mix": 1.0,
+          "sidechain": null
+        },
+        "sat": {
+          "bypass": true,
+          "drive_db": 6.0,
+          "mix": 1.0
+        },
+        "fader_db": -6.0,
+        "pan": 0.0
+      },
+      "ret": {
+        "type": "reverb",
+        "bypass": false,
+        "algorithm": "room",
+        "decay_s": 0.6,
+        "size": 0.5,
+        "damping": 0.5,
+        "modulation": 0.2,
+        "predelay_ms": 5.0,
+        "hpf_hz": 200.0,
+        "lpf_hz": 10000.0
+      },
+      "sends": [],
+      "automation": [
+        {
+          "param": "rev.decay",
+          "points": [
+            {
+              "frame": 0,
+              "value": 0.6
+            },
+            {
+              "frame": 60000,
+              "value": 1.5
+            }
+          ],
+          "author": "user",
+          "visible": false
+        }
+      ],
+      "locked": false,
+      "mute": false,
+      "solo": false
+    },
+    {
+      "id": "r2",
+      "kind": "return",
+      "name": "Delay",
+      "color": 0,
+      "role": null,
+      "channels": 2,
+      "output": {
+        "kind": "group",
+        "id": "g11"
+      },
+      "clips": [],
+      "chain": {
+        "trim_db": 0.0,
+        "hpf": {
+          "bypass": true,
+          "freq_hz": 80.0
+        },
+        "lpf": {
+          "bypass": true,
+          "freq_hz": 18000.0
+        },
+        "eq": {
+          "bypass": false,
+          "bands": [
+            {
+              "enabled": false,
+              "kind": "low_shelf",
+              "freq_hz": 100.0,
+              "gain_db": 0.0,
+              "q": 0.7
+            },
+            {
+              "enabled": false,
+              "kind": "peak",
+              "freq_hz": 400.0,
+              "gain_db": 0.0,
+              "q": 1.0
+            },
+            {
+              "enabled": false,
+              "kind": "peak",
+              "freq_hz": 2500.0,
+              "gain_db": 0.0,
+              "q": 1.0
+            },
+            {
+              "enabled": false,
+              "kind": "high_shelf",
+              "freq_hz": 8000.0,
+              "gain_db": 0.0,
+              "q": 0.7
+            }
+          ]
+        },
+        "comp": {
+          "bypass": true,
+          "threshold_db": -18.0,
+          "ratio": 3.0,
+          "attack_ms": 10.0,
+          "release_ms": 120.0,
+          "knee_db": 6.0,
+          "makeup_db": 0.0,
+          "mix": 1.0,
+          "sidechain": null
+        },
+        "sat": {
+          "bypass": true,
+          "drive_db": 6.0,
+          "mix": 1.0
+        },
+        "fader_db": -6.0,
+        "pan": 0.0
+      },
+      "ret": {
+        "type": "delay",
+        "bypass": false,
+        "time_ms": 375.0,
+        "sync": null,
+        "feedback": 0.25,
+        "feedback_hpf_hz": 200.0,
+        "feedback_lpf_hz": 6000.0
+      },
+      "sends": [],
+      "automation": [],
+      "locked": false,
+      "mute": false,
+      "solo": false
+    },
+    {
+      "id": "r12",
+      "kind": "return",
+      "name": "Reverb 2",
+      "color": 0,
+      "role": null,
+      "channels": 2,
+      "output": {
+        "kind": "mix_bus"
+      },
+      "clips": [],
+      "chain": {
+        "trim_db": 0.0,
+        "hpf": {
+          "bypass": true,
+          "freq_hz": 80.0
+        },
+        "lpf": {
+          "bypass": true,
+          "freq_hz": 18000.0
+        },
+        "eq": {
+          "bypass": false,
+          "bands": [
+            {
+              "enabled": false,
+              "kind": "low_shelf",
+              "freq_hz": 100.0,
+              "gain_db": 0.0,
+              "q": 0.7
+            },
+            {
+              "enabled": false,
+              "kind": "peak",
+              "freq_hz": 400.0,
+              "gain_db": 0.0,
+              "q": 1.0
+            },
+            {
+              "enabled": false,
+              "kind": "peak",
+              "freq_hz": 2500.0,
+              "gain_db": 0.0,
+              "q": 1.0
+            },
+            {
+              "enabled": false,
+              "kind": "high_shelf",
+              "freq_hz": 8000.0,
+              "gain_db": 0.0,
+              "q": 0.7
+            }
+          ]
+        },
+        "comp": {
+          "bypass": true,
+          "threshold_db": -18.0,
+          "ratio": 3.0,
+          "attack_ms": 10.0,
+          "release_ms": 120.0,
+          "knee_db": 6.0,
+          "makeup_db": 0.0,
+          "mix": 1.0,
+          "sidechain": null
+        },
+        "sat": {
+          "bypass": true,
+          "drive_db": 6.0,
+          "mix": 1.0
+        },
+        "fader_db": -6.0,
+        "pan": 0.0
+      },
+      "ret": {
+        "type": "reverb",
+        "bypass": false,
+        "algorithm": "plate",
+        "decay_s": 1.2,
+        "size": 0.5,
+        "damping": 0.5,
+        "modulation": 0.2,
+        "predelay_ms": 30.0,
+        "hpf_hz": 300.0,
+        "lpf_hz": 12000.0
+      },
+      "sends": [],
+      "automation": [],
+      "locked": false,
+      "mute": false,
+      "solo": false
+    }
+  ],
+  "mix_bus": {
+    "fader_db": 0.0
+  },
+  "sections": [],
+  "snapshots": [],
+  "master": {
+    "chain": {
+      "input_gain_db": 0.0,
+      "blocks": [
+        {
+          "id": "b1",
+          "block": {
+            "type": "eq",
+            "bypass": false,
+            "bands": [
+              {
+                "enabled": false,
+                "kind": "low_shelf",
+                "freq_hz": 60.0,
+                "gain_db": 0.0,
+                "q": 0.7
+              },
+              {
+                "enabled": false,
+                "kind": "peak",
+                "freq_hz": 200.0,
+                "gain_db": 0.0,
+                "q": 0.7
+              },
+              {
+                "enabled": false,
+                "kind": "peak",
+                "freq_hz": 800.0,
+                "gain_db": 0.0,
+                "q": 0.7
+              },
+              {
+                "enabled": false,
+                "kind": "peak",
+                "freq_hz": 2500.0,
+                "gain_db": 0.0,
+                "q": 0.7
+              },
+              {
+                "enabled": false,
+                "kind": "peak",
+                "freq_hz": 6000.0,
+                "gain_db": 0.0,
+                "q": 0.7
+              },
+              {
+                "enabled": false,
+                "kind": "high_shelf",
+                "freq_hz": 12000.0,
+                "gain_db": 0.0,
+                "q": 0.7
+              }
+            ]
+          }
+        },
+        {
+          "id": "b2",
+          "block": {
+            "type": "match_eq",
+            "bypass": true,
+            "amount": 0.5
+          }
+        },
+        {
+          "id": "b3",
+          "block": {
+            "type": "compressor",
+            "bypass": true,
+            "threshold_db": -14.0,
+            "ratio": 1.8,
+            "attack_ms": 30.0,
+            "release_ms": 200.0,
+            "knee_db": 6.0,
+            "makeup_db": 0.0,
+            "mix": 1.0,
+            "listen_above_hz": 0.0
+          }
+        },
+        {
+          "id": "b4",
+          "block": {
+            "type": "multiband",
+            "bypass": true,
+            "crossovers_hz": [
+              120.0,
+              4000.0
+            ],
+            "bands": [
+              {
+                "bypass": false,
+                "threshold_db": -18.0,
+                "ratio": 2.0,
+                "attack_ms": 20.0,
+                "release_ms": 160.0,
+                "gain_db": 0.0
+              },
+              {
+                "bypass": false,
+                "threshold_db": -18.0,
+                "ratio": 2.0,
+                "attack_ms": 20.0,
+                "release_ms": 160.0,
+                "gain_db": 0.0
+              },
+              {
+                "bypass": false,
+                "threshold_db": -18.0,
+                "ratio": 2.0,
+                "attack_ms": 20.0,
+                "release_ms": 160.0,
+                "gain_db": 0.0
+              }
+            ]
+          }
+        },
+        {
+          "id": "b5",
+          "block": {
+            "type": "width",
+            "bypass": true,
+            "side_gain_db": 0.0,
+            "mono_below_hz": 120.0
+          }
+        },
+        {
+          "id": "b6",
+          "block": {
+            "type": "saturation",
+            "bypass": true,
+            "drive_db": 3.0,
+            "mix": 1.0
+          }
+        },
+        {
+          "id": "b7",
+          "block": {
+            "type": "clipper",
+            "bypass": true,
+            "take_off_db": 2.0,
+            "softness": 0.4
+          }
+        }
+      ],
+      "limiter": {
+        "bypass": false,
+        "release_ms": 80.0
+      },
+      "dither": {
+        "bypass": false
+      }
+    },
+    "target": {
+      "preset": "streaming",
+      "lufs": -14.0,
+      "true_peak_db": -1.0
+    },
+    "reference": null,
+    "mixdown": null,
+    "metadata": {
+      "title": "",
+      "artist": "",
+      "album": "",
+      "year": "",
+      "genre": "",
+      "track_number": "",
+      "isrc": "",
+      "cover": null
+    },
+    "export": {
+      "wav": true,
+      "flac": false,
+      "aac": false,
+      "sample_rate": 48000,
+      "bit_depth": 24,
+      "aac_kbps": 256,
+      "folder": null
+    },
+    "target_kept": false,
+    "sections": []
+  },
+  "ai": {
+    "normalize_trim": true,
+    "allow_structure": true,
+    "spend_cap_usd": null,
+    "calls": [],
+    "notes": [],
+    "summary": null
+  },
+  "next_id": 13
+}

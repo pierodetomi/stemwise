@@ -1,0 +1,190 @@
+{
+  "$defs": {
+    "Brief": {
+      "additionalProperties": false,
+      "description": "Creative brief written by the author (passed to the model as text).",
+      "properties": {
+        "genre": {
+          "default": "",
+          "description": "Musical genre.",
+          "title": "Genre",
+          "type": "string"
+        },
+        "mood": {
+          "default": "",
+          "description": "Desired mood.",
+          "title": "Mood",
+          "type": "string"
+        },
+        "notes": {
+          "default": "",
+          "description": "Free notes on the desired result.",
+          "title": "Notes",
+          "type": "string"
+        }
+      },
+      "title": "Brief",
+      "type": "object"
+    },
+    "Options": {
+      "additionalProperties": false,
+      "properties": {
+        "max_iterations": {
+          "default": 3,
+          "description": "Maximum iterations of the verification loop.",
+          "maximum": 3,
+          "minimum": 1,
+          "title": "Max Iterations",
+          "type": "integer"
+        },
+        "mix_true_peak_db": {
+          "default": -3.0,
+          "description": "True-peak ceiling of the mix bus in dBTP (from -24 to -3).",
+          "maximum": -3.0,
+          "minimum": -24.0,
+          "title": "Mix True Peak Db",
+          "type": "number"
+        },
+        "pre_normalize": {
+          "default": true,
+          "description": "Normalise every stem to -23 LUFS before applying the plan.",
+          "title": "Pre Normalize",
+          "type": "boolean"
+        }
+      },
+      "title": "Options",
+      "type": "object"
+    },
+    "ReferenceSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "description": "Reference mix (WAV or FLAC), relative to the project folder.",
+          "title": "File",
+          "type": "string"
+        }
+      },
+      "required": [
+        "file"
+      ],
+      "title": "ReferenceSpec",
+      "type": "object"
+    },
+    "StemSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "description": "WAV or FLAC file, relative to the project folder.",
+          "title": "File",
+          "type": "string"
+        },
+        "id": {
+          "description": "Stem identifier: lowercase letters, digits and underscores, at most 32.",
+          "maxLength": 32,
+          "pattern": "^[a-z0-9][a-z0-9_]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional notes about the stem.",
+          "title": "Notes"
+        },
+        "role": {
+          "description": "Declared role of the stem.",
+          "enum": [
+            "kick",
+            "snare",
+            "toms",
+            "overheads",
+            "drums",
+            "percussion",
+            "bass",
+            "electric_guitar",
+            "acoustic_guitar",
+            "keys",
+            "synth",
+            "pad",
+            "lead_vocal",
+            "backing_vocal",
+            "fx",
+            "other"
+          ],
+          "title": "Role",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "file",
+        "role"
+      ],
+      "title": "StemSpec",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Content of project.yaml.",
+  "properties": {
+    "brief": {
+      "$ref": "#/$defs/Brief"
+    },
+    "name": {
+      "description": "Song title.",
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "options": {
+      "$ref": "#/$defs/Options"
+    },
+    "references": {
+      "items": {
+        "$ref": "#/$defs/ReferenceSpec"
+      },
+      "maxItems": 3,
+      "title": "References",
+      "type": "array"
+    },
+    "sample_rate": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "integer"
+        },
+        {
+          "const": "auto",
+          "type": "string"
+        }
+      ],
+      "description": "Sample rate of every stem in Hz, or 'auto' for the one shared by all stems.",
+      "title": "Sample Rate"
+    },
+    "stems": {
+      "items": {
+        "$ref": "#/$defs/StemSpec"
+      },
+      "maxItems": 16,
+      "minItems": 2,
+      "title": "Stems",
+      "type": "array"
+    }
+  },
+  "required": [
+    "name",
+    "sample_rate",
+    "brief",
+    "stems"
+  ],
+  "title": "ProjectSpec",
+  "type": "object"
+}

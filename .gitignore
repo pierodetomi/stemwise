@@ -1,0 +1,44 @@
+# Python / uv (poc/)
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+dist/
+build/
+
+# Secrets (PRD §7)
+.env
+.env.*
+!.env.example
+
+# No audio in the repository (PRD §10.1); run outputs stay local
+*.wav
+*.flac
+*.aif
+*.aiff
+*.mp3
+*.m4a
+*.ogg
+runs/
+
+# Author's real material for manual validation
+local/
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
+.claude/settings.local.json
+.claude/launch.json
+
+# Product (app/): Rust, Node, Tauri
+target/
+node_modules/
+app/ui/dist/
+app/src-tauri/gen/
+*.stemwise/
+playwright-report/
+test-results/
+app/ui/*.tsbuildinfo

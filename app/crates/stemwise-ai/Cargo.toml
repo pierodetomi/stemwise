@@ -1,0 +1,42 @@
+[package]
+name = "stemwise-ai"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+stemwise-core = { path = "../stemwise-core" }
+stemwise-analysis = { path = "../stemwise-analysis" }
+stemwise-engine = { path = "../stemwise-engine" }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+thiserror = "2.0.21"
+rayon = "1.12.0"
+blake3 = "1.8.7"
+schemars = "1.2.3"
+ts-rs = "12.0.1"
+stemwise-dsp = { version = "0.1.0", path = "../stemwise-dsp" }
+reqwest = { version = "0.13.5", default-features = false, features = ["blocking", "json", "rustls"] }
+keyring = "4.2.0"
+sha2 = "0.10.9"
+getrandom = "0.3.4"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+security-framework = "3.7.0"
+
+[lints]
+workspace = true
+
+[dev-dependencies]
+proptest = "1.12.0"
+tempfile = "3.27.0"
+libc = "0.2.191"
+
+[[bench]]
+name = "analysis"
+harness = false
+
+[[bench]]
+name = "project"
+harness = false

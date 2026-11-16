@@ -1,0 +1,386 @@
+{
+  "$defs": {
+    "CollisionEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "a": {
+          "description": "Stem identifier: lowercase letters, digits and underscores, at most 32.",
+          "maxLength": 32,
+          "pattern": "^[a-z0-9][a-z0-9_]*$",
+          "title": "A",
+          "type": "string"
+        },
+        "b": {
+          "description": "Stem identifier: lowercase letters, digits and underscores, at most 32.",
+          "maxLength": 32,
+          "pattern": "^[a-z0-9][a-z0-9_]*$",
+          "title": "B",
+          "type": "string"
+        },
+        "band": {
+          "enum": [
+            "20-60",
+            "60-120",
+            "120-250",
+            "250-500",
+            "500-2k",
+            "2k-4k",
+            "4k-8k",
+            "8k-20k"
+          ],
+          "title": "Band",
+          "type": "string"
+        },
+        "score": {
+          "description": "Masking score in [0, 1].",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Score",
+          "type": "number"
+        }
+      },
+      "required": [
+        "a",
+        "b",
+        "band",
+        "score"
+      ],
+      "title": "CollisionEntry",
+      "type": "object"
+    },
+    "Constraints": {
+      "additionalProperties": false,
+      "description": "EVA-4: the technical constraints of the mix (D-053).",
+      "properties": {
+        "dc_ok": {
+          "description": "DC offset of every channel at most 0.1% of full scale.",
+          "title": "Dc Ok",
+          "type": "boolean"
+        },
+        "low_corr_ok": {
+          "description": "L/R correlation below 120 Hz above 0 (or no lows).",
+          "title": "Low Corr Ok",
+          "type": "boolean"
+        },
+        "true_peak_ok": {
+          "description": "True peak at or below the ceiling of the mix.",
+          "title": "True Peak Ok",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "true_peak_ok",
+        "low_corr_ok",
+        "dc_ok"
+      ],
+      "title": "Constraints",
+      "type": "object"
+    },
+    "MixEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "bands_db": {
+          "anyOf": [
+            {
+              "items": {
+                "description": "Level in dB, limited to ±120.",
+                "maximum": 120.0,
+                "minimum": -120.0,
+                "type": "number"
+              },
+              "maxItems": 8,
+              "minItems": 8,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Bands Db"
+        },
+        "crest_db": {
+          "anyOf": [
+            {
+              "description": "Level in dB, limited to ±120.",
+              "maximum": 120.0,
+              "minimum": -120.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Crest Db"
+        },
+        "dyn_range_lu": {
+          "anyOf": [
+            {
+              "description": "Loudness range in LU.",
+              "maximum": 120.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Dyn Range Lu"
+        },
+        "low_corr": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": -1.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "L/R correlation over 20-120 Hz.",
+          "title": "Low Corr"
+        },
+        "lufs": {
+          "anyOf": [
+            {
+              "description": "Level in dB, limited to ±120.",
+              "maximum": 120.0,
+              "minimum": -120.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Lufs"
+        },
+        "peak_db": {
+          "description": "Level in dB, limited to ±120.",
+          "maximum": 120.0,
+          "minimum": -120.0,
+          "title": "Peak Db",
+          "type": "number"
+        },
+        "rms_db": {
+          "anyOf": [
+            {
+              "description": "Level in dB, limited to ±120.",
+              "maximum": 120.0,
+              "minimum": -120.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Rms Db"
+        },
+        "stereo": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Stereo"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "true_peak_db": {
+          "description": "Level in dB, limited to ±120.",
+          "maximum": 120.0,
+          "minimum": -120.0,
+          "title": "True Peak Db",
+          "type": "number"
+        }
+      },
+      "required": [
+        "lufs",
+        "peak_db",
+        "true_peak_db",
+        "rms_db",
+        "crest_db",
+        "dyn_range_lu",
+        "bands_db",
+        "stereo",
+        "low_corr"
+      ],
+      "title": "MixEntry",
+      "type": "object"
+    },
+    "Stereo": {
+      "additionalProperties": false,
+      "properties": {
+        "correlation": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": -1.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "L/R correlation, 20 Hz-20 kHz, active frames.",
+          "title": "Correlation"
+        },
+        "side_mid_db": {
+          "anyOf": [
+            {
+              "description": "Level in dB, limited to ±120.",
+              "maximum": 120.0,
+              "minimum": -120.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Side/mid power ratio in dB.",
+          "title": "Side Mid Db"
+        }
+      },
+      "required": [
+        "correlation",
+        "side_mid_db"
+      ],
+      "title": "Stereo",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Content of evaluation.json (PRD §6.4, D-049).",
+  "properties": {
+    "band_delta_db": {
+      "anyOf": [
+        {
+          "items": {
+            "description": "Level in dB, limited to ±120.",
+            "maximum": 120.0,
+            "minimum": -120.0,
+            "type": "number"
+          },
+          "maxItems": 8,
+          "minItems": 8,
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Target minus mix per band after aligning the mean level: positive = missing.",
+      "title": "Band Delta Db"
+    },
+    "constraints": {
+      "$ref": "#/$defs/Constraints"
+    },
+    "dyn_delta_lu": {
+      "anyOf": [
+        {
+          "maximum": 120.0,
+          "minimum": -120.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Target minus mix loudness range, LU: positive = the mix is less dynamic.",
+      "title": "Dyn Delta Lu"
+    },
+    "is_best": {
+      "description": "Best iteration at the time it was evaluated (D-049).",
+      "title": "Is Best",
+      "type": "boolean"
+    },
+    "iteration": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Iteration evaluated; null for the raw sum.",
+      "title": "Iteration"
+    },
+    "masking_top": {
+      "description": "Residual collisions between the processed stems.",
+      "items": {
+        "$ref": "#/$defs/CollisionEntry"
+      },
+      "maxItems": 10,
+      "title": "Masking Top",
+      "type": "array"
+    },
+    "mix": {
+      "$ref": "#/$defs/MixEntry",
+      "description": "Measures of the evaluated mix (ANA-7, ANA-10)."
+    },
+    "spectral_distance_db": {
+      "anyOf": [
+        {
+          "minimum": 0.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Mean absolute band difference from the target, dB; null without one.",
+      "title": "Spectral Distance Db"
+    },
+    "stop_reason": {
+      "anyOf": [
+        {
+          "enum": [
+            "below_threshold",
+            "no_improvement",
+            "max_iterations",
+            "no_target",
+            "decision_failed",
+            "revision"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Why the loop stopped after this one.",
+      "title": "Stop Reason"
+    },
+    "width_delta_db": {
+      "anyOf": [
+        {
+          "description": "Level in dB, limited to ±120.",
+          "maximum": 120.0,
+          "minimum": -120.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Target minus mix side/mid ratio, dB: positive = the mix is narrower.",
+      "title": "Width Delta Db"
+    }
+  },
+  "required": [
+    "iteration",
+    "spectral_distance_db",
+    "band_delta_db",
+    "width_delta_db",
+    "dyn_delta_lu",
+    "masking_top",
+    "constraints",
+    "is_best",
+    "stop_reason",
+    "mix"
+  ],
+  "title": "Evaluation",
+  "type": "object"
+}

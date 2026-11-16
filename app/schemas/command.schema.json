@@ -1,0 +1,2969 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Command",
+  "oneOf": [
+    {
+      "description": "One continuous or switch parameter of a track (`params::ParamId` string form).",
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "set_param"
+        },
+        "param": {
+          "type": "string"
+        },
+        "track": {
+          "type": "string"
+        },
+        "value": {
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "required": [
+        "op",
+        "track",
+        "param",
+        "value"
+      ]
+    },
+    {
+      "description": "Replaces a track (matched by id) with a new version: clips, chain, sends, automation, name…",
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "set_track"
+        },
+        "track": {
+          "$ref": "#/$defs/Track"
+        }
+      },
+      "required": [
+        "op",
+        "track"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "index": {
+          "type": "integer",
+          "format": "uint",
+          "minimum": 0
+        },
+        "op": {
+          "type": "string",
+          "const": "insert_track"
+        },
+        "track": {
+          "$ref": "#/$defs/Track"
+        }
+      },
+      "required": [
+        "op",
+        "index",
+        "track"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "remove_track"
+        },
+        "track": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "op",
+        "track"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "index": {
+          "type": "integer",
+          "format": "uint",
+          "minimum": 0
+        },
+        "op": {
+          "type": "string",
+          "const": "move_track"
+        },
+        "track": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "op",
+        "track",
+        "index"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "set_sections"
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Section"
+          }
+        }
+      },
+      "required": [
+        "op",
+        "sections"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "brief": {
+          "$ref": "#/$defs/Brief"
+        },
+        "op": {
+          "type": "string",
+          "const": "set_brief"
+        }
+      },
+      "required": [
+        "op",
+        "brief"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "set_tempo"
+        },
+        "tempo": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Tempo"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "op"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "op": {
+          "type": "string",
+          "const": "set_name"
+        }
+      },
+      "required": [
+        "op",
+        "name"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "bus": {
+          "$ref": "#/$defs/MixBus"
+        },
+        "op": {
+          "type": "string",
+          "const": "set_mix_bus"
+        }
+      },
+      "required": [
+        "op",
+        "bus"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "set_sample_rate"
+        },
+        "sample_rate": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "op"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "media": {
+          "$ref": "#/$defs/MediaFile"
+        },
+        "op": {
+          "type": "string",
+          "const": "add_media"
+        }
+      },
+      "required": [
+        "op",
+        "media"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "media": {
+          "type": "string"
+        },
+        "op": {
+          "type": "string",
+          "const": "remove_media"
+        }
+      },
+      "required": [
+        "op",
+        "media"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "set_references"
+        },
+        "references": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ReferenceTrack"
+          }
+        }
+      },
+      "required": [
+        "op",
+        "references"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "set_snapshots"
+        },
+        "snapshots": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SnapshotInfo"
+          }
+        }
+      },
+      "required": [
+        "op",
+        "snapshots"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "notes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AiNote"
+          }
+        },
+        "op": {
+          "type": "string",
+          "const": "set_ai_notes"
+        },
+        "summary": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "op",
+        "notes"
+      ]
+    },
+    {
+      "description": "The AI call log (AI-10): written with `Document::apply_view`, never a history step.",
+      "type": "object",
+      "properties": {
+        "calls": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AiCallRecord"
+          }
+        },
+        "op": {
+          "type": "string",
+          "const": "set_ai_calls"
+        }
+      },
+      "required": [
+        "op",
+        "calls"
+      ]
+    },
+    {
+      "description": "Solo of a track (view state, HIS-6: applied with `Document::apply_view`).",
+      "type": "object",
+      "properties": {
+        "on": {
+          "type": "boolean"
+        },
+        "op": {
+          "type": "string",
+          "const": "set_solo"
+        },
+        "track": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "op",
+        "track",
+        "on"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "on": {
+          "type": "boolean"
+        },
+        "op": {
+          "type": "string",
+          "const": "set_normalize_trim"
+        }
+      },
+      "required": [
+        "op",
+        "on"
+      ]
+    },
+    {
+      "description": "AI-27: whether the assistant may propose creative ideas (view state, kept in the project).",
+      "type": "object",
+      "properties": {
+        "on": {
+          "type": "boolean"
+        },
+        "op": {
+          "type": "string",
+          "const": "set_allow_ideas"
+        }
+      },
+      "required": [
+        "op",
+        "on"
+      ]
+    },
+    {
+      "description": "AI-18: whether the assistant may propose new returns and groups.",
+      "type": "object",
+      "properties": {
+        "on": {
+          "type": "boolean"
+        },
+        "op": {
+          "type": "string",
+          "const": "set_allow_structure"
+        }
+      },
+      "required": [
+        "op",
+        "on"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "const": "set_spend_cap"
+        },
+        "usd": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "format": "double"
+        }
+      },
+      "required": [
+        "op"
+      ]
+    },
+    {
+      "description": "The whole master state (master phase, HIS-5). The mixdown is kept as it is: undo and redo of master steps\nnever move it (MDN-2); only [`Command::SetMixdown`] changes it.",
+      "type": "object",
+      "properties": {
+        "master": {
+          "$ref": "#/$defs/MasterState"
+        },
+        "op": {
+          "type": "string",
+          "const": "set_master"
+        }
+      },
+      "required": [
+        "op",
+        "master"
+      ]
+    },
+    {
+      "description": "The clips using media `from` use media `to` instead (UI-6: a missing file replaced by another of the same\nshape, whose media is added first with `AddMedia`). Both entries stay in the project, so a snapshot that still\nnames `from` finds it, and reports it missing.",
+      "type": "object",
+      "properties": {
+        "from": {
+          "type": "string"
+        },
+        "op": {
+          "type": "string",
+          "const": "relink_media"
+        },
+        "to": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "op",
+        "from",
+        "to"
+      ]
+    },
+    {
+      "description": "A new mixdown (a bounce, MDN-1): recorded outside the histories, the file exists either way (MDN-4).",
+      "type": "object",
+      "properties": {
+        "mixdown": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Mixdown"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "op": {
+          "type": "string",
+          "const": "set_mixdown"
+        }
+      },
+      "required": [
+        "op"
+      ]
+    }
+  ],
+  "$defs": {
+    "AiCallKind": {
+      "type": "string",
+      "enum": [
+        "auto_mix",
+        "revision",
+        "master",
+        "master_revision"
+      ]
+    },
+    "AiCallRecord": {
+      "type": "object",
+      "properties": {
+        "attempts": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0
+        },
+        "cost_estimated": {
+          "description": "True when the cost was estimated from tokens and the price list (AI-15).",
+          "type": "boolean"
+        },
+        "cost_usd": {
+          "type": "number",
+          "format": "double"
+        },
+        "decider": {
+          "type": "string"
+        },
+        "duration_ms": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0
+        },
+        "effort": {
+          "type": "string"
+        },
+        "error": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "history_label": {
+          "description": "Label of the history step the proposal became, if applied (HIS-3).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "type": "string"
+        },
+        "iterations": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0
+        },
+        "kind": {
+          "$ref": "#/$defs/AiCallKind"
+        },
+        "model": {
+          "type": "string"
+        },
+        "outcome": {
+          "$ref": "#/$defs/AiOutcome"
+        },
+        "path": {
+          "description": "Folder of the call inside the package (`ai/<id>`).",
+          "type": "string"
+        },
+        "request": {
+          "description": "User request of a revision (AI-3).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "started_ms": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0
+        },
+        "stored": {
+          "description": "True when the call's proposal is kept in its folder: it can be reviewed and applied again later (AI-23).",
+          "type": "boolean",
+          "default": false
+        },
+        "tokens_in": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0
+        },
+        "tokens_out": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "started_ms",
+        "duration_ms",
+        "model",
+        "effort",
+        "decider",
+        "attempts",
+        "iterations",
+        "tokens_in",
+        "tokens_out",
+        "cost_usd",
+        "cost_estimated",
+        "outcome",
+        "path"
+      ]
+    },
+    "AiNote": {
+      "type": "object",
+      "properties": {
+        "number": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0
+        },
+        "text": {
+          "type": "string"
+        },
+        "track": {
+          "description": "Track or group id the note is about; `None` for a note about the whole mix or master.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "number",
+        "text"
+      ]
+    },
+    "AiOutcome": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "applied",
+        "applied_partly",
+        "discarded",
+        "failed",
+        "cancelled"
+      ]
+    },
+    "AudioFormat": {
+      "type": "string",
+      "enum": [
+        "wav",
+        "flac",
+        "aiff",
+        "mp3",
+        "aac"
+      ]
+    },
+    "Author": {
+      "type": "string",
+      "enum": [
+        "user",
+        "ai"
+      ]
+    },
+    "AutomationLane": {
+      "type": "object",
+      "properties": {
+        "author": {
+          "description": "Who last wrote the lane: the assistant (AUT-5) or the user (design D3).",
+          "$ref": "#/$defs/Author"
+        },
+        "param": {
+          "description": "Parameter id, see [`crate::params::ParamId`] (e.g. `fader`, `eq.1.gain`, `send.trk3`).",
+          "type": "string"
+        },
+        "points": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AutomationPoint"
+          }
+        },
+        "visible": {
+          "description": "Whether the lane is shown under the track (view state).",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "param",
+        "points",
+        "author",
+        "visible"
+      ]
+    },
+    "AutomationPoint": {
+      "type": "object",
+      "properties": {
+        "frame": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "value": {
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "required": [
+        "frame",
+        "value"
+      ]
+    },
+    "BassEnhancer": {
+      "description": "Bass enhancer (FX-18): harmonics of the low band, no octave below.",
+      "type": "object",
+      "properties": {
+        "bypass": {
+          "type": "boolean"
+        },
+        "freq_hz": {
+          "type": "number",
+          "format": "double"
+        },
+        "harmonics": {
+          "type": "number",
+          "format": "double"
+        },
+        "mix": {
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "required": [
+        "bypass",
+        "freq_hz",
+        "harmonics",
+        "mix"
+      ]
+    },
+    "Block": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "eq"
+            }
+          },
+          "$ref": "#/$defs/Equalizer",
+          "required": [
+            "type"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "match_eq"
+            }
+          },
+          "$ref": "#/$defs/MatchEq",
+          "required": [
+            "type"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "compressor"
+            }
+          },
+          "$ref": "#/$defs/MasterComp",
+          "required": [
+            "type"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "multiband"
+            }
+          },
+          "$ref": "#/$defs/Multiband",
+          "required": [
+            "type"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "width"
+            }
+          },
+          "$ref": "#/$defs/Width",
+          "required": [
+            "type"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "saturation"
+            }
+          },
+          "$ref": "#/$defs/Saturation",
+          "required": [
+            "type"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "clipper"
+            }
+          },
+          "$ref": "#/$defs/Clipper",
+          "required": [
+            "type"
+          ]
+        }
+      ]
+    },
+    "Brief": {
+      "type": "object",
+      "properties": {
+        "genre": {
+          "type": "string"
+        },
+        "mood": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "genre",
+        "mood",
+        "notes"
+      ]
+    },
+    "Chain": {
+      "description": "FX-1, FX-10: trim → blocks in free order → fader → pan → sends. On a return the blocks follow its processor\n(FX-11) and the trim is not used.",
+      "type": "object",
+      "properties": {
+        "blocks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FxBlock"
+          }
+        },
+        "fader_db": {
+          "type": "number",
+          "format": "double"
+        },
+        "pan": {
+          "type": "number",
+          "format": "double"
+        },
+        "trim_db": {
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "required": [
+        "trim_db",
+        "blocks",
+        "fader_db",
+        "pan"
+      ]
+    },
+    "Clip": {
+      "type": "object",
+      "properties": {
+        "fade_in": {
+          "$ref": "#/$defs/Fade"
+        },
+        "fade_out": {
+          "$ref": "#/$defs/Fade"
+        },
+        "gain_db": {
+          "type": "number",
+          "format": "double"
+        },
+        "id": {
+          "type": "string"
+        },
+        "length": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0
+        },
+        "media": {
+          "type": "string"
+        },
+        "mute": {
+          "type": "boolean"
+        },
+        "offset": {
+          "description": "Offset into the media file of the clip's first frame.",
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0
+        },
+        "start": {
+          "description": "Timeline position of the clip's first frame.",
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "required": [
+        "id",
+        "media",
+        "start",
+        "offset",
+        "length",
+        "gain_db",
+        "fade_in",
+        "fade_out",
+        "mute"
+      ]
+    },
+    "Clipper": {
+      "description": "Peak clipper (MAS-11): takes up to `take_off_db` off the tallest peaks that reach it, wherever it sits.",
+      "type": "object",
+      "properties": {
+        "bypass": {
+          "type": "boolean"
+        },
+        "softness": {
+          "description": "0 = hard … 1 = softest knee.",
+          "type": "number",
+          "format": "double"
+        },
+        "take_off_db": {
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "required": [
+        "bypass",
+        "take_off_db",
+        "softness"
+      ]
+    },
+    "Compressor": {
+      "type": "object",
+      "properties": {
+        "attack_ms": {
+          "type": "number",
+          "format": "double"
+        },
+        "bypass": {
+          "type": "boolean"
+        },
+        "knee_db": {
+          "type": "number",
+          "format": "double"
+        },
+        "makeup_db": {
+          "type": "number",
+          "format": "double"
+        },
+        "mix": {
+          "description": "Dry/wet, 0..1: below 1 the uncompressed signal is blended back in (parallel compression, FX-3). Tracks\nand groups only: the master compressor keeps it at 1.",
+          "type": "number",
+          "format": "double"
+        },
+        "ratio": {
+          "type": "number",
+          "format": "double"
+        },
+        "release_ms": {
+          "type": "number",
+          "format": "double"
+        },
+        "sidechain": {
+          "description": "Detector input from another track or group, post-fader (FX-3).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Sidechain"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "threshold_db": {
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "required": [
+        "bypass",
+        "threshold_db",
+        "ratio",
+        "attack_ms",
+        "release_ms",
+        "knee_db",
+        "makeup_db",
+        "mix"
+      ]
+    },
+    "Deesser": {
+      "description": "De-esser (FX-14).",
+      "type": "object",
+      "properties": {
+        "bypass": {
+          "type": "boolean"
+        },
+        "freq_hz": {
+          "type": "number",
+          "format": "double"
+        },
+        "max_reduction_db": {
+          "type": "number",
+          "format": "double"
+        },
+        "mode": {
+          "$ref": "#/$defs/DeesserMode"
+        },
+        "threshold_db": {
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "required": [
+        "bypass",
+        "freq_hz",
+        "threshold_db",
+        "max_reduction_db",
+        "mode"
+      ]
+    },
+    "DeesserMode": {
+      "oneOf": [
+        {
+          "description": "Only what is above the frequency goes down.",
+          "type": "string",
+          "const": "split"
+        },
+        {
+          "description": "The whole signal goes down.",
+          "type": "string",
+          "const": "wide"
+        }
+      ]
+    },
+    "DelayCharacter": {
+      "type": "string",
+      "enum": [
+        "clean",
+        "tape"
+      ]
+    },
+    "DelayMode": {
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "stereo"
+          ]
+        },
+        {
+          "description": "The input summed to mono, repeats alternating left and right.",
+          "type": "string",
+          "const": "ping_pong"
+        }
+      ]
+    },
+    "DeqBand": {
+      "type": "object",
+      "properties": {
+        "attack_ms": {
+          "type": "number",
+          "format": "double"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "freq_hz": {
+          "type": "number",
+          "format": "double"
+        },
+        "kind": {
+          "$ref": "#/$defs/EqKind"
+        },
+        "q": {
+          "type": "number",
+          "format": "double"
+        },
+        "range_db": {
+          "description": "Most gain the band takes, −12 … +6 dB: negative cuts, positive lifts.",
+          "type": "number",
+          "format": "double"
+        },
+        "release_ms": {
+          "type": "number",
+          "format": "double"
+        },
+        "sidechain": {
+          "description": "The detector hears the same band of another track or group (FX-3).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "threshold_db": {
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "required": [
+        "enabled",
+        "kind",
+        "freq_hz",
+        "q",
+        "threshold_db",
+        "range_db",
+        "attack_ms",
+        "release_ms"
+      ]
+    },
+    "Dither": {
+      "type": "object",
+      "properties": {
+        "bypass": {
+          "description": "TPDF dither is applied only when exporting at 16 bit (MAS-1); this switch can disable it.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "bypass"
+      ]
+    },
+    "Doubler": {
+      "description": "Doubler (FX-21): voices slightly out of tune and slowly moving in time, inside the track.",
+      "type": "object",
+      "properties": {
+        "bypass": {
+          "type": "boolean"
+        },
+        "delay_ms": {
+          "type": "number",
+          "format": "double"
+        },
+        "detune_cents": {
+          "type": "number",
+          "format": "double"
+        },
+        "mix": {
+          "type": "number",
+          "format": "double"
+        },
+        "spread": {
+          "type": "number",
+          "format": "double"
+        },
+        "voices": {
+          "type": "integer",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0
+        }
+      },
+      "required": [
+        "bypass",
+        "voices",
+        "detune_cents",
+        "delay_ms",
+        "spread",
+        "mix"
+      ]
+    },
+    "DynamicEq": {
+      "description": "Dynamic EQ (FX-15): one or two bands that move only when their detector passes the threshold.",
+      "type": "object",
+      "properties": {
+        "bands": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DeqBand"
+          }
+        },
+        "bypass": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "bypass",
+        "bands"
+      ]
+    },
+    "EqBand": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "freq_hz": {
+          "type": "number",
+          "format": "double"
+        },
+        "gain_db": {
+          "type": "number",
+          "format": "double"
+        },
+        "kind": {
+          "$ref": "#/$defs/EqKind"
+        },
+        "q": {
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "required": [
+        "enabled",
+        "kind",
+        "freq_hz",
+        "gain_db",
+        "q"
+      ]
+    },
+    "EqKind": {
+      "type": "string",
+      "enum": [
+        "peak",
+        "low_shelf",
+        "high_shelf"
+      ]
+    },
+    "EqOffsets": {
+      "type": "object",
+      "properties": {
+        "block": {
+          "type": "string"
+        },
+        "gains_db": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "required": [
+        "block",
+        "gains_db"
+      ]
+    },
+    "Equalizer": {
+      "type": "object",
+      "properties": {
+        "bands": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EqBand"
+          }
+        },
+        "bypass": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "bypass",
+        "bands"
+      ]
+    },
+    "Exciter": {
+      "description": "Exciter (FX-18).",
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "number",
+          "format": "double"
+        },
+        "bypass": {
+          "type": "boolean"
+        },
+        "drive_db": {
+          "type": "number",
+          "format": "double"
+        },
+        "freq_hz": {
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "required": [
+        "bypass",
+        "freq_hz",
+        "drive_db",
+        "amount"
+      ]
+    },
+    "ExportSettings": {
+      "type": "object",
+      "properties": {
+        "aac": {
+          "type": "boolean"
+        },
+        "aac_kbps": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0
+        },
+        "bit_depth": {
+          "description": "16, 24 or 32 (float) for WAV; 16 or 24 for FLAC.",
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0
+        },
+        "flac": {
+          "type": "boolean"
+        },
+        "folder": {
+          "description": "Destination folder outside the package; `None` means `masters/` inside it.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sample_rate": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0
+        },
+        "wav": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "wav",
+        "flac",
+        "aac",
+        "sample_rate",
+        "bit_depth",
+        "aac_kbps"
+      ]
+    },
+    "Fade": {
+      "type": "object",
+      "properties": {
+        "length": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0
+        },
+        "shape": {
+          "$ref": "#/$defs/FadeShape"
+        }
+      },
+      "required": [
+        "length",
+        "shape"
+      ]
+    },
+    "FadeShape": {
+      "type": "string",
+      "enum": [
+        "linear",
+        "equal_power"
+      ]
+    },
+    "Filter": {
+      "description": "High-pass or low-pass (FX-1, FX-12): 12 dB/octave, with a resonance.",
+      "type": "object",
+      "properties": {
+        "bypass": {
+          "type": "boolean"
+        },
+        "freq_hz": {
+          "type": "number",
+          "format": "double"
+        },
+        "resonance": {
+          "description": "Q of the filter, 0.5 … 10; 0.707 is the flat Butterworth response of schema 3 (FX-12).",
+          "type": "number",
+          "format": "double",
+          "default": 0.7071067811865476
+        }
+      },
+      "required": [
+        "bypass",
+        "freq_hz"
+      ]
+    },
+    "Fx": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "hpf"
+            }
+          },
+          "$ref": "#/$defs/Filter",
+          "required": [
+            "type"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "lpf"
+            }
+          },
+          "$ref": "#/$defs/Filter",
+          "required": [
+            "type"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "eq"
+            }
+          },
+          "$ref": "#/$defs/Equalizer",
+          "required": [
+            "type"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "compressor"
+            }
+          },
+          "$ref": "#/$defs/Compressor",
+          "required": [
+            "type"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "saturation"
+            }
+          },
+          "$ref": "#/$defs/Saturation",
+          "required": [
+            "type"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "gate"
+            }
+          },
+          "$ref": "#/$defs/Gate",
+          "required": [
+            "type"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "deesser"
+            }
+          },
+          "$ref": "#/$defs/Deesser",
+          "required": [
+            "type"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "dynamic_eq"
+            }
+          },
+          "$ref": "#/$defs/DynamicEq",
+          "required": [
+            "type"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "transient"
+            }
+          },
+          "$ref": "#/$defs/Transient",
+          "required": [
+            "type"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "clipper"
+            }
+          },
+          "$ref": "#/$defs/TrackClipper",
+          "required": [
+            "type"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "multiband"
+            }
+          },
+          "$ref": "#/$defs/Multiband",
+          "required": [
+            "type"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "exciter"
+            }
+          },
+          "$ref": "#/$defs/Exciter",
+          "required": [
+            "type"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "bass_enhancer"
+            }
+          },
+          "$ref": "#/$defs/BassEnhancer",
+          "required": [
+            "type"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "width"
+            }
+          },
+          "$ref": "#/$defs/StereoWidth",
+          "required": [
+            "type"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "modulation"
+            }
+          },
+          "$ref": "#/$defs/Modulation",
+          "required": [
+            "type"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "tremolo"
+            }
+          },
+          "$ref": "#/$defs/Tremolo",
+          "required": [
+            "type"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "harmonizer"
+            }
+          },
+          "$ref": "#/$defs/Harmonizer",
+          "required": [
+            "type"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "doubler"
+            }
+          },
+          "$ref": "#/$defs/Doubler",
+          "required": [
+            "type"
+          ]
+        }
+      ]
+    },
+    "FxBlock": {
+      "type": "object",
+      "properties": {
+        "fx": {
+          "$ref": "#/$defs/Fx"
+        },
+        "id": {
+          "description": "`<kind key>` or `<kind key><n>` (`eq`, `eq2`): unique in the chain, stable when the block moves.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "fx"
+      ]
+    },
+    "Gate": {
+      "description": "Gate and expander (FX-13).",
+      "type": "object",
+      "properties": {
+        "attack_ms": {
+          "type": "number",
+          "format": "double"
+        },
+        "bypass": {
+          "type": "boolean"
+        },
+        "detector_hpf_hz": {
+          "type": "number",
+          "format": "double"
+        },
+        "detector_lpf_hz": {
+          "type": "number",
+          "format": "double"
+        },
+        "hold_ms": {
+          "type": "number",
+          "format": "double"
+        },
+        "range_db": {
+          "description": "How far the signal goes down below the threshold.",
+          "type": "number",
+          "format": "double"
+        },
+        "ratio": {
+          "description": "1 … 20: at 20 it is a gate, below an expander.",
+          "type": "number",
+          "format": "double"
+        },
+        "release_ms": {
+          "type": "number",
+          "format": "double"
+        },
+        "sidechain": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "threshold_db": {
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "required": [
+        "bypass",
+        "threshold_db",
+        "range_db",
+        "ratio",
+        "attack_ms",
+        "hold_ms",
+        "release_ms",
+        "detector_hpf_hz",
+        "detector_lpf_hz"
+      ]
+    },
+    "HarmVoice": {
+      "type": "object",
+      "properties": {
+        "cents": {
+          "type": "number",
+          "format": "double"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "level_db": {
+          "type": "number",
+          "format": "double"
+        },
+        "pan": {
+          "type": "number",
+          "format": "double"
+        },
+        "semitones": {
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "required": [
+        "enabled",
+        "semitones",
+        "cents",
+        "level_db",
+        "pan"
+      ]
+    },
+    "Harmonizer": {
+      "description": "Harmonizer (FX-21).",
+      "type": "object",
+      "properties": {
+        "bypass": {
+          "type": "boolean"
+        },
+        "mix": {
+          "type": "number",
+          "format": "double"
+        },
+        "voices": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/HarmVoice"
+          }
+        }
+      },
+      "required": [
+        "bypass",
+        "voices",
+        "mix"
+      ]
+    },
+    "LfoShape": {
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "sine",
+            "triangle"
+          ]
+        },
+        {
+          "description": "A square with rounded edges.",
+          "type": "string",
+          "const": "square"
+        }
+      ]
+    },
+    "Limiter": {
+      "type": "object",
+      "properties": {
+        "bypass": {
+          "type": "boolean"
+        },
+        "release_ms": {
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "required": [
+        "bypass",
+        "release_ms"
+      ]
+    },
+    "LoudnessTarget": {
+      "type": "object",
+      "properties": {
+        "lufs": {
+          "type": "number",
+          "format": "double"
+        },
+        "preset": {
+          "description": "\"streaming\", \"loud\", \"cd\" or \"custom\" (MAS-2).",
+          "type": "string"
+        },
+        "true_peak_db": {
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "required": [
+        "preset",
+        "lufs",
+        "true_peak_db"
+      ]
+    },
+    "MasterBlock": {
+      "description": "A free block of the master chain: it can be moved, switched off and, for some kinds, be there twice.",
+      "type": "object",
+      "properties": {
+        "block": {
+          "$ref": "#/$defs/Block"
+        },
+        "id": {
+          "description": "Stable within the project (\"b1\", \"b2\"…): section offsets, notes and the engine refer to it.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "block"
+      ]
+    },
+    "MasterChain": {
+      "description": "The master chain (MAS-1): the input gain, then the free blocks in the order they process, then limiter and\ndither, which always close it (the limiter guarantees the ceiling only if nothing follows it, MAS-3).",
+      "type": "object",
+      "properties": {
+        "blocks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MasterBlock"
+          }
+        },
+        "dither": {
+          "$ref": "#/$defs/Dither"
+        },
+        "input_gain_db": {
+          "type": "number",
+          "format": "double"
+        },
+        "limiter": {
+          "$ref": "#/$defs/Limiter"
+        }
+      },
+      "required": [
+        "input_gain_db",
+        "blocks",
+        "limiter",
+        "dither"
+      ]
+    },
+    "MasterComp": {
+      "description": "The compressor of the master chain: stereo-linked, with a dry/wet mix (parallel compression) and a high-pass on\nits detector (MAS-13). It has no sidechain: nothing else plays in the master.",
+      "type": "object",
+      "properties": {
+        "attack_ms": {
+          "type": "number",
+          "format": "double"
+        },
+        "bypass": {
+          "type": "boolean"
+        },
+        "knee_db": {
+          "type": "number",
+          "format": "double"
+        },
+        "listen_above_hz": {
+          "description": "The detector does not hear what is below this frequency; 0 lets it hear everything.",
+          "type": "number",
+          "format": "double"
+        },
+        "makeup_db": {
+          "type": "number",
+          "format": "double"
+        },
+        "mix": {
+          "description": "0..1: share of the compressed signal; under 1 the rest is the untouched input.",
+          "type": "number",
+          "format": "double"
+        },
+        "ratio": {
+          "type": "number",
+          "format": "double"
+        },
+        "release_ms": {
+          "type": "number",
+          "format": "double"
+        },
+        "threshold_db": {
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "required": [
+        "bypass",
+        "threshold_db",
+        "ratio",
+        "attack_ms",
+        "release_ms",
+        "knee_db",
+        "makeup_db",
+        "mix",
+        "listen_above_hz"
+      ]
+    },
+    "MasterState": {
+      "type": "object",
+      "properties": {
+        "chain": {
+          "$ref": "#/$defs/MasterChain"
+        },
+        "export": {
+          "$ref": "#/$defs/ExportSettings"
+        },
+        "metadata": {
+          "$ref": "#/$defs/Metadata"
+        },
+        "mixdown": {
+          "description": "Latest mixdown (MDN-1, MDN-4).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Mixdown"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reference": {
+          "description": "Reference used by match EQ, A/B and the AI (an id of `references`).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sections": {
+          "description": "Offsets per section (MAS-14); sections without offsets are not listed.",
+          "type": "array",
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/SectionOffsets"
+          }
+        },
+        "target": {
+          "$ref": "#/$defs/LoudnessTarget"
+        },
+        "target_kept": {
+          "description": "The author keeps the destination although it is far from the references (design 9t): no warning about it.",
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": [
+        "chain",
+        "target",
+        "metadata",
+        "export"
+      ]
+    },
+    "MatchEq": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "description": "0..1 (shown as 0–100 %).",
+          "type": "number",
+          "format": "double"
+        },
+        "bypass": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "bypass",
+        "amount"
+      ]
+    },
+    "MbBand": {
+      "type": "object",
+      "properties": {
+        "attack_ms": {
+          "type": "number",
+          "format": "double"
+        },
+        "bypass": {
+          "type": "boolean"
+        },
+        "gain_db": {
+          "description": "Level of the band after its compressor.",
+          "type": "number",
+          "format": "double"
+        },
+        "ratio": {
+          "type": "number",
+          "format": "double"
+        },
+        "release_ms": {
+          "type": "number",
+          "format": "double"
+        },
+        "threshold_db": {
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "required": [
+        "bypass",
+        "threshold_db",
+        "ratio",
+        "attack_ms",
+        "release_ms",
+        "gain_db"
+      ]
+    },
+    "MediaFile": {
+      "type": "object",
+      "properties": {
+        "channels": {
+          "type": "integer",
+          "format": "uint16",
+          "maximum": 65535,
+          "minimum": 0
+        },
+        "converted": {
+          "description": "True when the file was resampled to the project rate at import (PRJ-5).",
+          "type": "boolean"
+        },
+        "encoding": {
+          "description": "Source description, e.g. \"PCM 24-bit\" or \"Float 32-bit\".",
+          "type": "string"
+        },
+        "format": {
+          "$ref": "#/$defs/AudioFormat"
+        },
+        "frames": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0
+        },
+        "id": {
+          "description": "Content hash of the stored file (BLAKE3, hex, 32 chars).",
+          "type": "string"
+        },
+        "original_name": {
+          "description": "File name at import, shown to the user only (never sent to the model, AI-10).",
+          "type": "string"
+        },
+        "path": {
+          "description": "Path inside the package, e.g. `audio/<hash>.wav`.",
+          "type": "string"
+        },
+        "sample_rate": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "id",
+        "path",
+        "original_name",
+        "format",
+        "channels",
+        "sample_rate",
+        "frames",
+        "encoding",
+        "converted"
+      ]
+    },
+    "Metadata": {
+      "type": "object",
+      "properties": {
+        "album": {
+          "type": "string"
+        },
+        "artist": {
+          "type": "string"
+        },
+        "cover": {
+          "description": "Cover image inside the package (`masters/cover.<ext>`), if any.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "genre": {
+          "type": "string"
+        },
+        "isrc": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "track_number": {
+          "type": "string"
+        },
+        "year": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "artist",
+        "album",
+        "year",
+        "genre",
+        "track_number",
+        "isrc"
+      ]
+    },
+    "MixBus": {
+      "type": "object",
+      "properties": {
+        "fader_db": {
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "required": [
+        "fader_db"
+      ]
+    },
+    "Mixdown": {
+      "type": "object",
+      "properties": {
+        "created_ms": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0
+        },
+        "frames": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0
+        },
+        "lra": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "format": "double"
+        },
+        "lufs": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "format": "double"
+        },
+        "mix_hash": {
+          "description": "Hash of the mix state the mixdown was rendered from (MDN-4).",
+          "type": "string"
+        },
+        "number": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0
+        },
+        "path": {
+          "description": "`mixdowns/mixdown-<n>.wav`.",
+          "type": "string"
+        },
+        "trim_db": {
+          "type": "number",
+          "format": "double"
+        },
+        "true_peak_db": {
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "required": [
+        "number",
+        "path",
+        "mix_hash",
+        "trim_db",
+        "frames",
+        "created_ms",
+        "true_peak_db"
+      ]
+    },
+    "ModMode": {
+      "type": "string",
+      "enum": [
+        "chorus",
+        "flanger",
+        "phaser"
+      ]
+    },
+    "Modulation": {
+      "description": "Modulation (FX-20).",
+      "type": "object",
+      "properties": {
+        "bypass": {
+          "type": "boolean"
+        },
+        "depth": {
+          "type": "number",
+          "format": "double"
+        },
+        "feedback": {
+          "type": "number",
+          "format": "double"
+        },
+        "mix": {
+          "type": "number",
+          "format": "double"
+        },
+        "mode": {
+          "$ref": "#/$defs/ModMode"
+        },
+        "rate_hz": {
+          "type": "number",
+          "format": "double"
+        },
+        "spread_deg": {
+          "type": "number",
+          "format": "double"
+        },
+        "stages": {
+          "type": "integer",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0
+        },
+        "sync": {
+          "description": "Musical value (\"1/4\", \"1/8.\") that sets the rate from the tempo, if any.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "voices": {
+          "type": "integer",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0
+        }
+      },
+      "required": [
+        "bypass",
+        "mode",
+        "rate_hz",
+        "depth",
+        "feedback",
+        "voices",
+        "stages",
+        "spread_deg",
+        "mix"
+      ]
+    },
+    "Multiband": {
+      "description": "Multiband compressor (MAS-12): two to six bands split by `crossovers_hz` (ascending, one fewer than the bands).",
+      "type": "object",
+      "properties": {
+        "bands": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MbBand"
+          }
+        },
+        "bypass": {
+          "type": "boolean"
+        },
+        "crossovers_hz": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "required": [
+        "bypass",
+        "crossovers_hz",
+        "bands"
+      ]
+    },
+    "Output": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "mix_bus"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "kind": {
+              "type": "string",
+              "const": "group"
+            }
+          },
+          "required": [
+            "kind",
+            "id"
+          ]
+        }
+      ]
+    },
+    "ReferenceTrack": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "media": {
+          "$ref": "#/$defs/MediaFile"
+        }
+      },
+      "required": [
+        "id",
+        "media"
+      ]
+    },
+    "ReturnFx": {
+      "oneOf": [
+        {
+          "description": "FX-5. The return level is the return track's fader.",
+          "type": "object",
+          "properties": {
+            "algorithm": {
+              "$ref": "#/$defs/ReverbAlgorithm"
+            },
+            "bypass": {
+              "type": "boolean"
+            },
+            "damping": {
+              "type": "number",
+              "format": "double"
+            },
+            "decay_s": {
+              "description": "RT60 at mid frequencies, seconds.",
+              "type": "number",
+              "format": "double"
+            },
+            "hpf_hz": {
+              "type": "number",
+              "format": "double"
+            },
+            "lpf_hz": {
+              "type": "number",
+              "format": "double"
+            },
+            "modulation": {
+              "type": "number",
+              "format": "double"
+            },
+            "predelay_ms": {
+              "type": "number",
+              "format": "double"
+            },
+            "shimmer_amount": {
+              "description": "FX-22: 0 … 1; at 0 the shimmer is a hall.",
+              "type": "number",
+              "format": "double",
+              "default": 0.0
+            },
+            "shimmer_semitones": {
+              "description": "FX-22 (shimmer only): interval of the pitch shift in the recirculation, +5, +7 or +12 semitones.",
+              "type": "number",
+              "format": "double",
+              "default": 12.0
+            },
+            "size": {
+              "type": "number",
+              "format": "double"
+            },
+            "type": {
+              "type": "string",
+              "const": "reverb"
+            }
+          },
+          "required": [
+            "type",
+            "bypass",
+            "algorithm",
+            "decay_s",
+            "size",
+            "damping",
+            "modulation",
+            "predelay_ms",
+            "hpf_hz",
+            "lpf_hz"
+          ]
+        },
+        {
+          "description": "FX-6, FX-23.",
+          "type": "object",
+          "properties": {
+            "bypass": {
+              "type": "boolean"
+            },
+            "character": {
+              "description": "FX-23: `clean` or `tape`.",
+              "$ref": "#/$defs/DelayCharacter",
+              "default": "clean"
+            },
+            "drive_db": {
+              "description": "Tape drive in the feedback, 0 … 12 dB, level compensated.",
+              "type": "number",
+              "format": "double",
+              "default": 0.0
+            },
+            "feedback": {
+              "type": "number",
+              "format": "double"
+            },
+            "feedback_hpf_hz": {
+              "type": "number",
+              "format": "double"
+            },
+            "feedback_lpf_hz": {
+              "type": "number",
+              "format": "double"
+            },
+            "mode": {
+              "description": "FX-23: `stereo` or `ping_pong`.",
+              "$ref": "#/$defs/DelayMode",
+              "default": "stereo"
+            },
+            "sync": {
+              "description": "Musical value (e.g. \"1/8\", \"1/4.\") that sets `time_ms` from the tempo, if any.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "time_ms": {
+              "type": "number",
+              "format": "double"
+            },
+            "type": {
+              "type": "string",
+              "const": "delay"
+            },
+            "wow": {
+              "description": "Tape wow and flutter, 0 … 1.",
+              "type": "number",
+              "format": "double",
+              "default": 0.0
+            }
+          },
+          "required": [
+            "type",
+            "bypass",
+            "time_ms",
+            "feedback",
+            "feedback_hpf_hz",
+            "feedback_lpf_hz"
+          ]
+        }
+      ]
+    },
+    "ReverbAlgorithm": {
+      "description": "The reverbs of FX-5 (`shimmer`, FX-22: a hall with a pitch shift in its recirculation).",
+      "type": "string",
+      "enum": [
+        "plate",
+        "room",
+        "hall",
+        "shimmer"
+      ]
+    },
+    "Role": {
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "kick",
+            "snare",
+            "toms",
+            "overheads",
+            "room",
+            "drums",
+            "percussion",
+            "bass",
+            "electric_guitar",
+            "acoustic_guitar",
+            "keys",
+            "synth",
+            "pad",
+            "strings",
+            "brass",
+            "woodwinds",
+            "choir",
+            "lead_vocal",
+            "backing_vocal",
+            "fx",
+            "other"
+          ]
+        },
+        {
+          "description": "Acoustic and classical music (A-080): piano on its own, woodwinds, a choir.",
+          "type": "string",
+          "const": "piano"
+        }
+      ]
+    },
+    "SatCharacter": {
+      "description": "Character of a saturation (FX-18).",
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "tape",
+            "tube",
+            "transistor"
+          ]
+        },
+        {
+          "description": "The waveshaper of FX-4 (and of every project before P-018).",
+          "type": "string",
+          "const": "soft"
+        }
+      ]
+    },
+    "Saturation": {
+      "type": "object",
+      "properties": {
+        "bypass": {
+          "type": "boolean"
+        },
+        "character": {
+          "description": "FX-18; the master's saturation is always `soft`.",
+          "$ref": "#/$defs/SatCharacter",
+          "default": "soft"
+        },
+        "drive_db": {
+          "type": "number",
+          "format": "double"
+        },
+        "mix": {
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "required": [
+        "bypass",
+        "drive_db",
+        "mix"
+      ]
+    },
+    "Section": {
+      "type": "object",
+      "properties": {
+        "color": {
+          "type": "integer",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0
+        },
+        "end": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "start": {
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "color",
+        "start",
+        "end"
+      ]
+    },
+    "SectionOffsets": {
+      "description": "Offsets of one section on top of the song-wide master (MAS-14): they act only while the section plays and\nglide in and out at its edges.",
+      "type": "object",
+      "properties": {
+        "eq": {
+          "description": "Added to the gains of the bands of an EQ block.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EqOffsets"
+          }
+        },
+        "level_db": {
+          "description": "Added to the level that reaches the limiter.",
+          "type": "number",
+          "format": "double"
+        },
+        "limiter_release_ms": {
+          "description": "Added to the limiter's release.",
+          "type": "number",
+          "format": "double"
+        },
+        "section": {
+          "type": "string"
+        },
+        "side_gain_db": {
+          "description": "Added to the side gain of the width block.",
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "required": [
+        "section",
+        "level_db",
+        "side_gain_db",
+        "limiter_release_ms",
+        "eq"
+      ]
+    },
+    "Send": {
+      "type": "object",
+      "properties": {
+        "level_db": {
+          "type": "number",
+          "format": "double"
+        },
+        "target": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "target",
+        "level_db"
+      ]
+    },
+    "Sidechain": {
+      "type": "object",
+      "properties": {
+        "hpf_hz": {
+          "description": "High-pass on the detector signal (FX-3).",
+          "type": "number",
+          "format": "double"
+        },
+        "source": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "source",
+        "hpf_hz"
+      ]
+    },
+    "SnapshotInfo": {
+      "type": "object",
+      "properties": {
+        "created_ms": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0
+        },
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "path": {
+          "description": "Path inside the package (`snapshots/<id>.json`).",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "created_ms",
+        "path"
+      ]
+    },
+    "StereoWidth": {
+      "description": "Stereo width of a track, group or return (FX-19).",
+      "type": "object",
+      "properties": {
+        "bypass": {
+          "type": "boolean"
+        },
+        "mono_below_hz": {
+          "type": "number",
+          "format": "double"
+        },
+        "width": {
+          "description": "Gain of the side, 0 … 2 (0 … 200%).",
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "required": [
+        "bypass",
+        "width",
+        "mono_below_hz"
+      ]
+    },
+    "Tempo": {
+      "type": "object",
+      "properties": {
+        "beat_unit": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0
+        },
+        "beats_per_bar": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0
+        },
+        "bpm": {
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "required": [
+        "bpm",
+        "beats_per_bar",
+        "beat_unit"
+      ]
+    },
+    "Track": {
+      "type": "object",
+      "properties": {
+        "automation": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AutomationLane"
+          }
+        },
+        "chain": {
+          "description": "Processing chain of audio tracks and groups (FX-1).",
+          "$ref": "#/$defs/Chain"
+        },
+        "channels": {
+          "description": "Channel count of the track's clips (audio tracks); 2 for groups and returns.",
+          "type": "integer",
+          "format": "uint16",
+          "maximum": 65535,
+          "minimum": 0
+        },
+        "clips": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Clip"
+          }
+        },
+        "color": {
+          "description": "Track tint 1..=12; 0 for the neutral bus tint (groups and returns by default).",
+          "type": "integer",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0
+        },
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/TrackKind"
+        },
+        "locked": {
+          "description": "Lock for the AI (AI-4).",
+          "type": "boolean"
+        },
+        "mute": {
+          "description": "View state (HIS-6): changing it never enters the history, but it is saved and rendered.",
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "output": {
+          "$ref": "#/$defs/Output"
+        },
+        "ret": {
+          "description": "Processor of a return track (FX-5, FX-6).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ReturnFx"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "role": {
+          "description": "Role of an audio track (PRJ-6); `None` for groups and returns.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Role"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sends": {
+          "description": "Post-fader sends to returns (TRK-5).",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Send"
+          }
+        },
+        "solo": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "name",
+        "color",
+        "channels",
+        "output",
+        "clips",
+        "chain",
+        "sends",
+        "automation",
+        "locked",
+        "mute",
+        "solo"
+      ]
+    },
+    "TrackClipper": {
+      "description": "Clipper of a track (FX-17): an absolute threshold.",
+      "type": "object",
+      "properties": {
+        "bypass": {
+          "type": "boolean"
+        },
+        "softness": {
+          "type": "number",
+          "format": "double"
+        },
+        "threshold_db": {
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "required": [
+        "bypass",
+        "threshold_db",
+        "softness"
+      ]
+    },
+    "TrackKind": {
+      "type": "string",
+      "enum": [
+        "audio",
+        "group",
+        "return"
+      ]
+    },
+    "Transient": {
+      "description": "Transient shaper (FX-16): no threshold.",
+      "type": "object",
+      "properties": {
+        "attack_db": {
+          "type": "number",
+          "format": "double"
+        },
+        "bypass": {
+          "type": "boolean"
+        },
+        "mix": {
+          "type": "number",
+          "format": "double"
+        },
+        "speed": {
+          "description": "0 … 1: how short the attack part is.",
+          "type": "number",
+          "format": "double"
+        },
+        "sustain_db": {
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "required": [
+        "bypass",
+        "attack_db",
+        "sustain_db",
+        "speed",
+        "mix"
+      ]
+    },
+    "Tremolo": {
+      "description": "Tremolo and auto-pan (FX-20).",
+      "type": "object",
+      "properties": {
+        "bypass": {
+          "type": "boolean"
+        },
+        "depth": {
+          "type": "number",
+          "format": "double"
+        },
+        "mode": {
+          "$ref": "#/$defs/TremoloMode"
+        },
+        "phase_deg": {
+          "description": "Phase offset of the right channel in tremolo mode, degrees.",
+          "type": "number",
+          "format": "double"
+        },
+        "rate_hz": {
+          "type": "number",
+          "format": "double"
+        },
+        "shape": {
+          "$ref": "#/$defs/LfoShape"
+        },
+        "sync": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "bypass",
+        "mode",
+        "rate_hz",
+        "depth",
+        "shape",
+        "phase_deg"
+      ]
+    },
+    "TremoloMode": {
+      "type": "string",
+      "enum": [
+        "tremolo",
+        "autopan"
+      ]
+    },
+    "Width": {
+      "type": "object",
+      "properties": {
+        "bypass": {
+          "type": "boolean"
+        },
+        "mono_below_hz": {
+          "description": "Below this frequency the signal is folded to mono; 0 disables it.",
+          "type": "number",
+          "format": "double"
+        },
+        "side_gain_db": {
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "required": [
+        "bypass",
+        "side_gain_db",
+        "mono_below_hz"
+      ]
+    }
+  }
+}

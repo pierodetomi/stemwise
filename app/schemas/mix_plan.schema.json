@@ -1,0 +1,831 @@
+{
+  "$defs": {
+    "BlockPlan": {
+      "additionalProperties": true,
+      "description": "A block the plan adds or changes (AI-25). `id` is a block the analysis lists (`k…`) or a new word; a new block\nhas a `position`. Its settings are the fields of its type (`type` is the kind), as in FOUNDATION §5.5; what a\nplan leaves out keeps its value (a new block: the value of a new one).",
+      "properties": {
+        "bypass": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "id": {
+          "type": "string"
+        },
+        "idea": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "position": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BlockPosition"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "type": {
+          "$ref": "#/$defs/FxKind"
+        }
+      },
+      "required": [
+        "id",
+        "type"
+      ],
+      "type": "object"
+    },
+    "BlockPosition": {
+      "description": "Where a new block goes in its chain (AI-25).",
+      "enum": [
+        "first",
+        "before_compressor",
+        "after_compressor",
+        "last"
+      ],
+      "type": "string"
+    },
+    "CompressorPlan": {
+      "additionalProperties": false,
+      "properties": {
+        "attack_ms": {
+          "format": "double",
+          "type": "number"
+        },
+        "knee_db": {
+          "format": "double",
+          "type": "number"
+        },
+        "makeup_db": {
+          "format": "double",
+          "type": "number"
+        },
+        "mix": {
+          "description": "Dry/wet: 1 is the compressed signal alone, lower values are parallel compression (FX-3).",
+          "format": "double",
+          "type": "number"
+        },
+        "ratio": {
+          "format": "double",
+          "type": "number"
+        },
+        "release_ms": {
+          "format": "double",
+          "type": "number"
+        },
+        "sidechain": {
+          "description": "Id of a track or group whose post-fader signal drives the detector, or null.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "threshold_db": {
+          "format": "double",
+          "type": "number"
+        }
+      },
+      "required": [
+        "threshold_db",
+        "ratio",
+        "attack_ms",
+        "release_ms",
+        "knee_db",
+        "makeup_db",
+        "mix"
+      ],
+      "type": "object"
+    },
+    "DelayCharacter": {
+      "enum": [
+        "clean",
+        "tape"
+      ],
+      "type": "string"
+    },
+    "DelayMode": {
+      "oneOf": [
+        {
+          "enum": [
+            "stereo"
+          ],
+          "type": "string"
+        },
+        {
+          "const": "ping_pong",
+          "description": "The input summed to mono, repeats alternating left and right.",
+          "type": "string"
+        }
+      ]
+    },
+    "EqBand": {
+      "additionalProperties": false,
+      "properties": {
+        "freq_hz": {
+          "format": "double",
+          "type": "number"
+        },
+        "gain_db": {
+          "format": "double",
+          "type": "number"
+        },
+        "q": {
+          "format": "double",
+          "type": "number"
+        },
+        "type": {
+          "$ref": "#/$defs/EqType"
+        }
+      },
+      "required": [
+        "type",
+        "freq_hz",
+        "gain_db",
+        "q"
+      ],
+      "type": "object"
+    },
+    "EqType": {
+      "enum": [
+        "peak",
+        "low_shelf",
+        "high_shelf"
+      ],
+      "type": "string"
+    },
+    "FxKind": {
+      "description": "The kinds of blocks, in the order the \"Add block\" menu lists them by family (UI-12).",
+      "enum": [
+        "hpf",
+        "lpf",
+        "eq",
+        "compressor",
+        "saturation",
+        "gate",
+        "deesser",
+        "dynamic_eq",
+        "transient",
+        "clipper",
+        "multiband",
+        "exciter",
+        "bass_enhancer",
+        "width",
+        "modulation",
+        "tremolo",
+        "harmonizer",
+        "doubler"
+      ],
+      "type": "string"
+    },
+    "GroupPlan": {
+      "additionalProperties": false,
+      "properties": {
+        "blocks": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/BlockPlan"
+          },
+          "type": "array"
+        },
+        "compressor": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CompressorPlan"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "eq": {
+          "items": {
+            "$ref": "#/$defs/EqBand"
+          },
+          "type": "array"
+        },
+        "gain_db": {
+          "format": "double",
+          "type": "number"
+        },
+        "idea_sends_db": {
+          "additionalProperties": {
+            "additionalProperties": {
+              "format": "double",
+              "type": "number"
+            },
+            "type": "object"
+          },
+          "default": {},
+          "type": "object"
+        },
+        "rationale": {
+          "type": "string"
+        },
+        "saturation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SaturationPlan"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sends_db": {
+          "additionalProperties": {
+            "format": "double",
+            "type": "number"
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "gain_db",
+        "eq",
+        "sends_db",
+        "rationale"
+      ],
+      "type": "object"
+    },
+    "IdeaPlan": {
+      "additionalProperties": false,
+      "description": "An idea of the plan (AI-26): only additions, chosen by the author one by one.",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "rationale": {
+          "type": "string"
+        },
+        "sections": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "rationale"
+      ],
+      "type": "object"
+    },
+    "NewGroup": {
+      "additionalProperties": false,
+      "description": "A group the plan creates around existing tracks or groups; its chain is under `groups.<id>`.",
+      "properties": {
+        "members": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "name": {
+          "type": "string"
+        },
+        "rationale": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "rationale"
+      ],
+      "type": "object"
+    },
+    "NewReturn": {
+      "additionalProperties": false,
+      "description": "A return the plan creates; its parameters are under `returns.<id>` like any other return's.",
+      "properties": {
+        "idea": {
+          "description": "v4: the idea this return belongs to (AI-26).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "rationale": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/$defs/NewReturnType"
+        }
+      },
+      "required": [
+        "type",
+        "name",
+        "rationale"
+      ],
+      "type": "object"
+    },
+    "NewReturnType": {
+      "enum": [
+        "reverb",
+        "delay"
+      ],
+      "type": "string"
+    },
+    "ReturnPlan": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "algorithm": {
+              "$ref": "#/$defs/ReverbAlgorithm"
+            },
+            "blocks": {
+              "default": [],
+              "description": "v4 (FX-11, AI-25): blocks after the reverb; only with structural changes allowed.",
+              "items": {
+                "$ref": "#/$defs/BlockPlan"
+              },
+              "type": "array"
+            },
+            "damping": {
+              "format": "double",
+              "type": "number"
+            },
+            "decay_s": {
+              "format": "double",
+              "type": "number"
+            },
+            "modulation": {
+              "format": "double",
+              "type": "number"
+            },
+            "predelay_ms": {
+              "format": "double",
+              "type": "number"
+            },
+            "return_gain_db": {
+              "format": "double",
+              "type": "number"
+            },
+            "return_hpf_hz": {
+              "format": "double",
+              "type": "number"
+            },
+            "return_lpf_hz": {
+              "format": "double",
+              "type": "number"
+            },
+            "shimmer_amount": {
+              "default": null,
+              "format": "double",
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "shimmer_semitones": {
+              "default": null,
+              "description": "v4, shimmer only (FX-22).",
+              "format": "double",
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "size": {
+              "format": "double",
+              "type": "number"
+            },
+            "type": {
+              "const": "reverb",
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "algorithm",
+            "decay_s",
+            "size",
+            "damping",
+            "modulation",
+            "predelay_ms",
+            "return_hpf_hz",
+            "return_lpf_hz",
+            "return_gain_db"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "blocks": {
+              "default": [],
+              "items": {
+                "$ref": "#/$defs/BlockPlan"
+              },
+              "type": "array"
+            },
+            "character": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/DelayCharacter"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "drive_db": {
+              "default": null,
+              "format": "double",
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "feedback": {
+              "format": "double",
+              "type": "number"
+            },
+            "feedback_hpf_hz": {
+              "format": "double",
+              "type": "number"
+            },
+            "feedback_lpf_hz": {
+              "format": "double",
+              "type": "number"
+            },
+            "mode": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/DelayMode"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "description": "v4 (FX-23)."
+            },
+            "return_gain_db": {
+              "format": "double",
+              "type": "number"
+            },
+            "time_ms": {
+              "format": "double",
+              "type": "number"
+            },
+            "type": {
+              "const": "delay",
+              "type": "string"
+            },
+            "wow": {
+              "default": null,
+              "format": "double",
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "type",
+            "time_ms",
+            "feedback",
+            "feedback_hpf_hz",
+            "feedback_lpf_hz",
+            "return_gain_db"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "ReverbAlgorithm": {
+      "description": "The reverbs of FX-5 (`shimmer`, FX-22: a hall with a pitch shift in its recirculation).",
+      "enum": [
+        "plate",
+        "room",
+        "hall",
+        "shimmer"
+      ],
+      "type": "string"
+    },
+    "SatCharacter": {
+      "description": "Character of a saturation (FX-18).",
+      "oneOf": [
+        {
+          "enum": [
+            "tape",
+            "tube",
+            "transistor"
+          ],
+          "type": "string"
+        },
+        {
+          "const": "soft",
+          "description": "The waveshaper of FX-4 (and of every project before P-018).",
+          "type": "string"
+        }
+      ]
+    },
+    "SaturationPlan": {
+      "additionalProperties": false,
+      "properties": {
+        "character": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SatCharacter"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "FX-18 (v4); absent keeps the track's."
+        },
+        "drive_db": {
+          "format": "double",
+          "type": "number"
+        },
+        "mix": {
+          "format": "double",
+          "type": "number"
+        }
+      },
+      "required": [
+        "drive_db",
+        "mix"
+      ],
+      "type": "object"
+    },
+    "SectionPlan": {
+      "additionalProperties": false,
+      "description": "Per-section deviations of a track (AI-6), written as automation (AUT-5).",
+      "properties": {
+        "blocks_on": {
+          "default": [],
+          "description": "v4: blocks on in this section only (bypassed in the sections that do not list them, AI-6).",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "eq_gain_offsets_db": {
+          "default": [],
+          "description": "One value per EQ band of the track, by position.",
+          "items": {
+            "format": "double",
+            "type": "number"
+          },
+          "type": "array"
+        },
+        "gain_offset_db": {
+          "default": 0.0,
+          "format": "double",
+          "type": "number"
+        },
+        "hpf_offset_oct": {
+          "default": null,
+          "description": "v4: the high-pass and low-pass frequency moved by octaves in this section (AI-6, FX-12).",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "idea": {
+          "default": null,
+          "description": "v4: the idea these offsets belong to (AI-26): all of them, or none.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "lpf_offset_oct": {
+          "default": null,
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "send_offsets_db": {
+          "additionalProperties": {
+            "format": "double",
+            "type": "number"
+          },
+          "default": {},
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "Structure": {
+      "additionalProperties": false,
+      "description": "What a plan adds to the structure of the mix (AI-17): nothing else is created, moved or removed.",
+      "properties": {
+        "groups": {
+          "additionalProperties": {
+            "$ref": "#/$defs/NewGroup"
+          },
+          "default": {},
+          "type": "object"
+        },
+        "returns": {
+          "additionalProperties": {
+            "$ref": "#/$defs/NewReturn"
+          },
+          "default": {},
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "TrackPlan": {
+      "additionalProperties": false,
+      "properties": {
+        "blocks": {
+          "default": [],
+          "description": "v4 (AI-25): blocks the plan adds or changes; a block not listed stays as it is.",
+          "items": {
+            "$ref": "#/$defs/BlockPlan"
+          },
+          "type": "array"
+        },
+        "compressor": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CompressorPlan"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "eq": {
+          "items": {
+            "$ref": "#/$defs/EqBand"
+          },
+          "type": "array"
+        },
+        "gain_db": {
+          "format": "double",
+          "type": "number"
+        },
+        "hpf_hz": {
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "hpf_resonance": {
+          "default": null,
+          "description": "v4 (FX-12): Q of the filters; absent keeps the track's.",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "idea_sends_db": {
+          "additionalProperties": {
+            "additionalProperties": {
+              "format": "double",
+              "type": "number"
+            },
+            "type": "object"
+          },
+          "default": {},
+          "description": "v4 (AI-26): sends that belong to an idea, by idea and return.",
+          "type": "object"
+        },
+        "lpf_hz": {
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "lpf_resonance": {
+          "default": null,
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "pan": {
+          "format": "double",
+          "type": "number"
+        },
+        "rationale": {
+          "type": "string"
+        },
+        "saturation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SaturationPlan"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sections": {
+          "additionalProperties": {
+            "$ref": "#/$defs/SectionPlan"
+          },
+          "default": {},
+          "type": "object"
+        },
+        "sends_db": {
+          "additionalProperties": {
+            "format": "double",
+            "type": "number"
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "gain_db",
+        "pan",
+        "eq",
+        "sends_db",
+        "rationale"
+      ],
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "`mix_plan` v4 (FOUNDATION §5.5); plans of version 3 kept in projects read as they are (AI-23).",
+  "properties": {
+    "groups": {
+      "additionalProperties": {
+        "$ref": "#/$defs/GroupPlan"
+      },
+      "default": {},
+      "type": "object"
+    },
+    "ideas": {
+      "additionalProperties": {
+        "$ref": "#/$defs/IdeaPlan"
+      },
+      "description": "v4 (AI-26): creative ideas; absent when they are not allowed and in later iterations.",
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "iteration": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "returns": {
+      "additionalProperties": {
+        "$ref": "#/$defs/ReturnPlan"
+      },
+      "default": {},
+      "type": "object"
+    },
+    "structure": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Structure"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "New returns and groups (AI-17); absent in later iterations, where the structure is already decided (AI-19)."
+    },
+    "summary": {
+      "type": "string"
+    },
+    "tracks": {
+      "additionalProperties": {
+        "$ref": "#/$defs/TrackPlan"
+      },
+      "type": "object"
+    },
+    "version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "version",
+    "iteration",
+    "summary",
+    "tracks"
+  ],
+  "title": "MixPlan",
+  "type": "object"
+}

@@ -1,0 +1,28 @@
+name: Feature request
+description: Something the app could do, or do better.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for the idea. Stemwise is maintained by one person in his spare time: replies can take a while,
+        and not every request can be taken on. What version 1 leaves out on purpose is listed in the README, under
+        "What it does not do".
+  - type: textarea
+    id: problem
+    attributes:
+      label: What you were trying to do
+      description: The problem first. Where did the app get in your way?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would help
+      description: How you imagine it working. A sketch or a reference to another tool is welcome.
+    validations:
+      required: true
+  - type: textarea
+    id: more
+    attributes:
+      label: Anything else

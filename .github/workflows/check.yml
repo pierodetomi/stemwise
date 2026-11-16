@@ -1,0 +1,56 @@
+name: Check
+
+# The same gate as `make check`, without the two steps that measure the machine rather than the code: the frame-time
+# tests (a hosted runner has no real GPU) and the repository's disk budget.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: make ci
+    runs-on: macos-15
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: app
+      - uses: taiki-e/install-action@cargo-deny
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: app/ui/pnpm-lock.yaml
+      - name: Dependencies
+        run: |
+          cargo fetch --locked
+          pnpm --dir ui install --frozen-lockfile
+          pnpm --dir ui exec playwright install webkit
+      - name: Gate
+        run: make ci
+      - name: Keep the Playwright results of a failed run
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: app/ui/test-results
+          retention-days: 7

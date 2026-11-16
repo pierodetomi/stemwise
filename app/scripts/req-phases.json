@@ -1,0 +1,20 @@
+{
+  "_comment": "Phase (FOUNDATION §8.1) at whose close each requirement must be covered by a test or justified. Exact ids override prefixes.",
+  "prefix": {
+    "PRJ": "F1", "HIS": "F1", "CLP": "F1", "SEC": "F1", "TRN": "F6", "TRK": "F3", "FX": "F3", "AUT": "F3",
+    "ENG": "F3", "ANA": "F4", "AI": "F5", "MDN": "F8", "MAS": "F8", "UI": "F9", "SET": "F9", "NFR": "F10"
+  },
+  "exact": {
+    "TRK-3": "F1", "CLP-3": "F6", "TRK-4": "F6", "FX-7": "F6", "AUT-2": "F6", "AUT-3": "F6", "AUT-5": "F5", "SEC-2": "F4",
+    "HIS-4": "F7", "AI-12": "F7", "AI-14": "F7", "AI-15": "F5", "AI-16": "F7",
+    "UI-1": "F6", "UI-2": "F6",
+    "NFR-1": "F3", "NFR-2": "F3", "NFR-4": "F3", "NFR-3": "F9", "NFR-5": "F9", "NFR-6": "F0", "NFR-9": "F0",
+    "FX-9": "F11", "ANA-18": "F12", "AI-17": "F12", "AI-18": "F12", "AI-19": "F12", "AI-20": "F12", "AI-21": "F12",
+    "UI-8": "F13", "UI-9": "F13", "UI-10": "F13", "UI-11": "F13",
+    "FX-10": "F15", "FX-11": "F15", "FX-12": "F15", "UI-12": "F15",
+    "FX-13": "F16", "FX-14": "F16", "FX-15": "F16", "FX-16": "F16", "FX-17": "F16", "FX-18": "F16", "FX-19": "F16", "FX-20": "F16", "FX-21": "F16", "FX-22": "F16", "FX-23": "F16", "FX-24": "F16",
+    "ANA-19": "F17", "AI-25": "F17", "AI-26": "F17", "AI-27": "F17", "UI-13": "F17",
+    "ANA-20": "F18", "UI-14": "F18", "UI-15": "F18", "UI-16": "F18",
+    "PRJ-9": "F19", "UI-17": "F19", "UI-18": "F19", "UI-19": "F19", "UI-20": "F19"
+  }
+}

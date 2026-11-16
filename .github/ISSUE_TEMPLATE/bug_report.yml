@@ -1,0 +1,69 @@
+name: Bug report
+description: Something does not work as it should.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for the report. Stemwise is maintained by one person in his spare time: replies can take a while.
+        Please do not attach audio you are not free to share, and never post an API key.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, step by step, and what the app did.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Stemwise version
+      placeholder: "0.1.1"
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version and Mac model
+      placeholder: "macOS 15.2, MacBook Air M2"
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where
+      options:
+        - Mix workspace
+        - Assistant (mix)
+        - Explain this mix
+        - Master workspace
+        - Assistant (master)
+        - Export
+        - Import and projects
+        - Audio playback and devices
+        - Settings and connecting OpenRouter
+        - Guided tour
+        - Something else
+    validations:
+      required: true
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: How often
+      options:
+        - Every time
+        - Sometimes
+        - It happened once
+    validations:
+      required: true
+  - type: textarea
+    id: more
+    attributes:
+      label: Anything else
+      description: Screenshots, the size of the project (number of tracks, sample rate, length), the model you were using.

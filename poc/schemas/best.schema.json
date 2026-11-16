@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Content of best.json: the best iteration of the run (EVA-6, D-049).",
+  "properties": {
+    "iteration": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Best iteration; null if none is valid.",
+      "title": "Iteration"
+    },
+    "plan": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Path of its plan, relative to the run folder.",
+      "title": "Plan"
+    },
+    "spectral_distance_db": {
+      "anyOf": [
+        {
+          "minimum": 0.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Its spectral distance, dB.",
+      "title": "Spectral Distance Db"
+    },
+    "stop_reason": {
+      "anyOf": [
+        {
+          "enum": [
+            "below_threshold",
+            "no_improvement",
+            "max_iterations",
+            "no_target",
+            "decision_failed",
+            "revision"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Why the loop stopped; null while running.",
+      "title": "Stop Reason"
+    }
+  },
+  "required": [
+    "iteration",
+    "plan",
+    "spectral_distance_db",
+    "stop_reason"
+  ],
+  "title": "Best",
+  "type": "object"
+}

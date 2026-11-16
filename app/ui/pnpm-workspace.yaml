@@ -1,0 +1,6 @@
+# pnpm settings for the interface (pnpm 11 reads them here, no longer from package.json).
+
+# minimatch below 11.0.1 has a denial-of-service advisory. It is a development dependency only (the linter uses
+# it), never shipped in the app; this keeps the packages that still ask for 10.x on a fixed version.
+overrides:
+  minimatch: ^11.0.5

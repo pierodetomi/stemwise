@@ -1,0 +1,258 @@
+{
+  "$defs": {
+    "MasterMix": {
+      "additionalProperties": false,
+      "description": "The mix before the master, measured as the master is (for comparison).",
+      "properties": {
+        "file": {
+          "description": "Path of the mix, as read.",
+          "minLength": 1,
+          "title": "File",
+          "type": "string"
+        },
+        "iteration": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Iteration of the mix; null for a file.",
+          "title": "Iteration"
+        },
+        "lufs": {
+          "anyOf": [
+            {
+              "description": "Level in dB, limited to ±120.",
+              "maximum": 120.0,
+              "minimum": -120.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Integrated loudness of the mix, LUFS (BS.1770).",
+          "title": "Lufs"
+        },
+        "run": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Run folder of the mix; null for a mix given as a file.",
+          "title": "Run"
+        },
+        "spectral_distance_db": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Distance of the mix from the reference (EVA-2 formula), dB.",
+          "title": "Spectral Distance Db"
+        },
+        "true_peak_db": {
+          "description": "True peak of the mix with 4x oversampling, dBTP.",
+          "maximum": 120.0,
+          "minimum": -120.0,
+          "title": "True Peak Db",
+          "type": "number"
+        }
+      },
+      "required": [
+        "run",
+        "iteration",
+        "file",
+        "lufs",
+        "true_peak_db",
+        "spectral_distance_db"
+      ],
+      "title": "MasterMix",
+      "type": "object"
+    },
+    "MasterReference": {
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "description": "Path of the reference, as given.",
+          "minLength": 1,
+          "title": "File",
+          "type": "string"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "enum": [
+                "ref1",
+                "ref2",
+                "ref3"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Reference of project.yaml; null for a file given on the command line.",
+          "title": "Id"
+        },
+        "lufs": {
+          "anyOf": [
+            {
+              "description": "Level in dB, limited to ±120.",
+              "maximum": 120.0,
+              "minimum": -120.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Integrated loudness of the reference, LUFS.",
+          "title": "Lufs"
+        },
+        "true_peak_db": {
+          "description": "True peak of the reference at the project rate, dBTP.",
+          "maximum": 120.0,
+          "minimum": -120.0,
+          "title": "True Peak Db",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "file",
+        "lufs",
+        "true_peak_db"
+      ],
+      "title": "MasterReference",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Content of master_report.json: what was mastered against what, and the result (MAS-3).",
+  "properties": {
+    "band_delta_db": {
+      "anyOf": [
+        {
+          "items": {
+            "description": "Level in dB, limited to ±120.",
+            "maximum": 120.0,
+            "minimum": -120.0,
+            "type": "number"
+          },
+          "maxItems": 8,
+          "minItems": 8,
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Reference minus master per band, after level alignment: positive = missing.",
+      "title": "Band Delta Db"
+    },
+    "files": {
+      "description": "Audio files written, in the folder.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Files",
+      "type": "array"
+    },
+    "lufs": {
+      "anyOf": [
+        {
+          "description": "Level in dB, limited to ±120.",
+          "maximum": 120.0,
+          "minimum": -120.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Integrated loudness of the master, LUFS (BS.1770).",
+      "title": "Lufs"
+    },
+    "mix": {
+      "$ref": "#/$defs/MasterMix"
+    },
+    "reference": {
+      "$ref": "#/$defs/MasterReference"
+    },
+    "sample_rate": {
+      "description": "Sample rate of the master, Hz (D-070).",
+      "exclusiveMinimum": 0,
+      "title": "Sample Rate",
+      "type": "integer"
+    },
+    "spectral_distance_db": {
+      "anyOf": [
+        {
+          "minimum": 0.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Mean absolute band difference from the reference after level alignment.",
+      "title": "Spectral Distance Db"
+    },
+    "true_peak_db": {
+      "description": "True peak of the master with 4x oversampling, dBTP.",
+      "maximum": 120.0,
+      "minimum": -120.0,
+      "title": "True Peak Db",
+      "type": "number"
+    },
+    "true_peak_ok": {
+      "description": "True peak at or below -1 dBTP (MAS-3).",
+      "title": "True Peak Ok",
+      "type": "boolean"
+    },
+    "version": {
+      "const": 1,
+      "default": 1,
+      "title": "Version",
+      "type": "integer"
+    },
+    "warnings": {
+      "description": "Warnings of the master, in English.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "sample_rate",
+    "files",
+    "mix",
+    "reference",
+    "lufs",
+    "true_peak_db",
+    "true_peak_ok",
+    "spectral_distance_db",
+    "band_delta_db",
+    "warnings"
+  ],
+  "title": "MasterReport",
+  "type": "object"
+}

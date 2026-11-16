@@ -1,0 +1,323 @@
+/* App-level glue (uses only tokens). The design boards are fixed-size frames; the app fills the window and adds
+   what a live window needs: scrolling areas, hit targets, inline fields, the responsive rules of design/README.md. */
+html, body, #root { margin: 0; height: 100%; background: var(--bg-0); }
+body { overflow: hidden; }
+.sw.app { width: 100vw; height: 100vh; min-width: var(--frame-w-min); min-height: var(--frame-h-min); }
+.sw.app.compact { --col-side: var(--col-side-min); --head-w: var(--head-w-min); --strip-w: var(--strip-w-min); }
+.sw.app.compact .hd .mini { display: none; }
+@media (min-width: 1921px) { .sw.app { --col-side: var(--col-side-max); } }
+@media (max-height: 799px) { .sw.app .row.s .cn { display: none; } .sw.app .row.s .wf { top: 50%; } .sw.app .row.s .hd .rl { display: none; } }
+@media (prefers-reduced-motion: reduce) { .sw * { transition-duration: var(--dur-1) !important; animation: none !important; } }
+.sw.reduce-motion * { transition-duration: var(--dur-1) !important; animation: none !important; }
+
+/* buttons that are list items, notes, pills keep the design's look */
+.sw .mi, .sw .li, .sw .note, .sw .pill, .sw .sender { width: 100%; text-align: left; }
+.sw .pill { width: auto; }
+.sw button:disabled { cursor: default; }
+.sw .btn:disabled, .sw .ib:disabled { opacity: var(--dis); }
+.sw .scroll { overflow-y: auto; min-height: 0; }
+
+/* inline fields: typed values, renames */
+.sw input, .sw textarea { font: inherit; color: var(--tx-1); }
+.sw input.input, .sw textarea.input { outline: none; }
+.sw input.input:focus, .sw textarea.input:focus { border-color: var(--accent); }
+.sw textarea.input { resize: vertical; }
+.sw input.bare, .sw textarea.bare { background: transparent; border: 0; outline: none; min-width: 0; flex: 1; color: var(--tx-1); }
+.sw .vt-edit { width: 100%; min-width: var(--sp-7); height: 1.6em; padding: 0 var(--sp-1); border-radius: var(--r-1); background: var(--bg-0); border: var(--bw-1) solid var(--accent); outline: none; text-align: center; }
+.sw .vt-edit.is-err { border-color: var(--danger); }
+.sw .kv, .sw .db { cursor: text; }
+
+/* continuous controls: hit areas and cursors */
+.sw .kb-hit { display: flex; cursor: ns-resize; border-radius: var(--r-round); }
+.sw .fader { cursor: ns-resize; }
+.sw .hbar.mini { cursor: ew-resize; }
+.sw .field { cursor: ns-resize; }
+.sw .field input { width: 100%; background: transparent; border: 0; outline: none; text-align: left; }
+.sw .field.fill { width: auto; }
+
+/* shell */
+.sw.app .body { min-height: 0; }
+.sw.app .left { min-height: 0; }
+.sw .rail { width: var(--rail); flex: none; align-items: center; gap: var(--sp-3); padding: var(--sp-3) 0; color: var(--tx-2); }
+.sw .rail-l { writing-mode: vertical-rl; transform: rotate(180deg); font-size: var(--fs-1); }
+.sw .bridge { height: var(--bridge-h); flex: none; flex-direction: row; align-items: center; gap: var(--sp-2); padding: 0 var(--sp-3); }
+
+/* timeline */
+.sw .timeline { flex: 1 1 0; min-height: 0; }
+.sw .timeline .tl { flex: 1 1 0; min-height: 0; overflow: hidden; }
+.sw .tl-rows { flex: 1 1 0; overflow-y: auto; overflow-x: hidden; position: relative; display: flex; flex-direction: column; }
+.sw .tl-fill { flex: 1 0 var(--sp-6); }
+.sw .tl-over { position: absolute; top: 0; right: 0; bottom: 0; overflow: hidden; pointer-events: none; }
+.sw .tl-over .play { left: 0; transform: none; will-change: transform; }
+.sw .row .hd { overflow: hidden; cursor: default; }
+.sw .row .hd .ib.fold { width: var(--icon-m); height: var(--icon-m); color: var(--tx-2); }
+.sw .row .hd .badge { cursor: pointer; }
+.sw .ruler .ln { cursor: pointer; }
+.sw .secs .ln { cursor: crosshair; }
+.sw .sec { cursor: pointer; }
+.sw .sec input.vt-edit { height: 100%; text-align: left; }
+.sw .clip { cursor: grab; }
+.sw .clip::before, .sw .clip::after { content: ""; position: absolute; top: 0; bottom: 0; width: 6px; cursor: ew-resize; z-index: 1; }
+.sw .clip::before { left: 0; }
+.sw .clip::after { right: 0; }
+.sw .clip .fh { opacity: 0; cursor: ew-resize; z-index: 2; transition: opacity var(--dur-1) var(--ease-out); }
+.sw .clip:hover .fh, .sw .clip.is-sel .fh { opacity: 1; }
+.sw [data-tool="split"] .ln, .sw [data-tool="split"] .clip { cursor: crosshair; }
+.sw .auto .ln { cursor: crosshair; }
+.sw .auto .dot { cursor: grab; z-index: 1; }
+.sw .auto .hd .select { height: var(--ctl-h-s); min-width: 0; }
+
+/* mixer */
+.sw .mixer-wrap { position: relative; flex: none; display: flex; flex-direction: column; min-height: var(--mixer-h-min); max-height: var(--mixer-h-max); }
+.sw .mixer-wrap .mixer { flex: 1 1 0; min-height: 0; }
+.sw .mixer-grip { position: absolute; left: 0; right: 0; top: calc(-1 * var(--gap)); height: var(--gap); cursor: ns-resize; z-index: 1; touch-action: none; }
+/* Like the track headers' grip: a thin line centred in the gap, accented on hover and while dragged. */
+.sw .mixer-grip::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: var(--bw-2); transform: translateY(-50%); background: transparent; transition: background var(--dur-1) var(--ease-out); }
+.sw .mixer-grip:hover::after, .sw .mixer-grip.on::after { background: var(--accent); }
+.sw .mixer-scroll { flex: 1 1 0; min-width: 0; display: flex; gap: var(--sp-h); overflow-x: auto; overflow-y: hidden; }
+.sw .mixer-scroll .strip { max-width: var(--strip-w-max); }
+.sw .strip.mixbus { flex: none; width: calc(var(--strip-w) + var(--sp-4)); margin-left: var(--sp-h); }
+.sw .strip .fz .fader { height: 100%; }
+.sw .strip .knob.s { visibility: hidden; }
+.sw .strip .kb-hit .knob.s { visibility: visible; }
+
+/* inspector and assistant */
+.sw .insp, .sw .asst { min-height: 0; }
+.sw .insp-body { flex: 1 1 0; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; }
+.sw .insp .knobs.wrap { flex-wrap: wrap; justify-content: flex-start; gap: var(--sp-3); }
+.sw .insp .chain .blk { text-align: left; }
+/* Sends leave the chain after the fader: a line sets them apart from the blocks above (A-065). */
+.sw .insp .sect.sends { border-top: var(--bw-1) solid var(--line); margin-top: var(--sp-1); padding-top: var(--sp-4); }
+.sw .eq.is-off .cv, .sw .eq.is-off .ar { opacity: var(--dis); }
+.sw .eq .dot { cursor: grab; }
+.sw .eq .dot.is-dis { opacity: var(--dis); }
+.sw .module .knobs { justify-content: space-around; }
+.sw .tile.row { text-align: left; width: 100%; }
+
+/* welcome and import */
+.sw .welcome-pane { width: var(--dlg-l); margin: var(--gap); border-radius: var(--r-3); }
+.sw .welcome-foot { padding: 0 var(--sp-5) var(--sp-3); }
+.sw .page.is-drop-over .hero { box-shadow: inset 0 0 0 var(--bw-2) var(--accent); border-radius: var(--r-3); }
+.sw .brief-side { width: var(--dlg-s); flex: none; }
+.sw .tbl.files .select { width: 100%; }
+.sw .hero .h.xl { margin: 0; }
+.sw .welcome-pane .ph .h { margin: 0; }
+/* the design's `.auto svg` targets the curve; icons in the lane header stay in the flow */
+.sw .auto .hd svg { position: static; }
+.sw .comp-extra { display: flex; align-items: center; gap: var(--sp-2); }
+
+/* assistant, proposal, AI usage (F7) */
+/* Assistant setup (design 14): the steps beside the content. */
+.sw .setup-rail { flex: none; width: calc(var(--dlg-s) / 2); margin: 0; padding: var(--sp-1) 0 0; list-style: none; }
+.sw .link { color: var(--accent); text-decoration: underline; text-underline-offset: var(--sp-h); }
+.sw .call { width: 100%; text-align: left; }
+.sw .call:hover { background: var(--bg-2); }
+.sw pre.json { margin: 0; min-height: 0; }
+.sw .proposal .pcard .b.grow { text-align: left; }
+.sw .ask textarea.bare { resize: none; line-height: var(--lh-text); }
+.sw .ask .ib { width: var(--ctl-h-s); height: var(--ctl-h-s); }
+/* The scope switch shrinks before the request button is pushed out of the panel: the track name is cut with an ellipsis. */
+.sw .seg.scope { flex: 0 1 auto; min-width: 0; }
+.sw .seg.scope > :first-child { flex: 0 1 auto; min-width: 0; }
+.sw .seg.scope > :last-child { flex: none; }
+.sw .usage-detail { min-width: 0; }
+.sw details summary { cursor: pointer; }
+.sw .tile.row > button.col { text-align: left; min-width: 0; }
+/* notifications stay clear of the column footers (Apply, Discard, request field) */
+.sw.app .toasts { bottom: calc(var(--sp-8) + var(--sp-5)); }
+.sw .mwave { cursor: pointer; }
+.sw .mod { cursor: pointer; }
+.sw .mod .led { border: 0; padding: 0; cursor: pointer; }
+
+/* UI-7: a bypassed chain block keeps AA contrast (the design dims it with opacity): outlined, value struck through. */
+.sw .pill.is-off { opacity: 1; background: transparent; box-shadow: inset 0 0 0 var(--bw-1) var(--line); }
+.sw .pill.is-off > :last-child { text-decoration: line-through; }
+/* UI-7: the red of an error tag, lifted towards the text colour for AA on its tinted background. */
+.sw .tag.err { color: color-mix(in oklch, var(--danger) 70%, var(--tx-1)); }
+.sw .mod .tabname { background: none; border: 0; padding: 0; margin: 0; text-align: left; color: inherit; cursor: pointer; min-width: 0; }
+.sw .mod .tabname:focus-visible { outline: var(--bw-2, 2px) solid var(--accent); outline-offset: 2px; border-radius: var(--r-1); }
+
+/* An application, not a page: clicks and drags on controls, lanes and rulers never select the interface's text.
+   Typed fields, the raw JSON of an AI call and the assistant's explanations stay selectable. */
+.sw.app { -webkit-user-select: none; user-select: none; }
+.sw.app input, .sw.app textarea, .sw.app pre, .sw.app [contenteditable], .sw.app .selectable { -webkit-user-select: text; user-select: text; }
+
+/* Top bar meters: every value has its own fixed slot, so the bars and their neighbours never move while playing. */
+.sw .busm { flex: none; }
+.sw .busm > * { flex: none; }
+.sw .busm .bus-bars { width: var(--sp-8); }
+.sw .busm .bus-bars .hbar { width: 100%; }
+.sw .busm .v { display: inline-block; white-space: nowrap; }
+.sw .busm .v.tp { min-width: 8.5ch; }
+.sw .busm .v.lu { min-width: 8.5ch; }
+.sw .busm .v.ld { min-width: 4.5ch; }
+
+/* Track headers: dragged to move (TRK-1, TRK-3). The line shows where the tracks land; a group they go into is
+   outlined. */
+.sw .tl-rows .hd.grab { cursor: grab; }
+.sw .row.is-moving { opacity: var(--dis); }
+.sw .row.is-into .hd, .sw .row.is-into .ln { box-shadow: inset 0 0 0 var(--bw-2) var(--accent); }
+.sw .track-drop { position: absolute; right: 0; height: var(--bw-2); margin-top: calc(var(--bw-2) / -2); background: var(--accent); pointer-events: none; z-index: 3; }
+
+/* The project name in the top bar opens the project settings. */
+.sw .pname { display: inline-flex; align-items: center; gap: var(--sp-1); background: transparent; border: 0; padding: var(--sp-1) var(--sp-2); margin-left: calc(var(--sp-2) * -1); border-radius: var(--r-1); color: inherit; cursor: pointer; }
+.sw .pname:hover { background: var(--bg-2); }
+.sw .pname .ic { color: var(--tx-3); }
+/* Master below 1360 px: the loudness panel on the right already shows the loudness large, and the mixdown number is
+   in the waveform's card, so the top bar keeps the level bars and the true peak. */
+.sw.app.compact[data-phase="master"] .busm .lu-col, .sw.app.compact[data-phase="master"] .top .md-label { display: none; }
+
+/* Preparing the master (9d–9k): announced to screen readers only; the overlay fades out when the master is ready. */
+.sw .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.sw .scrim.prep { transition: opacity var(--dur-3); }
+.sw .scrim.prep.is-leaving { opacity: 0; pointer-events: none; }
+.sw.reduce-motion .scrim.prep { transition-duration: var(--dur-1); }
+.sw .seg.phase .ring { margin-left: var(--sp-1); vertical-align: middle; }
+
+/* Scrubbing (TRN-1): the ruler shows it can grab the playhead; the master waveform is scrubbed by dragging. */
+.sw .row.ruler .ln.on-head, .sw .mwave { cursor: ew-resize; }
+
+/* Destination menu (9s): wide enough for each destination and where it sits against the references. */
+.menu[aria-label="Destination"]{width:calc(var(--col-side) + var(--sp-8))}
+.menu .mi .meta{flex:none}
+/* Master top bar (A-056): the listening level, the A/B source and the output meters (A-049) share it. The live
+   loudness is in the Loudness card, so the bar keeps the bars and the true peak; tighter gaps and segments. */
+.sw.app[data-phase="master"] .top { gap: var(--sp-3); }
+.sw.app[data-phase="master"] .top .seg { --seg-pad: var(--sp-2); }
+.sw.app[data-phase="master"] .top .busm .lu-col { display: none; }
+@media (max-width: 1599px) {
+  .sw.app[data-phase="master"] .top .dur, .sw.app[data-phase="master"] .top .review-tag { display: none; }
+}
+/* In a narrow window the labels shorten too ("Real", "Same", "Ref A"). */
+.sw .lbl-s { display: none; }
+.sw.app.compact[data-phase="master"] .lbl-l { display: none; }
+.sw.app.compact[data-phase="master"] .lbl-s { display: inline; }
+
+/* The mix at a glance (P-013, UI-8 → UI-11). Chain labels in a strip and Overview cells are buttons: click bypasses,
+   double click opens the block in the inspector. Returns and the mix bus keep an invisible chain column so that every
+   strip's rows line up with the rail. */
+.sw .strip .gl.spacer { visibility: hidden; }
+.sw .strip button.sg, .sw .cells button.cl { cursor: pointer; }
+.sw .strip button.sg:hover:not(.on) { color: var(--tx-2); }
+.sw .cells button.cl:hover { box-shadow: inset 0 0 0 var(--bw-1) var(--tx-2); }
+.sw .strip button.sg:focus-visible, .sw .cells button.cl:focus-visible { outline-offset: 0; }
+.sw .mxrail .seg { margin-bottom: 0; }
+.sw .mxrail .cl .ell { min-width: 0; }
+.sw .mixer.is-grid .strip { gap: var(--sp-h); }
+/* UI-7: a bypassed label or cell keeps AA contrast. The design draws it in --line-strong (too faint for text); here it
+   takes the secondary text colour, still a step under the outlined "neutral" label and far from the solid one (A-067). */
+.sw .sg:not(.on):not(.nu), .sw .cl.off { color: var(--tx-3); }
+
+/* Top bar of the Mix workspace at the minimum window (UI-4): with the panel switches in the bar, the saved state is
+   what gives way — cut with an ellipsis, whole in its tooltip — so the bus meters never leave the window. */
+.sw .top > .top-id { flex: 0 1 auto; min-width: 0; }
+.sw .top > .top-id > .mark { flex: none; }
+.sw .top > .top-id > .ell { flex: 0 1000 auto; }
+/* With a chip in the bar too (a proposal in review), the project name is cut after the saved state is gone. */
+.sw .top > .top-id > .pname { flex: 0 1 auto; min-width: var(--sp-8, 64px); }
+
+/* Assistant with four tabs (AI-23): they do not fit beside the title at the side column's minimum width, so they take
+   a row of their own, in equal parts. */
+.sw .asst .ph.rows { height: auto; flex-wrap: wrap; row-gap: var(--sp-1); padding-top: var(--sp-2); padding-bottom: var(--sp-2); }
+.sw .asst .ph.rows > .grow { flex-basis: 100%; height: 0; }
+.sw .asst .ph.rows > .seg { flex: 1 1 100%; }
+.sw .asst .ph.rows > .seg > * { flex: 1 1 0; justify-content: center; }
+
+/* The master rack (design 15a–15j): what a live window needs on top of the boards. */
+.sw .rrow, .sw .brow { cursor: pointer; }
+.sw .rrow .tabname, .sw .brow .tabname { background: none; border: 0; padding: 0; margin: 0; text-align: left; color: inherit; cursor: pointer; min-width: 0; font: inherit; font-weight: var(--fw-bold); }
+.sw .rrow .tabname:focus-visible, .sw .brow .tabname:focus-visible, .sw .rgrip:focus-visible, .sw .radd:focus-visible, .sw .rins:focus-visible { outline: var(--bw-2, 2px) solid var(--accent); outline-offset: 2px; border-radius: var(--r-1); }
+.sw .rrow .tabname:disabled { cursor: default; }
+.sw .rrow .led { border: 0; padding: 0; cursor: pointer; flex: none; }
+.sw .rrow i.led { cursor: default; }
+.sw .rgrip { background: none; border: 0; padding: 0; margin: 0; color: var(--tx-3); cursor: grab; display: flex; touch-action: none; }
+.sw .rgrip:hover { color: var(--tx-1); }
+.sw .rrow.is-moving { opacity: var(--dis); }
+.sw .rrow.is-drag { pointer-events: none; height: var(--ctl-h); transform: translateY(-50%) rotate(-1.5deg); }
+.sw .rwrap { position: relative; display: flex; flex-direction: column; gap: var(--sp-h); flex: none; }
+/* A "+" between two rows, shown when the pointer is near (15i): adds a block there. */
+.sw .rins { position: absolute; left: calc(var(--sp-3) * -1); top: calc(var(--sp-2) * -1); width: var(--sp-4); height: var(--sp-4); border-radius: var(--r-round); border: 0; padding: 0; background: var(--accent); color: var(--accent-tx); font-weight: var(--fw-bold); line-height: 1; cursor: pointer; opacity: 0; z-index: 1; }
+.sw .rwrap:hover > .rins, .sw .rins:focus-visible { opacity: 1; }
+.sw .radd { cursor: pointer; font: inherit; font-weight: var(--fw-bold); }
+.sw .radd.is-full { border-color: var(--line-strong); background: transparent; color: var(--tx-2); }
+.sw .rrows { overflow-y: auto; }
+.sw .rackrow > .card.grow { overflow-y: auto; }
+.sw .mwave button.sec { border: 0; font: inherit; font-size: var(--fs-1); font-weight: var(--fw-medium); cursor: pointer; text-align: left; }
+.sw .mwave button.sec:focus-visible { outline: var(--bw-2, 2px) solid var(--accent); outline-offset: -2px; }
+.sw .eq.mb .bd { cursor: pointer; }
+.sw .eq.mb .dot { cursor: ew-resize; }
+.sw .brow.is-off .bname, .sw .brow.is-off .brange { color: var(--tx-3); }
+
+/* The master's waveform (A-083): its body filled, its peaks as a thin outline, so a loud master is not a solid block. */
+.sw .mwave .pkw path { fill: none; stroke: color-mix(in oklch, var(--accent) 55%, transparent); stroke-width: 1; }
+/* Track headers' right edge (issue #9): a thin grip over the boundary, accented while dragged or focused. */
+.sw .tl .head-resize { position: absolute; top: 0; bottom: 0; width: var(--sp-2); transform: translateX(-50%); z-index: 3; cursor: col-resize; touch-action: none; }
+.sw .tl .head-resize::after { content: ""; position: absolute; top: 0; bottom: 0; left: 50%; width: var(--bw-2); transform: translateX(-50%); background: transparent; transition: background var(--dur-1) var(--ease-out); }
+.sw .tl .head-resize:hover::after, .sw .tl .head-resize.on::after, .sw .tl .head-resize:focus-visible::after { background: var(--accent); }
+.sw .tl .head-resize:focus-visible { outline: none; }
+
+/* The chain of a track in the inspector (design 16a–16c, UI-12). */
+.sw .tch .rrows { max-height: none; overflow: visible; }
+.sw .rline { height: var(--bw-2); margin: calc(var(--bw-1) * -1) 0; background: var(--accent); border-radius: var(--r-pill); }
+.sw .rrow.tr .led { width: var(--led); height: var(--led); }
+.sw .sg.pad { visibility: hidden; }
+.sw .sg.pad::before { content: "·"; }
+.sw .gl button.sg.more { cursor: pointer; }
+/* The "Add block" menu beside the inspector (16b): one column per family. */
+.sw.pop.addmenu, .pop.addmenu { z-index: var(--z-pop); background: var(--bg-3); border-radius: var(--r-3); box-shadow: var(--shadow-pop), inset 0 0 0 var(--bw-1) var(--line); padding: var(--sp-3); display: flex; flex-direction: column; gap: var(--sp-2); max-height: calc(100vh - var(--sp-5)); overflow-y: auto; height: auto; min-height: 0; min-width: 0; }
+.addmenu .am-cols { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--sp-3); }
+.addmenu .am-fam { text-transform: none; padding: 0 var(--sp-1); }
+.addmenu .am-item { display: flex; align-items: flex-start; gap: var(--sp-2); padding: var(--sp-1); border: 0; border-radius: var(--r-2); background: none; color: var(--tx-1); text-align: left; cursor: pointer; font: inherit; min-width: 0; }
+.addmenu .am-item:hover:not(:disabled), .addmenu .am-item:focus-visible { background: var(--bg-2); outline: none; box-shadow: inset 0 0 0 var(--bw-1) var(--accent); }
+.addmenu .am-item:disabled { cursor: default; color: var(--tx-3); }
+.addmenu .am-item .sg { flex: none; min-width: calc(var(--sp-5) + var(--sp-1)); }
+.addmenu .am-txt { min-width: 0; gap: var(--bw-1); }
+
+/* Explain this mix (design 17, UI-14 → UI-16): the map scrolls when it is taller than the window, the text scrolls
+   in its column, a term of the glossary opens on hover and on focus. */
+.sw .xbody { flex: 1; }
+.sw .xscroll { overflow: auto; min-height: 0; }
+.sw .xstage { min-width: 100%; min-height: 100%; }
+.sw button.mn { text-align: left; }
+.sw .mn.grp { padding: 0 var(--sp-2) 0 var(--sp-1); gap: var(--sp-1); }
+.sw .mn-fold { width: var(--tgl); height: var(--tgl); display: inline-flex; align-items: center; justify-content: center; border-radius: var(--r-1); color: var(--tx-3); flex: none; }
+.sw .mn-fold:hover { background: var(--bg-2); color: var(--tx-1); }
+.sw .mn-main { display: flex; flex-direction: column; justify-content: center; align-self: stretch; flex: 1 1 0; min-width: 0; text-align: left; line-height: var(--lh-tight); }
+.sw button.mn:hover, .sw .mn.grp:hover, .sw .xs:hover { background: var(--bg-3); }
+.sw .xs.on:hover { background: var(--accent); }
+.sw .xdoc.scroll { overflow-y: auto; }
+.sw .xdoc .xbal { display: flex; flex-direction: column; align-items: stretch; gap: var(--sp-2); }
+.sw .xnav { overflow-x: auto; scrollbar-width: none; }
+.sw .xnav::-webkit-scrollbar { display: none; }
+.sw .xbal-r { display: grid; grid-template-columns: calc(var(--sp-8) * 2) minmax(0, 1fr) calc(var(--sp-8) + var(--sp-4)); gap: var(--sp-3); align-items: center; }
+.sw .xbal-r > span:last-child { text-align: right; }
+.sw .xbal-r .hbar > i { background: var(--tc, var(--tx-2)); }
+.sw .xbal-r .hbar.acc > i { background: var(--accent); }
+.sw ol.xsteps { list-style: none; margin: 0; padding: 0; }
+.sw .xn:hover { background: var(--line); }
+.sw .gt { cursor: help; }
+.sw .gt:hover, .sw .gt:focus { color: var(--tx-1); border-bottom-color: var(--accent); outline: none; }
+.sw .gt:hover .tip, .sw .gt:focus .tip { display: block; left: 0; top: calc(100% + var(--sp-1)); width: var(--tip-w); font-size: var(--fs-1); font-weight: var(--fw-regular); line-height: var(--lh-ui); white-space: normal; }
+.sw .xpend { padding: var(--sp-2) var(--sp-3); border-radius: var(--r-2); background: var(--bg-2); }
+.sw .xside .ph h2 { margin: 0; }
+.sw .xside .btn.on { color: var(--solo); }
+.sw.app.compact .xside { width: var(--col-explain-min); }
+.sw .xsl.grow { flex: 1 1 0; }
+
+/* Guided tour (P-020, design 18): the hole moves by transform; clicks outside it stop at the blockers. */
+.sw .tour-block { position: absolute; pointer-events: auto; }
+/* A confirmation the lit area asks for is answered before the tour goes on: above it, never under the bubble. */
+.sw .scrim.over-tour { z-index: calc(var(--z-tour) + 1); }
+.sw .tour-spot { left: 0; top: 0; transition: transform var(--dur-3) var(--ease-in-out), opacity var(--dur-1) var(--ease-out); pointer-events: none; }
+.sw .tour-tip, .sw .tour-card { animation: tour-in var(--dur-2) var(--ease-out); z-index: 1; }
+.sw .tour.full { animation: tour-dim var(--dur-3) var(--ease-in-out); }
+@keyframes tour-in { from { opacity: 0; } }
+@keyframes tour-dim { from { background: transparent; } }
+/* Reduce motion: no moving, no scaling; the swap is a fade of --dur-1. */
+.sw.reduce-motion .tour-spot, .sw .tour.reduce .tour-spot { transition: opacity var(--dur-1) linear; }
+.sw.reduce-motion .tour-tip, .sw.reduce-motion .tour-card, .sw.reduce-motion .tour.full { animation-duration: var(--dur-1); }
+@media (prefers-reduced-motion: reduce) {
+  .sw .tour-spot { transition: opacity var(--dur-1) linear; }
+  .sw .tour-tip, .sw .tour-card, .sw .tour.full { animation-duration: var(--dur-1); }
+}
+.sw .tourlink { background: none; border: 0; padding: 0; cursor: pointer; color: var(--accent); }

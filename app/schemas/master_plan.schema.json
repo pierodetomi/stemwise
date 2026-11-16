@@ -1,0 +1,516 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "chain": {
+      "items": {
+        "anyOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "bands": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "freq_hz": {
+                      "maximum": 20000.0,
+                      "minimum": 20.0,
+                      "type": "number"
+                    },
+                    "gain_db": {
+                      "maximum": 6.0,
+                      "minimum": -6.0,
+                      "type": "number"
+                    },
+                    "q": {
+                      "maximum": 8.0,
+                      "minimum": 0.3,
+                      "type": "number"
+                    },
+                    "type": {
+                      "enum": [
+                        "peak",
+                        "low_shelf",
+                        "high_shelf"
+                      ],
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "freq_hz",
+                    "gain_db",
+                    "q"
+                  ],
+                  "type": "object"
+                },
+                "maxItems": 6,
+                "type": "array"
+              },
+              "id": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "type": {
+                "enum": [
+                  "eq"
+                ],
+                "type": "string"
+              },
+              "why": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "bands",
+              "why"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "amount": {
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              "id": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "type": {
+                "enum": [
+                  "match_eq"
+                ],
+                "type": "string"
+              },
+              "why": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "amount",
+              "why"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "attack_ms": {
+                "maximum": 100.0,
+                "minimum": 0.1,
+                "type": "number"
+              },
+              "id": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "knee_db": {
+                "maximum": 12.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              "listen_above_hz": {
+                "maximum": 300.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              "makeup_db": {
+                "maximum": 12.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              "mix": {
+                "maximum": 1.0,
+                "minimum": 0.2,
+                "type": "number"
+              },
+              "ratio": {
+                "maximum": 4.0,
+                "minimum": 1.0,
+                "type": "number"
+              },
+              "release_ms": {
+                "maximum": 1000.0,
+                "minimum": 20.0,
+                "type": "number"
+              },
+              "threshold_db": {
+                "maximum": 0.0,
+                "minimum": -40.0,
+                "type": "number"
+              },
+              "type": {
+                "enum": [
+                  "compressor"
+                ],
+                "type": "string"
+              },
+              "why": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "threshold_db",
+              "ratio",
+              "attack_ms",
+              "release_ms",
+              "knee_db",
+              "makeup_db",
+              "mix",
+              "listen_above_hz",
+              "why"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "bands": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "attack_ms": {
+                      "maximum": 100.0,
+                      "minimum": 0.1,
+                      "type": "number"
+                    },
+                    "gain_db": {
+                      "maximum": 6.0,
+                      "minimum": -6.0,
+                      "type": "number"
+                    },
+                    "ratio": {
+                      "maximum": 4.0,
+                      "minimum": 1.0,
+                      "type": "number"
+                    },
+                    "release_ms": {
+                      "maximum": 1000.0,
+                      "minimum": 20.0,
+                      "type": "number"
+                    },
+                    "threshold_db": {
+                      "maximum": 0.0,
+                      "minimum": -40.0,
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "threshold_db",
+                    "ratio",
+                    "attack_ms",
+                    "release_ms",
+                    "gain_db"
+                  ],
+                  "type": "object"
+                },
+                "maxItems": 6,
+                "minItems": 2,
+                "type": "array"
+              },
+              "crossovers_hz": {
+                "items": {
+                  "maximum": 12000.0,
+                  "minimum": 40.0,
+                  "type": "number"
+                },
+                "maxItems": 5,
+                "minItems": 1,
+                "type": "array"
+              },
+              "id": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "type": {
+                "enum": [
+                  "multiband"
+                ],
+                "type": "string"
+              },
+              "why": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "crossovers_hz",
+              "bands",
+              "why"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "mono_below_hz": {
+                "maximum": 250.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              "side_gain_db": {
+                "maximum": 6.0,
+                "minimum": -6.0,
+                "type": "number"
+              },
+              "type": {
+                "enum": [
+                  "width"
+                ],
+                "type": "string"
+              },
+              "why": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "side_gain_db",
+              "mono_below_hz",
+              "why"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "drive_db": {
+                "maximum": 18.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              "id": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "mix": {
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              "type": {
+                "enum": [
+                  "saturation"
+                ],
+                "type": "string"
+              },
+              "why": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "drive_db",
+              "mix",
+              "why"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "softness": {
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              "take_off_db": {
+                "maximum": 6.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              "type": {
+                "enum": [
+                  "clipper"
+                ],
+                "type": "string"
+              },
+              "why": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "take_off_db",
+              "softness",
+              "why"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "maxItems": 9,
+      "type": "array"
+    },
+    "input_gain_db": {
+      "maximum": 12.0,
+      "minimum": -12.0,
+      "type": "number"
+    },
+    "limiter": {
+      "additionalProperties": false,
+      "properties": {
+        "release_ms": {
+          "maximum": 500.0,
+          "minimum": 20.0,
+          "type": "number"
+        }
+      },
+      "required": [
+        "release_ms"
+      ],
+      "type": "object"
+    },
+    "rationale": {
+      "additionalProperties": false,
+      "properties": {
+        "limiter": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "order": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sections": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "order",
+        "limiter",
+        "sections"
+      ],
+      "type": "object"
+    },
+    "sections": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "eq": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "block": {
+                  "type": "string"
+                },
+                "gains_db": {
+                  "items": {
+                    "maximum": 2.0,
+                    "minimum": -2.0,
+                    "type": "number"
+                  },
+                  "maxItems": 6,
+                  "type": "array"
+                }
+              },
+              "required": [
+                "block",
+                "gains_db"
+              ],
+              "type": "object"
+            },
+            "maxItems": 2,
+            "type": "array"
+          },
+          "level_db": {
+            "maximum": 2.0,
+            "minimum": -2.0,
+            "type": "number"
+          },
+          "limiter_release_ms": {
+            "maximum": 100.0,
+            "minimum": -100.0,
+            "type": "number"
+          },
+          "section": {
+            "type": "string"
+          },
+          "side_gain_db": {
+            "maximum": 3.0,
+            "minimum": -3.0,
+            "type": "number"
+          }
+        },
+        "required": [
+          "section",
+          "level_db",
+          "side_gain_db",
+          "limiter_release_ms",
+          "eq"
+        ],
+        "type": "object"
+      },
+      "maxItems": 0,
+      "type": "array"
+    },
+    "summary": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "target": {
+      "additionalProperties": false,
+      "properties": {
+        "lufs": {
+          "maximum": -6.0,
+          "minimum": -24.0,
+          "type": "number"
+        },
+        "true_peak_db": {
+          "maximum": -0.1,
+          "minimum": -3.0,
+          "type": "number"
+        }
+      },
+      "required": [
+        "lufs",
+        "true_peak_db"
+      ],
+      "type": "object"
+    },
+    "version": {
+      "enum": [
+        2
+      ],
+      "type": "integer"
+    }
+  },
+  "required": [
+    "version",
+    "summary",
+    "target",
+    "input_gain_db",
+    "chain",
+    "limiter",
+    "sections",
+    "rationale"
+  ],
+  "type": "object"
+}

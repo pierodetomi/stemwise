@@ -1,0 +1,62 @@
+[workspace]
+resolver = "3"
+members = [
+    "crates/stemwise-core",
+    "crates/stemwise-dsp",
+    "crates/stemwise-analysis",
+    "crates/stemwise-engine",
+    "crates/stemwise-ai",
+    "crates/stemwise-cli",
+    "crates/stemwise-export",
+    "src-tauri",
+]
+default-members = [
+    "crates/stemwise-core",
+    "crates/stemwise-dsp",
+    "crates/stemwise-analysis",
+    "crates/stemwise-engine",
+    "crates/stemwise-ai",
+    "crates/stemwise-cli",
+    "crates/stemwise-export",
+    "src-tauri",
+]
+
+[workspace.package]
+version = "0.1.1"
+edition = "2024"
+license = "MIT"
+authors = ["Piero De Tomi"]
+repository = "https://github.com/pierodetomi/stemwise"
+publish = false
+
+[workspace.lints.rust]
+unsafe_op_in_unsafe_fn = "deny"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+
+# Disk budget (FOUNDATION §9, rule 18): reduced debug info, no incremental cache for dependencies.
+[profile.dev]
+debug = "line-tables-only"
+incremental = true
+
+[profile.dev.package."*"]
+debug = false
+incremental = false
+opt-level = 2
+
+[profile.test]
+debug = "line-tables-only"
+
+[profile.release]
+debug = false
+lto = "thin"
+codegen-units = 4
+
+# Benchmarks and the real-time path need optimised code even in dev runs of the DSP crates.
+[profile.dev.package.stemwise-dsp]
+opt-level = 2
+[profile.dev.package.stemwise-engine]
+opt-level = 2
+[profile.dev.package.stemwise-analysis]
+opt-level = 2
