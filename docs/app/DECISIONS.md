@@ -2487,9 +2487,16 @@ modulo AAC è controllato con Clippy anche per `aarch64-apple-darwin` e `x86_64-
 workspace per macOS non si è potuto compilare da qui (alcune dipendenze vogliono un compilatore C per macOS): lo
 conferma la CI su `macos-15`.
 
-**Non fatto e non verificato.** CI su `windows-latest`; Linux (pacchetti, fallback della chiave su file quando manca
-Secret Service); prova dell'app vera su Windows (audio WASAPI, trascinamento dei file con lo scaling, avvio a freddo
-con WebView2, finestra minima di 1280×720 su un portatile al 150%); benchmark su Windows; firma Authenticode.
+**CI su Windows (stesso giorno).** Un secondo job, `make ci (Windows)` su `windows-latest`: GNU make da Chocolatey
+se manca, i passi in Git Bash, Playwright su Edge, già presente sul runner. È un job a sé e non una matrice, così il
+controllo `make ci` su macOS conserva il nome che la protezione di `main` può richiedere. Il nuovo `.gitattributes`
+(`* text=auto eol=lf`) impedisce al checkout di Windows di convertire i file in CRLF, che romperebbe i confronti
+byte per byte dei file generati. Nell'indice era già tutto LF: nessun file cambia. `make ci` provato in locale in
+Git Bash con il PATH pulito: verde, 114 test Playwright. Il job gira alla prima pull request del ramo.
+
+**Non fatto e non verificato.** Linux (pacchetti, fallback della chiave su file quando manca
+Secret Service); prova a mano su un Windows pulito (installer, ascolto, trascinamento dei file con lo scaling,
+finestra minima di 1280×720 su un portatile al 150%: VALIDATION 64–66); benchmark su Windows; firma Authenticode.
 
 ## Dipendenze aggiunte
 

@@ -177,8 +177,8 @@ Fasi F0 → F19 chiuse. Repository pubblico dal 2026-11-16 (A-101). Windows è i
   59 su 59 con l'audio WASAPI (avvio a freddo 0,8 s). Difetti trovati e corretti: salvataggio atomico che falliva
   su Windows, Save As con i percorsi `\`, snap che leggeva solo il tasto ⌘, cartella dati della CLI. AAC con Media
   Foundation, barra dei menu solo su macOS, scorciatoie e testi per sistema, elenco licenze per tre target (497
-  librerie). Da provare a mano: VALIDATION 64–66. Restano la CI su Windows, Linux e la firma Authenticode · disco
-  7,85 GB.
+  librerie). CI anche su `windows-latest` (job `make ci (Windows)`, ancora mai eseguito: parte alla prima PR). Da
+  provare a mano: VALIDATION 64–66. Restano Linux e la firma Authenticode · disco 7,85 GB.
 - Prossimo passo: in parallelo la validazione dell'autore (docs/app/VALIDATION.md, nell'ordine
   consigliato), almeno un auto mix col modello vero e il pacchetto su un Mac pulito prima di aprire.
 - Verifica dello stato: `cd app && make check` (verde), `make reqs` per i buchi residui, `git tag` per le fasi.
@@ -248,7 +248,7 @@ _Requisiti ridotti o non verificati, con motivo e riferimento alla decisione (FO
   nell'avvio dell'audio.
 - **Windows non provato a mano (A-104)** — gate e self-test girano sulla macchina di sviluppo; installer su un
   Windows pulito, ascolto, trascinamento con lo scaling e finestra minima su un portatile al 150% li giudica l'autore
-  (VALIDATION 64–66). Pacchetto non firmato: SmartScreen avvisa. Nessuna CI su Windows. Il render non è identico
+  (VALIDATION 64–66). Pacchetto non firmato: SmartScreen avvisa. La CI su Windows non ha ancora mai girato. Il render non è identico
   bit per bit tra sistemi (libreria matematica del sistema): il test dello schema 3 gira solo su macOS.
 - **Locate a un file per volta (UI-6)** — il dialogo con ricerca per cartella del design 13g è sostituito da un menu
   dei file mancanti (A-047).
