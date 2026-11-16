@@ -68,6 +68,12 @@ fn rms_db(x: &[f32]) -> f32 {
 }
 
 fn check_roundtrip(channels: u16, rate: u32, kbps: u32) {
+    if !aac_available() {
+        // MAS-10: where the system has no encoder the format is not offered; `encode_aac` then reports it.
+        let dir = scratch();
+        assert!(encode_aac(&dir.path().join("out.m4a"), &[0.0; 3000], channels, rate, kbps).is_err());
+        return;
+    }
     let dir = scratch();
     let path = dir.path().join("out.m4a");
     let input = sine(rate, channels, 3.0, 1000.0, 0.5);

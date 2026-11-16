@@ -291,8 +291,8 @@ fn data_dir() -> PathBuf {
     if let Some(d) = std::env::var_os("STEMWISE_DATA") {
         return PathBuf::from(d);
     }
-    let home = std::env::var_os("HOME").map(PathBuf::from).unwrap_or_else(std::env::temp_dir);
-    home.join("Library/Application Support/app.stemwise.desktop")
+    // The folder Tauri gives the app (`app_data_dir`): the system's data folder and the app's identifier.
+    dirs::data_dir().unwrap_or_else(std::env::temp_dir).join("app.stemwise.desktop")
 }
 
 fn log_call(d: &mut Document, record: stemwise_core::model::AiCallRecord) {

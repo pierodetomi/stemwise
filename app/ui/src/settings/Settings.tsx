@@ -1,6 +1,8 @@
 // Settings (design 11a–11d; SET-1): audio device and buffer, the assistant (decider, key, model, effort,
 // temperature, spending cap, what is sent, total across projects), appearance, and the shortcuts (view only, UI-3).
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { KEYCHAIN_SHORT, THIS_COMPUTER } from "../shared/platform";
+import { keysInText } from "../shared/keys";
 import type { AudioPrefs, DeviceInfo, TransportState } from "../backend/types";
 import { Seg } from "../shared/controls";
 import { keyHome } from "../ai/Assist";
@@ -200,7 +202,7 @@ function AiPane() {
       </Row>
       <Row title="OpenRouter account" sub={`The key is kept in ${keyHome(ai.key_place)}, never in the project.`}>
         <div className="fx g2">
-          <span className="input sm grow"><span className="grow ell" data-testid="key-state">{ai.has_key ? (ai.key_place === "file" ? "Stored in a private file of this app" : "Stored in the keychain") : "No key"}</span></span>
+          <span className="input sm grow"><span className="grow ell" data-testid="key-state">{ai.has_key ? (ai.key_place === "file" ? "Stored in a private file of this app" : `Stored in ${KEYCHAIN_SHORT}`) : "No key"}</span></span>
           {ai.has_key ? (
             <>
               <button type="button" className="btn" onClick={() => setView({ setup: "connect" })}>
@@ -294,7 +296,7 @@ function AiPane() {
           <span className="dim s1">Measurements, roles, track names, your brief and your requests. Never audio, file names, paths or the song title.</span>
         </div>
       </Row>
-      <Row title="All projects" sub="Total recorded on this Mac.">
+      <Row title="All projects" sub={`Total recorded on ${THIS_COMPUTER}.`}>
         <div className="fx g2 stretch">
           <div className="stat"><span className="faint s1">Cost</span><span className="v" data-testid="total-cost">${ai.total_usd.toFixed(2)}</span></div>
           <div className="stat"><span className="faint s1">Calls</span><span className="v">{ai.total_calls}</span></div>
@@ -372,7 +374,7 @@ function ShortcutsPane() {
   const [q, setQ] = useState("");
   const groups = useMemo(() => {
     const f = q.trim().toLowerCase();
-    const hit = (s: Shortcut) => !f || s.label.toLowerCase().includes(f) || s.keys.toLowerCase().includes(f) || s.group.toLowerCase().includes(f);
+    const hit = (s: Shortcut) => !f || s.label.toLowerCase().includes(f) || keysInText(s.keys).toLowerCase().includes(f) || s.group.toLowerCase().includes(f);
     const out = new Map<string, Shortcut[]>();
     for (const s of SHORTCUTS.filter(hit)) out.set(s.group, [...(out.get(s.group) ?? []), s]);
     return [...out];
@@ -393,7 +395,7 @@ function ShortcutsPane() {
             {list.map((s) => (
               <div key={s.id} className="fx between" style={{ height: "var(--ctl-h)" }}>
                 <span className="dim">{s.label}</span>
-                <span className="kbd" aria-label={`Shortcut ${s.keys}`}>{s.keys}</span>
+                <span className="kbd" aria-label={`Shortcut ${keysInText(s.keys)}`}>{keysInText(s.keys)}</span>
               </div>
             ))}
           </div>

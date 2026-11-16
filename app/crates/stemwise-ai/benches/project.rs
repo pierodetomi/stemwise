@@ -20,12 +20,25 @@ use stemwise_engine::realtime::Engine;
 const RATE: u32 = 48000;
 
 /// Peak resident memory of this process so far, in bytes (macOS reports bytes, Linux kilobytes).
+#[cfg(unix)]
 fn peak_rss() -> u64 {
     let mut u: libc::rusage = unsafe { std::mem::zeroed() };
     // SAFETY: getrusage fills the struct it is given.
     unsafe { libc::getrusage(libc::RUSAGE_SELF, &mut u) };
     let v = u.ru_maxrss as u64;
     if cfg!(target_os = "macos") { v } else { v * 1024 }
+}
+
+/// Peak resident memory of this process so far, in bytes: the peak working set on Windows.
+#[cfg(windows)]
+fn peak_rss() -> u64 {
+    use windows_sys::Win32::System::ProcessStatus::{GetProcessMemoryInfo, PROCESS_MEMORY_COUNTERS};
+    use windows_sys::Win32::System::Threading::GetCurrentProcess;
+    let mut c: PROCESS_MEMORY_COUNTERS = unsafe { std::mem::zeroed() };
+    let size = std::mem::size_of::<PROCESS_MEMORY_COUNTERS>() as u32;
+    // SAFETY: the pseudo-handle of the current process needs no closing; the struct is the size we pass.
+    unsafe { GetProcessMemoryInfo(GetCurrentProcess(), &mut c, size) };
+    c.PeakWorkingSetSize as u64
 }
 
 fn stems(src: &Path, count: u32, seconds: usize) -> Vec<ImportChoice> {

@@ -2,13 +2,14 @@
 // cost before sending (AI-3, AI-5, AI-16), Auto mix (AI-1), progress per phase and pass with Cancel (AI-12), the
 // missing-key state (AI-11), the spending-cap confirmation, the brief and references (PRJ-7).
 import { useEffect, useState, type ReactNode } from "react";
+import { KEYCHAIN, THIS_COMPUTER } from "../shared/platform";
 import type { AiStatus, CostEstimate } from "../backend/types";
 import { Icon } from "../shared/Icon";
 import { Seg } from "../shared/controls";
 import { useApp, useBackend } from "../state/context";
 
 /** Where this build keeps the key, in words (A-072). */
-export const keyHome = (place: "keychain" | "file" | undefined) => (place === "file" ? "a private file of this app on your Mac" : "the macOS keychain");
+export const keyHome = (place: "keychain" | "file" | undefined) => (place === "file" ? `a private file of this app on ${THIS_COMPUTER}` : KEYCHAIN);
 
 export const usd = (v: number) => (v < 0.995 ? `$${v.toFixed(2)}` : `$${v.toFixed(2)}`);
 

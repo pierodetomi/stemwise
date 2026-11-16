@@ -1,6 +1,7 @@
 // Welcome (design 1a, 1b; PRJ-1, UI-2): recent projects, new project, open; on first launch (no recent projects)
 // the right pane invites to set up the assistant, which can be skipped.
 import { useEffect, useState } from "react";
+import { THIS_COMPUTER } from "../shared/platform";
 import type { AppInfo, RecentProject } from "../backend/types";
 import { Icon, Mark } from "../shared/Icon";
 import { useApp, useBackend } from "../state/context";
@@ -63,7 +64,7 @@ function FirstRun({ onSkip }: { onSkip: () => void }) {
         <div className="tile row" style={{ height: "auto" }}>
           <Icon name="lock" className="aic" />
           <div className="col">
-            <span className="b">Your audio never leaves this Mac</span>
+            <span className="b">Your audio never leaves {THIS_COMPUTER}</span>
             <span className="dim s1">The model receives measurements, roles, track names, your brief and your requests. Never audio, file names, paths or the song title.</span>
           </div>
         </div>
@@ -190,7 +191,7 @@ export function Welcome() {
                 <input className="bare" placeholder="Filter" aria-label="Filter recent projects" value={filter} onChange={(e) => setFilter(e.target.value)} />
               </label>
             </div>
-            <div className="sect list scroll grow" aria-label="Recent projects">
+            <div className="sect list scroll grow" role="group" aria-label="Recent projects">
               {list.map((p, i) => (
                 <button type="button" key={p.path} className="li" onClick={() => open(p.path)} title={p.path}>
                   <Thumb seed={[...p.name].reduce((a, c) => a + c.charCodeAt(0), i)} />

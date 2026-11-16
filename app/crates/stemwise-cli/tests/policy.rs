@@ -3,9 +3,11 @@
 //! - NFR-7: the only network code is the OpenRouter client (`stemwise-ai/src/openrouter.rs`), only `stemwise-ai`
 //!   depends on an HTTP library, and the client is created only where the user asked for the assistant (the
 //!   `ai_start` and `master_ai_start` paths of the app, the CLI's explicit commands). No telemetry anywhere.
-//! - NFR-8: what is specific to macOS (conditional compilation on the OS, linked frameworks, foreign functions) lives
-//!   only in isolated modules behind an interface: today the AAC encoder (`stemwise-export/src/aac.rs`, behind
-//!   `aac_available` and `encode_aac`, with a non-macOS fallback that reports it unavailable).
+//! - NFR-8: what is specific to one system (conditional compilation on the OS, linked frameworks, foreign functions)
+//!   lives only in isolated modules behind an interface, the same on every system: the AAC encoder
+//!   (`stemwise-export/src/aac.rs`, behind `aac_available` and `encode_aac`, reporting it unavailable where the
+//!   system has none), the question about the signature (`stemwise-ai/src/signing.rs`) and the shell's menu bar
+//!   (`src-tauri/src/platform.rs`).
 
 use std::path::{Path, PathBuf};
 
@@ -26,7 +28,8 @@ fn sources() -> Vec<(String, String)> {
                     stack.push(p);
                 }
             } else if p.extension().is_some_and(|x| x == "rs" || x == "toml") {
-                let rel = p.strip_prefix(&root).unwrap().display().to_string();
+                // `/` on every system, so that the paths below compare the same on Windows.
+                let rel = p.strip_prefix(&root).unwrap().display().to_string().replace('\\', "/");
                 if rel.ends_with("stemwise-cli/tests/policy.rs") {
                     continue; // this file names what it looks for
                 }
@@ -107,8 +110,9 @@ fn network_code_is_only_the_openrouter_client_called_on_request() {
 
 /// req: NFR-8
 #[test]
-fn macos_specific_code_is_isolated_behind_an_interface() {
-    let isolated = ["crates/stemwise-export/src/aac.rs", "crates/stemwise-ai/src/signing.rs"];
+fn platform_specific_code_is_isolated_behind_an_interface() {
+    let isolated =
+        ["crates/stemwise-export/src/aac.rs", "crates/stemwise-ai/src/signing.rs", "src-tauri/src/platform.rs"];
     let markers = ["target_os", "#[link(", "extern \"C\"", "objc", "core_foundation", "cocoa::", "AudioToolbox"];
     for (path, text) in sources() {
         if path.ends_with(".toml")
@@ -123,9 +127,11 @@ fn macos_specific_code_is_isolated_behind_an_interface() {
             assert!(!c.contains(m), "{path} has platform-specific code (`{m}`) outside the isolated modules");
         }
     }
-    // The isolated module offers the same interface everywhere, with a fallback off macOS.
+    // Each isolated module offers the same interface everywhere, with a fallback where the system has no equivalent.
     let aac = std::fs::read_to_string(app().join(isolated[0])).unwrap();
-    assert!(aac.contains("#[cfg(not(target_os = \"macos\"))]") && aac.contains("pub fn aac_available"));
+    assert!(aac.contains("#[cfg(not(any(target_os = \"macos\", windows)))]") && aac.contains("pub fn aac_available"));
     let signing = std::fs::read_to_string(app().join(isolated[1])).unwrap();
     assert!(signing.contains("#[cfg(not(target_os = \"macos\"))]") && signing.contains("pub fn keychain_is_silent"));
+    let platform = std::fs::read_to_string(app().join(isolated[2])).unwrap();
+    assert!(platform.contains("#[cfg(not(target_os = \"macos\"))]") && platform.contains("pub fn with_menu_bar"));
 }

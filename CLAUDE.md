@@ -116,7 +116,7 @@ make test      # solo i test
 make bench     # benchmark (NFR-1, NFR-4)
 make reqs      # requisiti di FOUNDATION §3 senza test
 make oracle    # rigenera app/fixtures/oracle dalla PoC
-make build     # pacchetto .app/.dmg
+make build     # pacchetto del sistema: .app/.dmg su macOS, installer NSIS su Windows
 make ci        # il gate come lo esegue la CI di GitHub: check senza test dei tempi di frame e senza tetto di disco
 make third-party  # rigenera l'elenco delle licenze di terze parti incluso nell'app
 make disk      # occupazione del repository per cartella

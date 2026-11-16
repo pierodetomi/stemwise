@@ -50,7 +50,7 @@ punto di partenza rapido e spiegato.
 | Id | Decisione |
 | --- | --- |
 | P-001 | **Prodotto distribuibile**: solo dipendenze con licenze permissive; nessuna libreria GPL/LGPL. `pedalboard` e `matchering` della PoC non si usano: il DSP è riscritto. |
-| P-002 | **macOS nella v1, codice portabile**: stack cross-platform; la v1 si verifica e si pacchettizza solo su macOS (Apple Silicon e Intel). Windows e Linux sono un lavoro successivo di build e collaudo, non una riscrittura. |
+| P-002 | **Un solo codice per macOS, Windows e Linux**: stack cross-platform; la v1 si verifica e si pacchettizza su macOS (Apple Silicon e Intel). Dal 2026-11-16 (A-104) anche su Windows 10/11 x64, con un installer NSIS; Linux è il passo successivo. Portare un sistema è lavoro di build e collaudo, non una riscrittura. |
 | P-003 | Nella v1 entrano: **curve di automazione libere**, **editing delle clip**, **delay e saturazione interni**. |
 | P-004 | **Fuori dalla v1: plugin AU/VST3 di terze parti.** |
 | P-005 | **Accesso al modello con chiave propria via OpenRouter**, salvata nel portachiavi di sistema. Nessun backend. |
@@ -86,7 +86,7 @@ punto di partenza rapido e spiegato.
 | Undo/redo illimitato, snapshot con nome, confronto A/B | Collaborazione, cloud, account |
 | Mixdown e fase di master separata, master AI, riferimenti, master multibanda (P-017) | Separazione in stem dei riferimenti |
 | Export WAV, FLAC e AAC con metadata (titolo, artista, album, anno, ISRC, copertina) | MP3 (encoder con licenza LGPL), DDP e assemblaggio di album |
-| macOS 13+, pacchetto `.app`/`.dmg` | Build verificati per Windows/Linux, firma e notarizzazione (richiedono l'account Apple dell'autore), aggiornamento automatico |
+| macOS 13+, pacchetto `.app`/`.dmg`; Windows 10/11 x64, installer NSIS (A-104) | Build verificati per Linux, firma e notarizzazione (richiedono l'account Apple e un certificato Authenticode dell'autore), aggiornamento automatico |
 | Interfaccia in inglese, stringhe centralizzate | Altre lingue dell'interfaccia |
 | Tour guidato al primo avvio e a richiesta, su un progetto dimostrativo incorporato con audio sintetizzato (P-020) | Tour a compiti (passi che aspettano un'azione), capitoli separati, video, guida in linea; progetto dimostrativo apribile fuori dal tour; stem reali nel pacchetto |
 
@@ -406,7 +406,7 @@ giustificazione scritta in `docs/app/REQS-JUSTIFIED.md`.
   di file o titolo del brano.
 - **AI-11.** Chiave OpenRouter **nel portachiavi di sistema quando l'app può leggerlo senza che il sistema chieda
   la password** (su macOS: build firmata con un certificato emesso da Apple, la cui identità non cambia da una build
-  all'altra); **altrimenti in un file della cartella dati dell'app leggibile solo dall'utente** (permessi 600), mai
+  all'altra); **altrimenti in un file della cartella dati dell'app leggibile solo dall'utente** (permessi 600; su Windows la cartella dati nel profilo dell'utente), mai
   nel progetto, nei log o nel file delle impostazioni. L'interfaccia dice sempre dove sta la chiave. Modello, sforzo di ragionamento e temperatura
   configurabili; nessun modello cablato nel codice (default di configurazione: `openai/gpt-6.1-sol`, sforzo
   medio, D-047). Stato chiaro quando manca la chiave o la rete.
@@ -565,7 +565,7 @@ giustificazione scritta in `docs/app/REQS-JUSTIFIED.md`.
 - **MAS-9.** Metadata: titolo, artista, album, anno, genere, numero di traccia, ISRC (validato nel formato),
   copertina. Scritti nei tag propri di ogni formato (chunk `LIST/INFO`, `bext` e `ID3` per WAV; commenti Vorbis
   e immagine per FLAC; atomi per M4A) e conservati nel progetto.
-- **MAS-10.** L'AAC usa l'encoder del sistema operativo dietro un'interfaccia isolata (AudioToolbox su macOS);
+- **MAS-10.** L'AAC usa l'encoder del sistema operativo dietro un'interfaccia isolata (AudioToolbox su macOS, Media Foundation su Windows);
   dove l'encoder manca, il formato non viene offerto. Per i formati con perdita, il true peak si misura sul file
   decodificato e, se supera il tetto, l'export si ripete con il margine necessario.
 - **MAS-8.** Il master è deterministico: stesso mixdown e stesso piano ⇒ stesso file.
@@ -711,8 +711,9 @@ giustificazione scritta in `docs/app/REQS-JUSTIFIED.md`.
   nel menu che si apre dal nome del progetto nella barra in alto, in Mix e in Master: `New project…` (⌘N), `Open…`
   (⌘O); `Project settings…`, `Save` (⌘S), `Save as…` (⇧⌘S), `Close project`; `Settings…` (⌘,); il sottomenu `Help`
   con `Take the Tour`. La barra dei menu di macOS tiene solo ciò che dà macOS: il menu Stemwise con About, Services,
-  Hide, Hide Others, Show All e Quit; Edit, che serve ai campi di testo; Window. Le scorciatoie restano le stesse e le
-  gestisce l'interfaccia (UI-3). Sulla schermata Welcome, dove non c'è un progetto, gli stessi comandi sono i suoi
+  Hide, Hide Others, Show All e Quit; Edit, che serve ai campi di testo; Window. Su Windows e Linux la finestra non ha
+  una barra dei menu (A-104). Le scorciatoie restano le stesse e le gestisce l'interfaccia (UI-3); fuori da macOS si
+  leggono con Ctrl, Alt e Shift. Sulla schermata Welcome, dove non c'è un progetto, gli stessi comandi sono i suoi
   pulsanti e collegamenti.
 - **SET-1.** Impostazioni: dispositivo audio e buffer; AI (chiave, modello, sforzo, decisore finto); aspetto;
   scorciatoie (solo consultazione nella v1).
@@ -733,7 +734,8 @@ giustificazione scritta in `docs/app/REQS-JUSTIFIED.md`.
   collegamento del conto (AI-24) aggiunge un **ascolto locale temporaneo**: solo sulle interfacce di loopback, solo
   mentre l'utente sta collegando, per una sola risposta e al più dieci minuti. L'app apre nel browser solo pagine di
   OpenRouter, da un elenco fisso.
-- **NFR-8.** Il codice non contiene nulla di specifico di macOS fuori da moduli isolati dietro un'interfaccia.
+- **NFR-8.** Il codice non contiene nulla di specifico di un sistema operativo fuori da moduli isolati dietro
+  un'interfaccia uguale su tutti i sistemi (A-104).
 - **NFR-9.** Durante lo sviluppo il repository, artefatti di build compresi, resta sotto **20 GB** (§9, regole
   18–20).
 
@@ -743,13 +745,13 @@ giustificazione scritta in `docs/app/REQS-JUSTIFIED.md`.
 
 | Ambito | Scelta | Note |
 | --- | --- | --- |
-| Shell desktop | **Tauri 2** | Webview di sistema (WKWebView su macOS), pacchetto piccolo, backend Rust nello stesso processo |
+| Shell desktop | **Tauri 2** | Webview di sistema (WKWebView su macOS, WebView2 su Windows, WebKitGTK su Linux), pacchetto piccolo, backend Rust nello stesso processo |
 | Motore, DSP, analisi, AI, modello dati | **Rust** (workspace Cargo) | Tempo reale nativo; compilatore e `cargo test` come verifica stretta per gli agenti |
 | Uscita audio | `cpal` | CoreAudio / WASAPI / ALSA con lo stesso codice |
 | Decodifica | `symphonia` (MPL-2.0) | WAV, FLAC, AIFF; MP3/AAC per i riferimenti |
 | Scrittura WAV | `hound` | |
 | Scrittura FLAC | `flacenc` (o equivalente in Rust puro) | |
-| Scrittura AAC | Encoder di sistema (AudioToolbox) dietro un trait | Unico modulo specifico di piattaforma oltre all'audio |
+| Scrittura AAC | Encoder di sistema (AudioToolbox su macOS, Media Foundation su Windows) dietro un'interfaccia | Modulo specifico di piattaforma, con la firma (A-072) e la barra dei menu (A-104) |
 | Metadata | `lofty` (o equivalente) | Tag di WAV, FLAC, M4A |
 | Ricampionamento | `rubato` | Import, riferimenti, uscita, export |
 | FFT | `realfft` / `rustfft` | |

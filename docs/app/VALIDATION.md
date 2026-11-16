@@ -344,6 +344,17 @@ col servizio vero, con la tua chiave (l'agente non usa chiavi né rete):
     chiunque: deve comparire l'avviso sullo sviluppatore non verificato, poi **Impostazioni di Sistema › Privacy e
     sicurezza › Apri comunque**, mai "danneggiato". Il self-test nel pacchetto è stato ripetuto a Mac fermo il
     2026-11-16: tre volte su tre, 59 su 59.
+64. **Installer su Windows (A-104).** Installa `Stemwise_<versione>_x64-setup.exe` da `app/target/release/bundle/nsis`
+    su un Windows pulito: SmartScreen avvisa perché non è firmato (**Ulteriori informazioni › Esegui comunque**),
+    l'installazione non chiede diritti di amministratore e l'app compare nel menu Start. La finestra non ha una
+    barra dei menu; il menu del nome del progetto ha tutti i comandi, con le scorciatoie scritte `Ctrl+…`.
+65. **Audio su Windows (A-104).** Su un brano vero: riproduzione senza scatti con il dispositivo predefinito
+    (WASAPI), cambio di dispositivo in Impostazioni › Audio, cuffie scollegate durante la riproduzione (13b). Ascolta
+    un export AAC a 256 kbit/s, che su Windows usa Media Foundation, accanto allo stesso export fatto su macOS.
+66. **Percorsi e trascinamento su Windows (A-104).** Nuovo progetto da file trascinati da Esplora file con lo
+    schermo al 125% o al 150%: il riquadro di rilascio sta sotto il puntatore. `Save as…` in una cartella con
+    spazi e lettere accentate, poi riapertura dai recenti. Su un portatile al 150% la finestra minima di 1280×720
+    potrebbe non entrare nello schermo: dimmi se succede.
 
 ## Ordine consigliato
 
@@ -358,3 +369,4 @@ col servizio vero, con la tua chiave (l'agente non usa chiavi né rete):
 7. Tour guidato e menu dell'app: 57 (per primo, su dati puliti), 58–61.
 8. Pulizia: 15.
 9. Landing page e pacchetto scaricato: 62, 63.
+10. Windows: 64, 65, 66.

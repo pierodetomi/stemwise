@@ -146,7 +146,7 @@ Stemwise mixes and masters audio that already exists. By choice, version 1 has:
 - no third-party plug-ins (AU, VST3, CLAP);
 - no time-stretching or pitch correction;
 - no MP3 export;
-- no builds for Windows or Linux;
+- no Linux build yet; Windows (10 or 11, x64) builds from source, with no published installer yet;
 - an interface in English only.
 
 Status: this is a first public version (0.1.x), made by one person. It is covered by a large automated test suite,
@@ -155,9 +155,10 @@ but it has been used on few real songs so far. Expect rough edges, keep backups 
 
 ## Build from source
 
-You need macOS 13 or later on Apple Silicon, the Xcode Command Line Tools, stable [Rust](https://rustup.rs),
-Node 22 or later with [pnpm](https://pnpm.io), and [`cargo-deny`](https://github.com/EmbarkStudios/cargo-deny) for
-the licence gate.
+You need stable [Rust](https://rustup.rs), Node 22 or later with [pnpm](https://pnpm.io), and
+[`cargo-deny`](https://github.com/EmbarkStudios/cargo-deny) for the licence gate. On macOS (13 or later, Apple
+Silicon): the Xcode Command Line Tools. On Windows (10 or 11, x64): the Visual Studio Build Tools with the C++
+workload, and GNU make run from a bash shell such as Git Bash; `make build` there produces an NSIS installer.
 
 ```bash
 git clone https://github.com/pierodetomi/stemwise.git

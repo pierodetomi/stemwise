@@ -3,6 +3,7 @@
 // locked; the blocks between them are dragged or moved from the keyboard, duplicated, reset, removed. "Add block"
 // opens a menu beside the inspector, one column per family. Every change is the core's own edit: one undo step.
 import { useEffect, useRef, useState } from "react";
+import { keysInText } from "../shared/keys";
 import { createPortal } from "react-dom";
 import type { FxKind } from "../bindings/FxKind";
 import type { FxOp } from "../bindings/FxOp";
@@ -223,7 +224,7 @@ export function ChainRack({ t, project, sel, onSel }: { t: Track; project: Proje
                   className="tabname b ell rname"
                   aria-pressed={sel === b.id}
                   aria-label={`${name}, ${blockSummary(b.fx)}${b.fx.bypass ? ", off" : ""}`}
-                  title="⌥↑ ⌥↓ to move · ⌫ to remove"
+                  title={keysInText("⌥↑ ⌥↓ to move · ⌫ to remove")}
                   onClick={(e) => {
                     e.stopPropagation();
                     onSel(b.id);

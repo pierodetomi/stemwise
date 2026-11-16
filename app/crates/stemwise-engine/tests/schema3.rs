@@ -58,7 +58,12 @@ fn imported(dir_parent: &Path) -> (PathBuf, Document) {
 }
 
 /// req: FX-10, PRJ-8, ENG-4
+///
+/// The fixtures and their hashes were written on macOS by the schema-3 build. A render is the same at every run on
+/// one system, but the system's maths library (`sin`, `exp`) differs in the last bit from one system to another
+/// (A-104): elsewhere even the test signals come out different, so the oracle holds on macOS only.
 #[test]
+#[cfg_attr(not(target_os = "macos"), ignore = "the schema-3 hashes were rendered on macOS (A-104)")]
 fn schema3_projects_render_with_the_same_hash() {
     let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../fixtures/schema3");
     let hashes: serde_json::Value =

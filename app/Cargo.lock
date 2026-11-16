@@ -4551,6 +4551,7 @@ dependencies = [
  "tempfile",
  "thiserror 2.0.21",
  "ts-rs",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -4593,6 +4594,7 @@ version = "0.1.1"
 dependencies = [
  "anyhow",
  "clap",
+ "dirs",
  "serde_json",
  "stemwise-ai",
  "stemwise-analysis",
@@ -4665,6 +4667,7 @@ dependencies = [
  "tempfile",
  "thiserror 2.0.21",
  "ts-rs",
+ "windows",
 ]
 
 [[package]]

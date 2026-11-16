@@ -2,6 +2,7 @@
 // Panels collapse in the design's order (assistant ⌘J, inspector ⌘I, mixer ⌘M; the timeline never closes); the
 // mixer is resized from its top edge. Global shortcuts for transport, history, tools and saving (UI-3).
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { keysInText } from "../shared/keys";
 import { Icon } from "../shared/Icon";
 import { useApp, useBackend, useStore } from "../state/context";
 import { shortcutOf } from "../shared/shortcuts";
@@ -192,7 +193,7 @@ export function Workspace({ onMaster, assistantFooter, snapshots, proposals, ove
         <div className="left">
           <Timeline />
           {hideMixer ? (
-            <button type="button" className="card bridge" aria-label="Show mixer" title="Show mixer (⌘M)" onClick={() => setView({ hideMixer: false })}>
+            <button type="button" className="card bridge" aria-label="Show mixer" title={keysInText("Show mixer (⌘M)")} onClick={() => setView({ hideMixer: false })}>
               <Icon name="up" size="m" />
               <span className="s1 dim">Mixer</span>
             </button>
@@ -205,8 +206,8 @@ export function Workspace({ onMaster, assistantFooter, snapshots, proposals, ove
         </div>
         {side ?? (
           <>
-            {hideInspector ? <Rail label="Inspector" icon="eye" keys="⌘I" onOpen={() => setView({ hideInspector: false })} /> : <Inspector />}
-            {hideAssistant ? <Rail label="Assistant" icon="spark" keys="⌘J" onOpen={() => setView({ hideAssistant: false })} /> : <Assistant footer={assistantFooter} snapshots={snapshots} proposals={proposals} working={working} />}
+            {hideInspector ? <Rail label="Inspector" icon="eye" keys={keysInText("⌘I")} onOpen={() => setView({ hideInspector: false })} /> : <Inspector />}
+            {hideAssistant ? <Rail label="Assistant" icon="spark" keys={keysInText("⌘J")} onOpen={() => setView({ hideAssistant: false })} /> : <Assistant footer={assistantFooter} snapshots={snapshots} proposals={proposals} working={working} />}
           </>
         )}
       </div>

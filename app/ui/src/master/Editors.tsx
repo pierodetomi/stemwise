@@ -1,6 +1,7 @@
 // The editors of the master chain (design 15a, 15c–15e, 15h; MAS-1, MAS-11 … MAS-14): the block selected in the rack,
 // or the offsets of a section, beside the rack.
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { keysInText } from "../shared/keys";
 import type { BlockView } from "../bindings/BlockView";
 import type { MasterStatus } from "../bindings/MasterStatus";
 import { CompCurve, biquad, magDb } from "../mix/EqGraph";
@@ -196,7 +197,7 @@ function EqEditor({ v, ms }: { v: BlockView; ms: MasterStatus }) {
           <label className="flabel"><span className="l">Q</span><Field ctl={qCtl} /></label>
           <Toggle kind="by" on={sel.enabled} label={`Band ${band + 1} on`} onClick={() => onBand(`Master · ${name} ${band + 1} ${sel.enabled ? "off" : "on"}`, (x) => (x.bands[band].enabled = !sel.enabled))} />
         </div>
-        <span className="faint s1">Drag a handle, double-click to reset. Hold ⇧ for fine steps.</span>
+        <span className="faint s1">Drag a handle, double-click to reset. {keysInText("Hold ⇧ for fine steps.")}</span>
       </div>
       {menu.node}
     </section>

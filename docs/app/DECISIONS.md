@@ -2413,6 +2413,84 @@ nella compilazione (`cargo tree -i glib` senza `--target all` non trova nulla). 
 Tauri passi a un'altra versione di GTK. Non corretto: l'avviso va chiuso su GitHub come "codice vulnerabile non
 usato", e riaperto il giorno in cui esistesse una build per Linux.
 
+### A-104 — Windows come secondo sistema: build, gate e pacchetto (2026-11-16, chiesto dall'autore)
+
+**Contesto.** L'app si costruiva e si pacchettizzava solo su macOS. L'autore ha chiesto di renderla multipiattaforma,
+partendo da Windows, che è la macchina su cui si lavora. Lo stack era già portabile (P-002): `cpal`, `keyring`,
+`symphonia` e Tauri funzionano sui tre sistemi, e il `Cargo.lock` conteneva già i pacchetti per Windows e Linux.
+L'inventario ha trovato ciò che legava l'app a macOS: la build, il gate, alcuni difetti a runtime e i testi
+dell'interfaccia.
+
+**Difetti veri trovati su Windows.**
+- *Salvataggio atomico rotto*: `package::write_atomic` riapriva il file temporaneo in sola lettura per `sync_all`.
+  Windows rifiuta di svuotare su disco un file aperto in lettura (`FlushFileBuffers`), quindi falliva ogni
+  creazione e salvataggio di progetto. Ora lo svuota lo stesso handle che lo scrive.
+- *Save As*: l'interfaccia divideva i percorsi solo su `/` (`tauri.ts`, `NewProject.tsx`, `ExportDialog.tsx`), e
+  con i percorsi `C:\…` sbagliava nome e cartella. Ora usa `shared/path.ts` (`baseName`, `parentDir`), con un test.
+- *Snap*: nella Timeline lo snap si disattivava solo con `metaKey`, che fuori da macOS è il tasto Windows. Ora vale
+  anche Ctrl, come per le altre scorciatoie.
+- *CLI*: la cartella dati era `~/Library/Application Support/…` scritta a mano. Ora è `dirs::data_dir()` più
+  l'identificatore, la stessa cartella di `app_data_dir` di Tauri su ogni sistema.
+
+**Scelte.**
+- *Barra dei menu*: solo su macOS. Su Windows e Linux una barra nella finestra sarebbe un secondo menu dell'app,
+  contro UI-20; i campi di testo hanno già copia, incolla e annulla dalla webview. Il codice sta in
+  `src-tauri/src/platform.rs`, il terzo modulo isolato di NFR-8, che ora vale per ogni sistema e non solo per
+  macOS. Il test di policy normalizza i separatori dei percorsi.
+- *AAC su Windows* con Media Foundation (sink writer, contenitore MPEG-4), dietro la stessa interfaccia di
+  AudioToolbox; il formato si offre solo se il sistema ha un encoder AAC (le edizioni "N" senza Media Feature Pack
+  non lo hanno). L'encoder vuole PCM a 16 bit. La documentazione dice fino a 192 kbit/s; Windows 11 codifica davvero
+  a 256 e 320 (misurato dalla dimensione dei file: 258 e 322 kbit/s). Le scelte restano le stesse su tutti i
+  sistemi; dove l'encoder rifiuta una velocità sopra 192, l'export ripiega su 192 e il rapporto lo dice
+  (`encode_aac` restituisce la velocità usata). Linux resta senza AAC: non c'è un encoder di sistema, e quelli
+  disponibili non hanno licenze permissive (A-005).
+- *Scorciatoie*: la tabella resta scritta alla maniera del Mac. `keysInText` (`shared/keys.ts`) la mostra come
+  `Ctrl+Shift+S` fuori da macOS, in menu, tooltip e Impostazioni. I testi che dicevano "this Mac" e "macOS keychain"
+  usano `shared/platform.ts` ("this computer", "Windows Credential Manager"). Le parole dipendono dal sistema, il
+  comportamento no. I test Playwright girano con l'user agent di Safari per Mac e restano invariati.
+- *Pacchetto*: `tauri.windows.conf.json` produce un installer NSIS per l'utente corrente (senza diritti di
+  amministratore), con il bootstrapper di WebView2. L'icona `.ico` c'era già ed era generata dallo stesso
+  `source.png`. `make build` verifica la firma con `codesign` solo su macOS. Il pacchetto Windows **non è firmato**:
+  SmartScreen avvisa al primo avvio, finché l'autore non ha un certificato Authenticode (stessa situazione della
+  0.1.0 su macOS).
+- *Licenze*: `make third-party` elenca l'unione delle librerie dei tre target pacchettizzati
+  (`aarch64-apple-darwin`, `x86_64-pc-windows-msvc`, `x86_64-unknown-linux-gnu`): 497 librerie invece di 355, tutte
+  con licenze permissive (`cargo deny` verde). Ogni pacchetto può nominare qualche libreria che non contiene, mai
+  ometterne una che contiene. Dipendenze nuove: `windows` 0.62 (solo Windows, già nel lockfile tramite Tauri),
+  `windows-sys` 0.61 (solo sviluppo, picco di memoria del benchmark), `dirs` 7.0 (già nel lockfile tramite Tauri).
+- *Render tra sistemi*: su uno stesso sistema il render resta deterministico, ma non è identico bit per bit tra
+  macOS e Windows. `sin` ed `exp` vengono dalla libreria matematica del sistema e possono differire nell'ultimo bit
+  (circa −140 dB): perfino i segnali di prova dei test escono diversi. Non si passa a una libreria matematica
+  propria: cambierebbe gli hash su macOS e romperebbe la prova di migrazione dello schema 3 (A-087), i cui fixture
+  vengono da una build che non esiste più. Quel test gira quindi solo su macOS. Un progetto aperto su un altro
+  sistema ha un mixdown da rifare, perché l'hash del mix cambia: si ricalcola da solo.
+- *Gate su Windows*: `make` è GNU make (qui `gmake` di Strawberry Perl) dentro una shell bash (Git Bash o Cygwin);
+  il Makefile non cambia. Su Windows Playwright usa **Edge** (`channel: "msedge"`) invece del suo WebKit, con
+  l'user agent di Safari per Mac: WebView2, con cui l'app arriva all'utente, è il motore di Edge. Il WebKit di
+  Playwright per Windows disegna in software: misurava 8 fps sui test di NFR-3, contro 145 e 117 fps su Edge, e
+  sotto il carico della suite perdeva a intermittenza i clic sul fumetto del tour mentre si spostava (due corse su
+  tre, a 8 come a 4 worker). Con Edge la suite è passata tre volte su tre, 116 test in 1,2 minuti. Su macOS e sulla
+  CI resta WebKit; il progetto si chiama ancora `webkit`.
+- *Difetto ARIA trovato in passing*: l'elenco dei progetti recenti nella Welcome aveva `aria-label` su un `div`
+  senza ruolo, un attributo vietato per ARIA. axe lo vedeva solo quando l'elenco era già caricato al momento della
+  scansione, cioè a intermittenza. Ora ha `role="group"`.
+- *Self-test*: dipendeva dalla durata del brano. Dopo l'auto mix, su un brano corto la testina era già oltre la fine,
+  e due passi ("reverb algorithm changed while playing", "master plays through the chain") misuravano silenzio sul
+  bus. Ora quei passi riportano la testina all'inizio. Il comportamento dell'app non cambia. `clean-stale` riconosce
+  gli eseguibili `.exe` con i loro `.pdb` e l'installer NSIS.
+
+**Verificato su Windows 11 x64 (2026-11-16).** `make check` verde (116 test Playwright, 162 requisiti senza
+buchi). `make build` produce `Stemwise_0.1.1_x64-setup.exe` (7 MB). Self-test nell'eseguibile release con il
+dispositivo audio reale (WASAPI, cuffie USB a 48 kHz): **59 su 59**, avvio a freddo 0,8 s, carico 3%. Nello stesso
+self-test passano Save As, export WAV, FLAC e AAC a 256 kbit/s sotto il tetto, e il tour col brano sintetico. Il
+modulo AAC è controllato con Clippy anche per `aarch64-apple-darwin` e `x86_64-unknown-linux-gnu`. Il resto del
+workspace per macOS non si è potuto compilare da qui (alcune dipendenze vogliono un compilatore C per macOS): lo
+conferma la CI su `macos-15`.
+
+**Non fatto e non verificato.** CI su `windows-latest`; Linux (pacchetti, fallback della chiave su file quando manca
+Secret Service); prova dell'app vera su Windows (audio WASAPI, trascinamento dei file con lo scaling, avvio a freddo
+con WebView2, finestra minima di 1280×720 su un portatile al 150%); benchmark su Windows; firma Authenticode.
+
 ## Dipendenze aggiunte
 
 | Libreria | Versione | Licenza | Perché | Fase |
@@ -2446,6 +2524,9 @@ usato", e riaperto il giorno in cui esistesse una build per Linux.
 | getrandom | 0.3 | MIT/Apache-2.0 | Verifier PKCE e `state` casuali (AI-24) | P-015 |
 | security-framework (solo macOS) | 3.7 | MIT/Apache-2.0 | Sapere se la build è firmata con un certificato Apple (AI-11, A-072); già presente come dipendenza di `keyring` | P-015 |
 | tauri-plugin-opener | 2.7 | MIT/Apache-2.0 | Aprire nel browser le pagine di OpenRouter (AI-24) | P-015 |
+| windows (solo Windows; Media Foundation, COM) | 0.62 | MIT/Apache-2.0 | Encoder AAC di sistema su Windows (MAS-10, A-104); già nel lockfile tramite Tauri | A-104 |
+| windows-sys (sviluppo, solo Windows) | 0.61 | MIT/Apache-2.0 | Picco di memoria del benchmark su Windows (NFR-5, A-104) | A-104 |
+| dirs | 7.0 | MIT/Apache-2.0 | Cartella dati della CLI uguale a quella dell'app su ogni sistema (A-104); già nel lockfile tramite Tauri | A-104 |
 
 ## Fuori scope segnalato
 

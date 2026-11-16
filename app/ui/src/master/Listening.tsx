@@ -2,6 +2,7 @@
 // in the top bar, the Listening section of the Loudness card, the warning when the destination sits far from the
 // references, and its line in the export report.
 import type { FileReport } from "../bindings/FileReport";
+import { keysInText } from "../shared/keys";
 import type { MasterStatus } from "../bindings/MasterStatus";
 import { Icon } from "../shared/Icon";
 import { Seg } from "../shared/controls";
@@ -32,7 +33,7 @@ export function ListenControls({ ms }: { ms: MasterStatus }) {
         label="Listening level"
         value={ms.listen_same ? "same" : "real"}
         items={[
-          { value: "real", label: <><span className="lbl-l">Real level</span><span className="lbl-s">Real</span></>, aria: "Real level", title: "The master as the exported file; the other sources at their own level. ⇧B" },
+          { value: "real", label: <><span className="lbl-l">Real level</span><span className="lbl-s">Real</span></>, aria: "Real level", title: keysInText("The master as the exported file; the other sources at their own level. ⇧B") },
           {
             value: "same",
             className: ms.listen_same ? "same" : "",
@@ -44,7 +45,7 @@ export function ListenControls({ ms }: { ms: MasterStatus }) {
               </>
             ),
             aria: "Same loudness",
-            title: "Compare at the same loudness: quieter sources are raised, louder ones lowered. ⇧B",
+            title: keysInText("Compare at the same loudness: quieter sources are raised, louder ones lowered. ⇧B"),
           },
         ]}
         onChange={(v) => void backend.masterListenSame(v === "same").catch(fail)}
@@ -93,7 +94,7 @@ export function ListeningSection({ ms, gap }: { ms: MasterStatus; gap: TargetGap
           )}
         </span>
         <span className="faint s1">
-          <span className="kbd">⇧B</span> {same ? "real level" : "same loudness"}
+          <span className="kbd">{keysInText("⇧B")}</span> {same ? "real level" : "same loudness"}
         </span>
       </div>
       <div className="lrows" role="list">

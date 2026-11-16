@@ -1,5 +1,7 @@
 // The guided tour's strings (P-020, UI-18): the final English text of design/screens/18-tour.html, in one place.
 
+import { THIS_COMPUTER } from "../shared/platform";
+
 export interface StepText {
   title: string;
   text: string;
@@ -10,7 +12,7 @@ export interface StepText {
 }
 
 export const STEP_TEXT: StepText[] = [
-  { title: "Welcome to Stemwise", text: "A three-minute tour on a demo song: the mix, the assistant, the master and the export. Nothing you change here is saved, and nothing leaves this Mac." },
+  { title: "Welcome to Stemwise", text: `A three-minute tour on a demo song: the mix, the assistant, the master and the export. Nothing you change here is saved, and nothing leaves ${THIS_COMPUTER}.` },
   { title: "Play the song", text: "The top bar holds the transport, the position in the song and the meters of the whole mix. The demo keeps playing while you look around.", try: "press Play, or Space, to listen." },
   { title: "Tracks on a timeline", text: "Each imported file becomes a track, laid out under the sections of the song. Editing never touches your files, and every change can be undone." },
   { title: "A track", text: "The header holds the name, the role, mute, solo and the lock that keeps the assistant away. The small labels tell what is working in its chain." },
@@ -37,7 +39,7 @@ export const STEP_TEXT: StepText[] = [
 
 export const TOUR_TEXT = {
   dialog: "Guided tour",
-  note: "The demo song is synthesised on this Mac from simple sounds, so it sounds a little plain.",
+  note: `The demo song is synthesised on ${THIS_COMPUTER} from simple sounds, so it sounds a little plain.`,
   keys: { next: "next", back: "back", esc: "leaves the tour", space: "plays" },
   start: "Start",
   skip: "Skip tour",
@@ -50,7 +52,7 @@ export const TOUR_TEXT = {
   waitMixdown: ["Bouncing the mix to the mixdown…", ""],
   waitMaster: ["Preparing the master…", ""],
   failedTitle: "The demo song can’t be prepared",
-  failedText: "Something went wrong while building it on this Mac, so the tour ends here. Everything else works as usual.",
+  failedText: `Something went wrong while building it on ${THIS_COMPUTER}, so the tour ends here. Everything else works as usual.`,
   failedNote: "Help › Take the Tour tries again.",
   copyDetails: "Copy details",
   close: "Close",

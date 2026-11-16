@@ -2,6 +2,7 @@ import { invoke as rawInvoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { open, save } from "@tauri-apps/plugin-dialog";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
+import { baseName, parentDir } from "../shared/path";
 import type { MasterWave } from "../bindings/MasterWave";
 import type { ChainOp } from "../bindings/ChainOp";
 import type { MixLevels } from "../bindings/MixLevels";
@@ -54,8 +55,8 @@ export class TauriBackend implements Backend {
   async pickSaveLocation(name: string) {
     const r = await save({ title: "Save a copy of the project", defaultPath: `${name}.stemwise` });
     if (!r) return null;
-    const file = r.split("/").pop() ?? r;
-    return { parent: r.slice(0, r.length - file.length - 1) || "/", name: file.replace(/\.stemwise$/i, "") };
+    const file = baseName(r);
+    return { parent: parentDir(r), name: file.replace(/\.stemwise$/i, "") };
   }
   saveProjectAs = (parent: string, name: string) => invoke<void>("save_project_as", { parent, name });
   tourInfo = () => invoke<TourInfo>("tour_info");

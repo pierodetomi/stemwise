@@ -1,6 +1,7 @@
 // Menus of the design (C2): context menus, pickers. Opens at a point, closes on Esc, outside click or choice;
 // arrows move between items, Enter chooses, → opens a submenu (UI-7).
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { keysInText } from "./keys";
 import { createPortal } from "react-dom";
 import { Icon, type IconName } from "./Icon";
 
@@ -112,7 +113,7 @@ export function Menu({ menu, onClose }: { menu: MenuState; onClose: () => void }
               {it.checked !== undefined && <span className="chk">{it.checked && <Icon name="check" size="m" />}</span>}
               {it.icon && <Icon name={it.icon} size="m" />}
               <span className="ell">{it.label}</span>
-              {it.kbd && <span className="kbd">{it.kbd}</span>}
+              {it.kbd && <span className="kbd">{keysInText(it.kbd)}</span>}
               {it.meta && (
                 <span className={`meta ${it.meta.warn ? "warnc" : ""}`}>
                   {it.meta.warn && <Icon name="warn" size="sm" />} {it.meta.text}

@@ -5,6 +5,7 @@ import { Fragment, useState } from "react";
 import type { MasterStatus } from "../bindings/MasterStatus";
 import { Icon } from "../shared/Icon";
 import { useMenu } from "../shared/Menu";
+import { baseName, parentDir } from "../shared/path";
 import { useApp, useBackend } from "../state/context";
 import { targetName, useMasterEdit } from "./bind";
 import { ReportLevelLine, TargetNotice } from "./Listening";
@@ -64,20 +65,20 @@ export function ExportDialog({ ms, onClose }: { ms: MasterStatus; onClose: () =>
   }
   if (started && ms.last_export) {
     const rep = ms.last_export;
-    const text = rep.map((r) => `${r.path.split("/").pop()}\t${n1(r.lufs)} LUFS\t${n1(r.true_peak_db)} dBTP\t${n1(r.lra)} LU`).join("\n");
+    const text = rep.map((r) => `${baseName(r.path)}\t${n1(r.lufs)} LUFS\t${n1(r.true_peak_db)} dBTP\t${n1(r.lra)} LU`).join("\n");
     return (
       <div className="scrim">
         <div className="dialog l" role="dialog" aria-modal="true" aria-label="Export complete">
           <div className="dlg-h">
             <span className="h l">Export complete</span>
-            <span className="dim text">{rep.length} file{rep.length === 1 ? "" : "s"} written to {rep[0]?.path.replace(/\/[^/]+$/, "")}.</span>
+            <span className="dim text">{rep.length} file{rep.length === 1 ? "" : "s"} written to {rep[0] ? parentDir(rep[0].path) : ""}.</span>
           </div>
           <div className="dlg-b">
             <div className="mtable" style={{ gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr 1fr" }} role="table" aria-label="Export report">
               <span className="th">File</span><span className="th r">Loudness</span><span className="th r">True peak</span><span className="th r">Range</span><span className="th r">To reference</span><span className="th">Format</span>
               {rep.map((r) => (
                 <Fragment key={r.path}>
-                  <span className="b ell">{r.path.split("/").pop()}</span>
+                  <span className="b ell">{baseName(r.path)}</span>
                   <span className="r">{n1(r.lufs)} LUFS</span>
                   <span className="r">{n1(r.true_peak_db)} dBTP</span>
                   <span className="r">{n1(r.lra)} LU</span>

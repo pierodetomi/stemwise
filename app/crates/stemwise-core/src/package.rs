@@ -53,9 +53,12 @@ pub fn create(parent: &Path, name: &str) -> Result<(PathBuf, Project), PackageEr
 
 fn write_atomic(path: &Path, bytes: &[u8]) -> io::Result<()> {
     let tmp = path.with_extension(format!("tmp-{}", std::process::id()));
-    fs::write(&tmp, bytes)?;
-    // Make sure the data is on disk before the rename publishes it.
-    fs::File::open(&tmp)?.sync_all()?;
+    // Make sure the data is on disk before the rename publishes it. The handle that wrote it flushes it: Windows
+    // refuses to flush a file opened for reading.
+    let mut f = fs::File::create(&tmp)?;
+    io::Write::write_all(&mut f, bytes)?;
+    f.sync_all()?;
+    drop(f);
     fs::rename(&tmp, path)
 }
 

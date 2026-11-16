@@ -28,7 +28,8 @@ Legenda: ⬜ da iniziare · 🟦 in corso · ✅ chiusa (gate verde) · ⚠️ c
 | F18 Explain this mix | ⚠️ | 2026-11-15 · P-019 · tavole 17a–17j approvate dall'autore (A-092), poi implementate: vista `Explain` nel Mix (⌘E) con la mappa del segnale (tracce per famiglia → gruppi → bus, mandate, sidechain, gruppi ripiegabili, striscia delle sezioni) e lo stesso mix in parole, per tutto il mix, per elemento e per sezione; testo a regole, glossario, copia come testo; **nessun modello**; livelli per famiglia e per sezione misurati dal core in background (`mix_levels`) · ANA-20, UI-14 → UI-16 coperti (1 test Rust, 15 Vitest, 6 Playwright; 103 in tutto) · riserve: non provata nell'app Tauri né nel pacchetto · A-093 · disco 12,28 GB |
 | F19 Tour guidato | ✅ | 2026-11-15 · P-020, issue #5 · tavole 18a–18w e C8 approvate dall'autore (A-095), un solo menu dell'app con Help (UI-20, A-096), poi implementate: brano dimostrativo costruito e sintetizzato dal core (`stemwise_core::demo`, 12 stem, 68 s, tre sezioni, stesso documento e stesso hash a ogni costruzione), sessione effimera nella cache dell'app (niente recenti, autosave, salvataggio, export; eliminata alla fine e all'avvio), proposta del decisore finto in background anche con una chiave e fuori dal registro dei costi, segno "mostrato" nei dati dell'app, tour con riflettore e fumetto e i quindici passi, collegamento nella Welcome, menu di sistema ridotto e ⌘N/⌘O nell'app · PRJ-9, UI-17 → UI-20 coperti (7 test Rust, 6 Vitest, 9 Playwright sul tour; 113 Playwright in tutto) · tempi: brano aperto e suonabile in 1,1 s (soglia 3 s), proposta del decisore finto 36 s in background, mixdown e master 5 s, avvio a freddo 0,6–1,6 s · pacchetto ricostruito, self-test nell'app impacchettata 59/59 · corretti tre aggiornamenti dello store durante il rendering (rack di traccia e del Master, riferimenti del nuovo progetto, A-098) · A-097 · disco 10,5 GB dopo `clean-stale` |
 
-Fasi F0 → F19 chiuse. Repository pubblico dal 2026-11-16 (A-101). Prossimo passo: la validazione dell'autore.
+Fasi F0 → F19 chiuse. Repository pubblico dal 2026-11-16 (A-101). Windows è il secondo sistema (A-104, ramo
+`feature/multi-platform-build`). Prossimo passo: la validazione dell'autore.
 
 ## Dove riprendere
 
@@ -171,6 +172,13 @@ Fasi F0 → F19 chiuse. Repository pubblico dal 2026-11-16 (A-101). Prossimo pas
   da `node_modules` senza pnpm (355 librerie).
 - **CI verde** su `8738e13` (A-103): tutto il gate sul runner di GitHub, 114 test Playwright. Le code dei runner macOS
   possono far annullare una corsa: in quel caso si rilancia.
+- **Windows (A-104, 2026-11-16, chiesto dall'autore).** Gate, pacchetto e app vera su Windows 11 x64: `make check`
+  verde (Playwright su Edge, il motore di WebView2), installer NSIS da `make build`, self-test nell'eseguibile release
+  59 su 59 con l'audio WASAPI (avvio a freddo 0,8 s). Difetti trovati e corretti: salvataggio atomico che falliva
+  su Windows, Save As con i percorsi `\`, snap che leggeva solo il tasto ⌘, cartella dati della CLI. AAC con Media
+  Foundation, barra dei menu solo su macOS, scorciatoie e testi per sistema, elenco licenze per tre target (497
+  librerie). Da provare a mano: VALIDATION 64–66. Restano la CI su Windows, Linux e la firma Authenticode · disco
+  7,85 GB.
 - Prossimo passo: in parallelo la validazione dell'autore (docs/app/VALIDATION.md, nell'ordine
   consigliato), almeno un auto mix col modello vero e il pacchetto su un Mac pulito prima di aprire.
 - Verifica dello stato: `cd app && make check` (verde), `make reqs` per i buchi residui, `git tag` per le fasi.
@@ -238,5 +246,9 @@ _Requisiti ridotti o non verificati, con motivo e riferimento alla decisione (FO
   senza segnale sul bus, una rimasta ferma. A Mac fermo: tre su tre, 59 su 59. I due esiti anomali non sono stati
   riprodotti e la causa non è accertata: se ricapitano a macchina ferma, è un difetto da cercare nel self-test o
   nell'avvio dell'audio.
+- **Windows non provato a mano (A-104)** — gate e self-test girano sulla macchina di sviluppo; installer su un
+  Windows pulito, ascolto, trascinamento con lo scaling e finestra minima su un portatile al 150% li giudica l'autore
+  (VALIDATION 64–66). Pacchetto non firmato: SmartScreen avvisa. Nessuna CI su Windows. Il render non è identico
+  bit per bit tra sistemi (libreria matematica del sistema): il test dello schema 3 gira solo su macOS.
 - **Locate a un file per volta (UI-6)** — il dialogo con ricerca per cartella del design 13g è sostituito da un menu
   dei file mancanti (A-047).

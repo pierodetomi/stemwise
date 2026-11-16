@@ -288,7 +288,9 @@ fn tags_m4a() {
         Some(stemwise_export::aac::encode_aac(&path, &src, 2, 48_000, 128))
     }));
     match encoded {
-        Ok(Some(r)) => r.unwrap(),
+        Ok(Some(r)) => {
+            r.unwrap();
+        }
         Ok(None) | Err(_) => {
             println!("tags_m4a: SKIPPED, AAC encoder unavailable or still a stub");
             return;

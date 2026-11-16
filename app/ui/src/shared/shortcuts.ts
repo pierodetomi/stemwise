@@ -1,6 +1,8 @@
 // Keyboard shortcuts (UI-3): one table, shown in Settings › Shortcuts and matched by the handlers. `keys` is how it
 // is shown; `match` decides whether a keydown is this shortcut.
 
+import { keysInText } from "./keys";
+
 export interface Shortcut {
   id: string;
   group: "Project" | "Transport" | "Editing" | "Tools" | "History" | "View" | "Tracks";
@@ -66,5 +68,5 @@ export function shortcutOf(e: KeyboardEvent): Shortcut["id"] | null {
 
 /** How a shortcut is shown (tooltips, menus). */
 export function keysOf(id: string): string {
-  return SHORTCUTS.find((s) => s.id === id)?.keys ?? "";
+  return keysInText(SHORTCUTS.find((s) => s.id === id)?.keys ?? "");
 }

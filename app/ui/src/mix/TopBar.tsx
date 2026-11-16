@@ -1,6 +1,7 @@
 // Top bar of the Mix workspace (design 3a): project, phase selector (UI-1), transport (TRN-1), position, section,
 // undo/redo (HIS-1), mix bus meters (true peak, loudness) and engine load.
 import { Icon, Mark } from "../shared/Icon";
+import { keysInText } from "../shared/keys";
 import { ProjectMenuButton } from "../project/ProjectMenu";
 import { IconButton, Seg } from "../shared/controls";
 import { BusMeters } from "../shared/BusMeters";
@@ -152,7 +153,7 @@ export function TopBar({ onMaster, mid, sideTaken = false }: { onMaster: () => v
       {mid}
       <div className="grow" />
       {!explain && <PanelSwitches sideTaken={sideTaken} />}
-      <IconButton icon="gear" label="Settings (⌘,)" onClick={() => openSettings()} />
+      <IconButton icon="gear" label={keysInText("Settings (⌘,)")} onClick={() => openSettings()} />
       <BusMeters label="Mix bus" />
     </header>
   );

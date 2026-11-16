@@ -87,12 +87,15 @@ oracle:
 	cd ../poc && uv run python ../app/scripts/oracle.py
 
 build:
-	# CI=true: the bundler skips the AppleScript that arranges the .dmg window in the Finder (it times out without
-	# a logged-in Finder session; A-046). The image is the same, without the custom window layout.
+	# The packages of this system (tauri.conf.json, with tauri.windows.conf.json on Windows; A-104). CI=true: on macOS
+	# the bundler skips the AppleScript that arranges the .dmg window in the Finder (it times out without a
+	# logged-in Finder session; A-046). The image is the same, without the custom window layout.
 	cd src-tauri && CI=true $(TAURI) build
+ifeq ($(shell uname -s),Darwin)
 	# The bundle must carry a valid signature (ad hoc, `signingIdentity: "-"`): with an invalid one macOS calls a
 	# downloaded app "damaged" and offers no way to open it (A-103).
 	codesign --verify --deep --strict target/release/bundle/macos/Stemwise.app
+endif
 	bash scripts/disk.sh
 
 disk:

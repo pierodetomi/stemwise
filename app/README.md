@@ -6,8 +6,9 @@ and TypeScript. What the app does, how to install it and the rules of the code a
 
 ## Requirements
 
-macOS 13 or later on Apple Silicon, the Xcode Command Line Tools, stable Rust, Node 22 or later with pnpm, and
-`cargo-deny` for the licence gate. Regenerating the numeric oracle also needs the proof of concept in
+Stable Rust, Node 22 or later with pnpm, and `cargo-deny` for the licence gate. On macOS (13 or later, Apple
+Silicon): the Xcode Command Line Tools. On Windows (10 or 11, x64): the Visual Studio Build Tools (C++ workload)
+and GNU make, run from a bash shell such as Git Bash (A-104). Regenerating the numeric oracle also needs the proof of concept in
 [`../poc`](../poc/README.md) (Python, with uv).
 
 ## Commands
@@ -19,7 +20,7 @@ make ui           # the interface alone in a browser, on the mock backend
 make check        # fmt, Clippy, Rust tests, licences, types, lint, Vitest, Playwright, requirements, disk space
 make test         # only the tests
 make bench        # NFR-1, NFR-3 (import), NFR-4, NFR-5, ANA-17, in release mode
-make build        # Stemwise.app and the .dmg, in target/release/bundle
+make build        # the package of this system in target/release/bundle: .app and .dmg, or the NSIS installer
 make schemas      # JSON Schemas and TypeScript types, from the Rust types
 make third-party  # the list of third-party licences that ships inside the app
 make reqs         # requirements of the specification without a test or a justification

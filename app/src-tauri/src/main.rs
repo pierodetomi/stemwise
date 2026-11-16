@@ -3,6 +3,7 @@
 
 //! Tauri shell: commands and events over the Stemwise crates (FOUNDATION §5.6). No domain logic here.
 
+mod platform;
 mod session;
 
 use std::path::PathBuf;
@@ -203,27 +204,6 @@ fn master_work(app: &AppHandle, shared: &Shared) {
             }
         }
     });
-}
-
-/// The menu bar (macOS) keeps only what macOS provides: the app menu (About, Services, Hide, Quit), Edit for the
-/// text fields and Window. Every command of Stemwise is in the app menu of the interface (UI-20).
-fn app_menu(app: &AppHandle) -> tauri::Result<tauri::menu::Menu<tauri::Wry>> {
-    use tauri::menu::{AboutMetadata, MenuBuilder, SubmenuBuilder};
-    let about = AboutMetadata { name: Some("Stemwise".into()), ..Default::default() };
-    let stemwise = SubmenuBuilder::new(app, "Stemwise")
-        .about(Some(about))
-        .separator()
-        .services()
-        .separator()
-        .hide()
-        .hide_others()
-        .show_all()
-        .separator()
-        .quit()
-        .build()?;
-    let edit = SubmenuBuilder::new(app, "Edit").undo().redo().separator().cut().copy().paste().select_all().build()?;
-    let window = SubmenuBuilder::new(app, "Window").minimize().maximize().separator().fullscreen().build()?;
-    MenuBuilder::new(app).items(&[&stemwise, &edit, &window]).build()
 }
 
 /// Sends the assistant's state to the UI (AI-12).
@@ -1259,10 +1239,8 @@ fn tour_end(app: AppHandle, state: State<'_, Shared>) {
 
 fn main() {
     STARTED.get_or_init(std::time::Instant::now);
-    tauri::Builder::default()
-        .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_opener::init())
-        .menu(app_menu)
+    let builder = tauri::Builder::default().plugin(tauri_plugin_dialog::init()).plugin(tauri_plugin_opener::init());
+    platform::with_menu_bar(builder)
         .setup(|app| {
             // `STEMWISE_DATA` moves the app's data folder (recent projects, AI register): the self-test uses it.
             let data = std::env::var_os("STEMWISE_DATA")

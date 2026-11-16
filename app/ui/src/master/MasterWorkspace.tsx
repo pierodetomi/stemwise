@@ -3,6 +3,7 @@
 // spectrum against the reference, the destination, equal-loudness A/B, the assistant for the master. Its own
 // history (HIS-5).
 import { DeviceBanner } from "../shared/StateBanners";
+import { keysInText } from "../shared/keys";
 import { BusMeters } from "../shared/BusMeters";
 import { useEffect, useRef, useState } from "react";
 import type { MasterStatus } from "../bindings/MasterStatus";
@@ -89,7 +90,7 @@ function MasterTop({ ms, preparing, waiting }: { ms: MasterStatus; preparing: bo
         {/* Real level by default, the same loudness on demand (D26, D27), then the source of the A/B. */}
         <ListenControls ms={ms} />
       </div>
-      <IconButton icon="gear" label="Settings (⌘,)" onClick={() => openSettings()} />
+      <IconButton icon="gear" label={keysInText("Settings (⌘,)")} onClick={() => openSettings()} />
       <BusMeters label="Master output" engine={false} />
       <button type="button" className="btn primary" disabled={held} onClick={() => setView({ exportOpen: true })}>
         <Icon name="exp" size="m" />
@@ -394,7 +395,7 @@ function MasterProposalPanel({ ms }: { ms: MasterStatus }) {
             <span className="b s1">Real level</span>
           )}
           <span className="faint s1" data-testid="proposal-level">
-            {proposalHint(ms)} <span className="kbd">B</span> switches · <span className="kbd">⇧B</span> {ms.listen_same ? "real level" : "same loudness"}
+            {proposalHint(ms)} <span className="kbd">B</span> switches · <span className="kbd">{keysInText("⇧B")}</span> {ms.listen_same ? "real level" : "same loudness"}
           </span>
         </div>
         <p className="why dim">{p.summary}</p>

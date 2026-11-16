@@ -1,40 +1,216 @@
-//! AAC in an M4A container through the system encoder (A-005, MAS-10): AudioToolbox `ExtAudioFile` on macOS, through
-//! a small FFI kept inside this module. Elsewhere the format is not offered.
+//! AAC in an M4A container through the system encoder (A-005, MAS-10), behind one interface: AudioToolbox
+//! `ExtAudioFile` on macOS, the Media Foundation sink writer on Windows (A-104), each through a small FFI kept inside
+//! this module. Elsewhere (Linux: no system encoder, none with a permissive licence) the format is not offered.
 
 use std::path::Path;
 
 /// Whether this system can encode AAC (the UI hides the format otherwise, MAS-10).
 pub fn aac_available() -> bool {
-    #[cfg(target_os = "macos")]
-    {
-        sys::encoder_available()
-    }
-    #[cfg(not(target_os = "macos"))]
-    {
-        false
-    }
+    sys::encoder_available()
 }
 
-/// Encodes interleaved float samples (−1…1) to AAC-LC in an M4A file at `kbps` (e.g. 256).
-pub fn encode_aac(path: &Path, samples: &[f32], channels: u16, rate: u32, kbps: u32) -> crate::Result<()> {
+/// Encodes interleaved float samples (−1…1) to AAC-LC in an M4A file at `kbps` (e.g. 256). Returns the bit rate
+/// the file was written at: the one asked for, or the highest the system's encoder takes when it takes fewer (the
+/// Media Foundation encoder of older Windows 10 stops at 192).
+pub fn encode_aac(path: &Path, samples: &[f32], channels: u16, rate: u32, kbps: u32) -> crate::Result<u32> {
     if !matches!(channels, 1 | 2) {
         return Err(crate::ExportError::Unsupported(format!("AAC with {channels} channels")));
     }
-    // AudioToolbox's AAC encoder stops at 48 kHz (F8 review, B3).
+    // AudioToolbox's AAC encoder stops at 48 kHz (F8 review, B3), and so does Media Foundation's.
     if !matches!(rate, 44_100 | 48_000) {
         return Err(crate::ExportError::Unsupported(format!("AAC at {rate} Hz")));
     }
     if kbps == 0 {
         return Err(crate::ExportError::Unsupported("AAC at 0 kbps".to_string()));
     }
-    #[cfg(target_os = "macos")]
-    {
-        sys::encode(path, samples, channels, rate, kbps)
+    sys::encode(path, samples, channels, rate, kbps)
+}
+
+/// No AAC encoder on this system: the format is not offered.
+#[cfg(not(any(target_os = "macos", windows)))]
+mod sys {
+    use std::path::Path;
+
+    pub fn encoder_available() -> bool {
+        false
     }
-    #[cfg(not(target_os = "macos"))]
-    {
-        let _ = (path, samples);
-        Err(crate::ExportError::Unsupported("AAC encoding is only available on macOS".to_string()))
+
+    pub fn encode(_: &Path, _: &[f32], _: u16, _: u32, _: u32) -> crate::Result<u32> {
+        Err(crate::ExportError::Unsupported("AAC encoding is not available on this system".to_string()))
+    }
+}
+
+/// Media Foundation (Windows): the sink writer finds the system's AAC encoder and writes the MPEG-4 container.
+#[cfg(windows)]
+mod sys {
+    use std::path::Path;
+
+    use windows::Win32::Media::MediaFoundation::{
+        IMFActivate, IMFAttributes, MF_MT_AUDIO_AVG_BYTES_PER_SECOND, MF_MT_AUDIO_BITS_PER_SAMPLE,
+        MF_MT_AUDIO_BLOCK_ALIGNMENT, MF_MT_AUDIO_NUM_CHANNELS, MF_MT_AUDIO_SAMPLES_PER_SECOND, MF_MT_MAJOR_TYPE,
+        MF_MT_SUBTYPE, MF_TRANSCODE_CONTAINERTYPE, MF_VERSION, MFAudioFormat_AAC, MFAudioFormat_PCM,
+        MFCreateAttributes, MFCreateMediaType, MFCreateMemoryBuffer, MFCreateSample, MFCreateSinkWriterFromURL,
+        MFMediaType_Audio, MFSTARTUP_LITE, MFShutdown, MFStartup, MFT_CATEGORY_AUDIO_ENCODER, MFT_ENUM_FLAG_LOCALMFT,
+        MFT_ENUM_FLAG_SORTANDFILTER, MFT_ENUM_FLAG_SYNCMFT, MFT_REGISTER_TYPE_INFO, MFTEnumEx,
+        MFTranscodeContainerType_MPEG4,
+    };
+    use windows::Win32::System::Com::{COINIT_MULTITHREADED, CoInitializeEx, CoTaskMemFree, CoUninitialize};
+    use windows::core::HSTRING;
+
+    use crate::ExportError;
+
+    /// The highest rate every Media Foundation AAC encoder takes (24 000 bytes per second); Windows 11 takes 256 and
+    /// 320 too.
+    const SAFE_KBPS: u32 = 192;
+    /// Frames handed to the writer at a time.
+    const CHUNK_FRAMES: usize = 4096;
+    /// Media Foundation counts time in units of 100 ns.
+    const UNITS_PER_SECOND: i64 = 10_000_000;
+
+    /// COM on this thread for the length of a call; left alone when the thread already has another mode.
+    struct Com(bool);
+    impl Com {
+        fn init() -> Self {
+            // SAFETY: no reserved pointer; a thread may initialise COM more than once if it uninitialises as often.
+            Com(unsafe { CoInitializeEx(None, COINIT_MULTITHREADED) }.is_ok())
+        }
+    }
+    impl Drop for Com {
+        fn drop(&mut self) {
+            if self.0 {
+                // SAFETY: pairs the successful `CoInitializeEx` of `init`.
+                unsafe { CoUninitialize() };
+            }
+        }
+    }
+
+    /// Media Foundation started for the length of a call.
+    struct Mf;
+    impl Mf {
+        fn start() -> windows::core::Result<Self> {
+            // SAFETY: plain call; every successful start is paired by the shutdown in `drop`.
+            unsafe { MFStartup(MF_VERSION, MFSTARTUP_LITE) }.map(|()| Mf)
+        }
+    }
+    impl Drop for Mf {
+        fn drop(&mut self) {
+            // SAFETY: pairs the successful `MFStartup` of `start`.
+            let _ = unsafe { MFShutdown() };
+        }
+    }
+
+    fn fail(what: &str) -> impl Fn(windows::core::Error) -> ExportError + '_ {
+        move |e| ExportError::Encoder(format!("{what} failed: {e}"))
+    }
+
+    pub fn encoder_available() -> bool {
+        let _com = Com::init();
+        let Ok(_mf) = Mf::start() else { return false };
+        let aac = MFT_REGISTER_TYPE_INFO { guidMajorType: MFMediaType_Audio, guidSubtype: MFAudioFormat_AAC };
+        let mut list: *mut Option<IMFActivate> = std::ptr::null_mut();
+        let mut count = 0u32;
+        let flags = MFT_ENUM_FLAG_SYNCMFT | MFT_ENUM_FLAG_LOCALMFT | MFT_ENUM_FLAG_SORTANDFILTER;
+        // SAFETY: the type and the two out-parameters are live locals; the call fills an array it allocates.
+        let found = unsafe { MFTEnumEx(MFT_CATEGORY_AUDIO_ENCODER, flags, None, Some(&aac), &mut list, &mut count) };
+        if !list.is_null() {
+            for i in 0..count as usize {
+                // SAFETY: `list` holds `count` activation objects owned by the caller: each is released once.
+                unsafe { std::ptr::drop_in_place(list.add(i)) };
+            }
+            // SAFETY: the array was allocated by the call with the COM allocator.
+            unsafe { CoTaskMemFree(Some(list.cast_const().cast())) };
+        }
+        found.is_ok() && count > 0
+    }
+
+    pub fn encode(path: &Path, samples: &[f32], channels: u16, rate: u32, kbps: u32) -> crate::Result<u32> {
+        let _com = Com::init();
+        let _mf = Mf::start().map_err(fail("MFStartup"))?;
+        let attempt = |kbps: u32| {
+            let _ = std::fs::remove_file(path);
+            let written = write(path, samples, channels, rate, kbps).map(|()| kbps);
+            if written.is_err() {
+                let _ = std::fs::remove_file(path);
+            }
+            written
+        };
+        match attempt(kbps) {
+            // An encoder that refuses the rate takes the highest one every encoder takes.
+            Err(_) if kbps > SAFE_KBPS => attempt(SAFE_KBPS),
+            done => done,
+        }
+    }
+
+    fn write(path: &Path, samples: &[f32], channels: u16, rate: u32, kbps: u32) -> crate::Result<()> {
+        let ch = u32::from(channels);
+        // SAFETY (whole block): every call is a Media Foundation method on an object created just above and alive
+        // for the call; the buffer is written only between its `Lock` and `Unlock`, within the length it reports.
+        unsafe {
+            let mut attributes: Option<IMFAttributes> = None;
+            MFCreateAttributes(&mut attributes, 1).map_err(fail("MFCreateAttributes"))?;
+            let attributes =
+                attributes.ok_or_else(|| ExportError::Encoder("MFCreateAttributes returned nothing".into()))?;
+            attributes
+                .SetGUID(&MF_TRANSCODE_CONTAINERTYPE, &MFTranscodeContainerType_MPEG4)
+                .map_err(fail("container type"))?;
+            let url = HSTRING::from(path);
+            let writer =
+                MFCreateSinkWriterFromURL(&url, None, &attributes).map_err(fail("MFCreateSinkWriterFromURL"))?;
+
+            let out = MFCreateMediaType().map_err(fail("MFCreateMediaType"))?;
+            out.SetGUID(&MF_MT_MAJOR_TYPE, &MFMediaType_Audio).map_err(fail("output type"))?;
+            out.SetGUID(&MF_MT_SUBTYPE, &MFAudioFormat_AAC).map_err(fail("output type"))?;
+            out.SetUINT32(&MF_MT_AUDIO_BITS_PER_SAMPLE, 16).map_err(fail("output type"))?;
+            out.SetUINT32(&MF_MT_AUDIO_SAMPLES_PER_SECOND, rate).map_err(fail("output type"))?;
+            out.SetUINT32(&MF_MT_AUDIO_NUM_CHANNELS, ch).map_err(fail("output type"))?;
+            out.SetUINT32(&MF_MT_AUDIO_AVG_BYTES_PER_SECOND, kbps * 1000 / 8).map_err(fail("output type"))?;
+            let stream = writer.AddStream(&out).map_err(fail("AddStream"))?;
+
+            // The AAC encoder takes 16-bit PCM.
+            let input = MFCreateMediaType().map_err(fail("MFCreateMediaType"))?;
+            input.SetGUID(&MF_MT_MAJOR_TYPE, &MFMediaType_Audio).map_err(fail("input type"))?;
+            input.SetGUID(&MF_MT_SUBTYPE, &MFAudioFormat_PCM).map_err(fail("input type"))?;
+            input.SetUINT32(&MF_MT_AUDIO_BITS_PER_SAMPLE, 16).map_err(fail("input type"))?;
+            input.SetUINT32(&MF_MT_AUDIO_SAMPLES_PER_SECOND, rate).map_err(fail("input type"))?;
+            input.SetUINT32(&MF_MT_AUDIO_NUM_CHANNELS, ch).map_err(fail("input type"))?;
+            input.SetUINT32(&MF_MT_AUDIO_BLOCK_ALIGNMENT, 2 * ch).map_err(fail("input type"))?;
+            input.SetUINT32(&MF_MT_AUDIO_AVG_BYTES_PER_SECOND, 2 * ch * rate).map_err(fail("input type"))?;
+            writer.SetInputMediaType(stream, &input, None).map_err(fail("SetInputMediaType"))?;
+
+            writer.BeginWriting().map_err(fail("BeginWriting"))?;
+            let n = usize::from(channels);
+            let time = |frame: usize| frame as i64 * UNITS_PER_SECOND / i64::from(rate);
+            let mut frame = 0usize;
+            for block in samples.chunks(CHUNK_FRAMES * n) {
+                let frames = block.len() / n;
+                if frames == 0 {
+                    break;
+                }
+                let bytes = (frames * n * 2) as u32;
+                let buffer = MFCreateMemoryBuffer(bytes).map_err(fail("MFCreateMemoryBuffer"))?;
+                let mut data: *mut u8 = std::ptr::null_mut();
+                let mut max = 0u32;
+                buffer.Lock(&mut data, Some(&mut max), None).map_err(fail("Lock"))?;
+                if data.is_null() || max < bytes {
+                    let _ = buffer.Unlock();
+                    return Err(ExportError::Encoder("the encoder's buffer is too small".into()));
+                }
+                let dst = std::slice::from_raw_parts_mut(data, bytes as usize);
+                for (d, v) in dst.as_chunks_mut::<2>().0.iter_mut().zip(&block[..frames * n]) {
+                    *d = ((v.clamp(-1.0, 1.0) * 32767.0).round() as i16).to_le_bytes();
+                }
+                buffer.Unlock().map_err(fail("Unlock"))?;
+                buffer.SetCurrentLength(bytes).map_err(fail("SetCurrentLength"))?;
+                let sample = MFCreateSample().map_err(fail("MFCreateSample"))?;
+                sample.AddBuffer(&buffer).map_err(fail("AddBuffer"))?;
+                sample.SetSampleTime(time(frame)).map_err(fail("SetSampleTime"))?;
+                sample.SetSampleDuration(time(frame + frames) - time(frame)).map_err(fail("SetSampleDuration"))?;
+                writer.WriteSample(stream, &sample).map_err(fail("WriteSample"))?;
+                frame += frames;
+            }
+            writer.Finalize().map_err(fail("Finalize"))?;
+        }
+        Ok(())
     }
 }
 
@@ -213,7 +389,12 @@ mod sys {
         }
     }
 
-    pub fn encode(path: &Path, samples: &[f32], channels: u16, rate: u32, kbps: u32) -> crate::Result<()> {
+    /// AudioToolbox takes any bit rate (it uses its nearest).
+    pub fn encode(path: &Path, samples: &[f32], channels: u16, rate: u32, kbps: u32) -> crate::Result<u32> {
+        encode_at(path, samples, channels, rate, kbps).map(|()| kbps)
+    }
+
+    fn encode_at(path: &Path, samples: &[f32], channels: u16, rate: u32, kbps: u32) -> crate::Result<()> {
         let mut name = path.as_os_str().to_owned();
         name.push(".part");
         let temp = PathBuf::from(name);

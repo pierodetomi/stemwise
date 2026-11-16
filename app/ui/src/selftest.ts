@@ -124,6 +124,8 @@ export async function runSelfTestIfRequested(backend: Backend) {
       const rev = now.tracks.find((t) => t.ret?.type === "reverb");
       if (rev && rev.ret?.type === "reverb") {
         const other = rev.ret.algorithm === "plate" ? "hall" : "plate";
+        // Back to the start, still playing: the auto mix may have run past the end of a short song (A-104).
+        await backend.locate(0);
         await backend.edit({ op: "set_reverb_algorithm", track: rev.id, algorithm: other }, "Algorithm");
         await sleep(600);
         const got = (await backend.getProject()).tracks.find((t) => t.id === rev.id)?.ret;
@@ -180,6 +182,8 @@ export async function runSelfTestIfRequested(backend: Backend) {
         [...prepSeen].map(([k, v]) => `${k}: ${v}`).join(", "),
       );
       check("master phase, loudness on target (MAS-2)", measured && !!m && Math.abs((m.lufs ?? 0) + 14) < 0.7 && m.true_peak_db <= -1 + 1e-6, `${m ? `${m.lufs?.toFixed(2)} LUFS, ${m.true_peak_db.toFixed(2)} dBTP` : "none"} · switch ${inMs.toFixed(0)} ms, measured after ${readyMs.toFixed(0)} ms`);
+      // From the start: after the auto mix the playhead may be past the end of a short song (A-104).
+      await backend.locate(0);
       await backend.play();
       await sleep(800);
       const mm = last as MeterSnapshot | null;

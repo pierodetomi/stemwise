@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 // Third-party notices (NFR-6): writes src-tauri/resources/THIRD-PARTY-LICENSES.txt, the list of every library that
 // ships inside the app with its licence text. Permissive licences ask for exactly this: their notice travels with
-// the binary. The file is tracked and bundled into Stemwise.app; `--check` fails when it is out of date.
+// the binary. The file is tracked and bundled into every package; `--check` fails when it is out of date.
 //
-// What is listed: the Rust crates the workspace links for the shipped target (normal dependencies only, no build or
-// dev dependencies) and the npm packages the interface depends on, fonts included.
+// What is listed: the Rust crates the workspace links for any of the packaged targets (normal dependencies only, no
+// build or dev dependencies) and the npm packages the interface depends on, fonts included. One list for all the
+// systems: a package may name a few libraries it does not carry, never miss one it does.
 import { execSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, writeFileSync } from "node:fs";
@@ -13,7 +14,8 @@ import { fileURLToPath } from "node:url";
 
 const app = join(dirname(fileURLToPath(import.meta.url)), "..");
 const out = join(app, "src-tauri/resources/THIRD-PARTY-LICENSES.txt");
-const TARGET = "aarch64-apple-darwin"; // the one target that is packaged (A-046); fixed so the list is the same everywhere
+// The packaged targets (A-046, A-104): fixed, so that the list comes out the same on every machine.
+const TARGETS = ["aarch64-apple-darwin", "x86_64-pc-windows-msvc", "x86_64-unknown-linux-gnu"];
 const run = (cmd, cwd) => execSync(cmd, { cwd, encoding: "utf8", maxBuffer: 256 * 1024 * 1024 });
 const NOTICE = /^(licen[sc]e|copying|notice|unlicense|copyright)/i;
 // Plain code-unit order: a locale-aware comparison changes with the Node and ICU version, and the list must come
@@ -31,19 +33,25 @@ function notices(dir) {
 }
 
 function rustPackages() {
-  const meta = JSON.parse(run(`cargo metadata --format-version 1 --locked --filter-platform ${TARGET}`, app));
-  const byId = new Map(meta.packages.map((p) => [p.id, p]));
-  const nodes = new Map(meta.resolve.nodes.map((n) => [n.id, n]));
-  const seen = new Set(meta.workspace_members);
-  const queue = [...meta.workspace_members];
-  while (queue.length) {
-    for (const dep of nodes.get(queue.pop()).deps) {
-      if (seen.has(dep.pkg) || !dep.dep_kinds.some((k) => k.kind === null)) continue;
-      seen.add(dep.pkg);
-      queue.push(dep.pkg);
+  const byId = new Map();
+  const seen = new Set();
+  let members = new Set();
+  for (const target of TARGETS) {
+    const meta = JSON.parse(run(`cargo metadata --format-version 1 --locked --filter-platform ${target}`, app));
+    for (const p of meta.packages) byId.set(p.id, p);
+    const nodes = new Map(meta.resolve.nodes.map((n) => [n.id, n]));
+    const reached = new Set(meta.workspace_members);
+    const queue = [...meta.workspace_members];
+    while (queue.length) {
+      for (const dep of nodes.get(queue.pop()).deps) {
+        if (reached.has(dep.pkg) || !dep.dep_kinds.some((k) => k.kind === null)) continue;
+        reached.add(dep.pkg);
+        queue.push(dep.pkg);
+      }
     }
+    for (const id of reached) seen.add(id);
+    members = new Set(meta.workspace_members);
   }
-  const members = new Set(meta.workspace_members);
   return [...seen].filter((id) => !members.has(id)).map((id) => {
     const p = byId.get(id);
     return { kind: "Rust crate", name: p.name, version: p.version, licence: p.license ?? "see the text below",

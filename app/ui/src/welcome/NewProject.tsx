@@ -8,6 +8,7 @@ import type { Role } from "../bindings/Role";
 import { Icon, Mark } from "../shared/Icon";
 import { formatClock } from "../shared/format";
 import { useMenu } from "../shared/Menu";
+import { baseName, parentDir } from "../shared/path";
 import { useApp, useBackend } from "../state/context";
 import { ROLES, roleLabel } from "../mix/menus";
 import { MAX_REFERENCES, ReferenceList, inside, isReferenceFile } from "../project/ProjectSettings";
@@ -67,7 +68,7 @@ export function NewProject() {
         return [...r, ...c.filter((x) => !known.has(x.path)).map((x) => ({ ...x, keep: !x.error, convert: false, confirmed: x.role !== "other" }))];
       });
       if (!name && !adding) {
-        const folder = paths[0].split("/").slice(-2, -1)[0];
+        const folder = baseName(parentDir(paths[0]));
         if (folder && folder !== "Stems") setName(folder);
       }
     } catch (e) {
@@ -119,7 +120,7 @@ export function NewProject() {
       await backend.importFiles(kept.map((r) => ({ path: r.path, role: r.role, name: r.name, convert: r.convert })));
       // After the tracks: a reference is converted to the project rate, which the first file sets.
       const failed: string[] = [];
-      if (!adding) for (const r of refs) await backend.addReference(r).catch((e) => failed.push(`${r.split("/").pop()}: ${String(e)}`));
+      if (!adding) for (const r of refs) await backend.addReference(r).catch((e) => failed.push(`${baseName(r)}: ${String(e)}`));
       toast("ok", adding ? "Tracks added" : "Project created", `${kept.length} file${kept.length === 1 ? "" : "s"} imported${refs.length - failed.length ? `, ${refs.length - failed.length} reference${refs.length - failed.length === 1 ? "" : "s"}` : ""}. Your originals were not touched.`);
       if (failed.length) setError(`A reference could not be added (${failed.join("; ")}). Add it again from the project settings.`);
       setView({ screen: "workspace" });
@@ -175,7 +176,7 @@ export function NewProject() {
                   <div key={r.path} className="banner" role="alert">
                     <Icon name="warn" />
                     <span className="grow">
-                      “{r.path.split("/").pop()}” is {r.sample_rate / 1000} kHz; the project is {(firstRate ?? 48000) / 1000} kHz (set by the first file). It will not be resampled silently.
+                      “{baseName(r.path)}” is {r.sample_rate / 1000} kHz; the project is {(firstRate ?? 48000) / 1000} kHz (set by the first file). It will not be resampled silently.
                     </span>
                     <button type="button" className="btn sm" onClick={() => update(r.path, { convert: true })}>
                       Convert a copy
@@ -244,7 +245,7 @@ export function NewProject() {
             </div>
             <div className="sect g2">
               <ReferenceList
-                items={refs.map((r) => ({ key: r, name: r.split("/").pop() ?? r, detail: (r.split(".").pop() ?? "").toUpperCase() }))}
+                items={refs.map((r) => ({ key: r, name: baseName(r), detail: (r.split(".").pop() ?? "").toUpperCase() }))}
                 onAdd={async () => {
                   const p = await backend.pickReference();
                   if (p) addRefs([p]);
@@ -263,7 +264,7 @@ export function NewProject() {
             <div className="dlg-h">
               <span className="h l">Different sample rate</span>
               <span className="dim text">
-                “{rateAsk.path.split("/").pop()}” is {rateAsk.sample_rate / 1000} kHz. This project runs at {(firstRate ?? 48000) / 1000} kHz.
+                “{baseName(rateAsk.path)}” is {rateAsk.sample_rate / 1000} kHz. This project runs at {(firstRate ?? 48000) / 1000} kHz.
               </span>
             </div>
             <RateChoice
@@ -287,7 +288,7 @@ function FileRow({ r, i, length, onRole, onRemove }: { r: Row; i: number; length
       <span className={`t${(i % 12) + 1}`}>
         <i className="tdot" />
       </span>
-      <span className="b ell" title={r.path}>{r.path.split("/").pop()}</span>
+      <span className="b ell" title={r.path}>{baseName(r.path)}</span>
       <span className="dim">{fmt(r)}</span>
       <span className={r.rate_mismatch && !r.convert ? "warnc b" : "dim"}>
         {r.sample_rate / 1000} kHz{r.rate_mismatch && !r.convert && <Icon name="warn" size="sm" />}

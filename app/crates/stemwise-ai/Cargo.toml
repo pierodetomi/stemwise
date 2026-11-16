@@ -31,7 +31,13 @@ workspace = true
 [dev-dependencies]
 proptest = "1.12.0"
 tempfile = "3.27.0"
+
+# Peak resident memory in the project bench (NFR-5), read the way each system reports it.
+[target.'cfg(unix)'.dev-dependencies]
 libc = "0.2.191"
+
+[target.'cfg(windows)'.dev-dependencies]
+windows-sys = { version = "0.61.2", features = ["Win32_System_ProcessStatus", "Win32_System_Threading"] }
 
 [[bench]]
 name = "analysis"

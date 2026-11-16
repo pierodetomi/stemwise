@@ -2,6 +2,7 @@
 // manual path for a key the user already has. One dialog, opened from the first launch (1b), Settings › AI (11b) and
 // the assistant column (13e, 14i–14k).
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { THIS_COMPUTER } from "../shared/platform";
 import type { ConnectOutcome } from "../backend/types";
 import { Icon } from "../shared/Icon";
 import { Switch } from "../settings/Settings";
@@ -25,7 +26,7 @@ export function Privacy() {
     <div className="tile row" style={{ height: "auto" }}>
       <Icon name="lock" className="aic" />
       <div className="col">
-        <span className="b">Your audio never leaves this Mac</span>
+        <span className="b">Your audio never leaves {THIS_COMPUTER}</span>
         <span className="dim s1">The model receives measurements, roles, track names, your brief and your requests. Never audio, file names, paths or the song title.</span>
       </div>
     </div>

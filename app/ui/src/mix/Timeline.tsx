@@ -2,6 +2,7 @@
 // automation lanes, playhead. Every gesture is previewed locally and becomes one edit when it ends (HIS-2); Esc
 // cancels it. Snap (CLP-3) is computed here for the preview (A-017); the core decides what the edit does.
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent as RPE } from "react";
+import { keysInText } from "../shared/keys";
 import type { AutomationPoint } from "../bindings/AutomationPoint";
 import type { Clip } from "../bindings/Clip";
 import type { Project } from "../bindings/Project";
@@ -297,7 +298,7 @@ export function Timeline() {
           const moving = d.keys.map((k) => findClip(project, k)).filter((x): x is [Track, Clip] => !!x);
           let snap: string | null = null;
           let snapAt: number | null = null;
-          if (view.snap && !e.metaKey) {
+          if (view.snap && !(e.metaKey || e.ctrlKey)) {
             const targets = snapTargets(project, rate, headFrame(), pps, new Set(d.keys));
             let best: { d: number; delta: number; what: string; at: number } | null = null;
             for (const [, c] of moving) {
@@ -330,7 +331,7 @@ export function Timeline() {
         case "trim": {
           const [t, c] = findClip(project, d.key) ?? [];
           if (!t || !c) return;
-          const s = snapIt(f, new Set([d.key]), e.metaKey);
+          const s = snapIt(f, new Set([d.key]), e.metaKey || e.ctrlKey);
           setDrag({ ...d, to: s.frame, snap: s.what });
           return;
         }
@@ -347,13 +348,13 @@ export function Timeline() {
           return;
         }
         case "loop":
-          setDrag({ ...d, b: snapIt(f, new Set(), e.metaKey).frame });
+          setDrag({ ...d, b: snapIt(f, new Set(), e.metaKey || e.ctrlKey).frame });
           return;
         case "section-new":
-          setDrag({ ...d, b: snapIt(f, new Set(), e.metaKey).frame });
+          setDrag({ ...d, b: snapIt(f, new Set(), e.metaKey || e.ctrlKey).frame });
           return;
         case "section-edge":
-          setDrag({ ...d, to: snapIt(f, new Set(), e.metaKey).frame });
+          setDrag({ ...d, to: snapIt(f, new Set(), e.metaKey || e.ctrlKey).frame });
           return;
         case "point": {
           const el = document.querySelector(`[data-lane="${d.track}:${d.param}"]`) as HTMLElement | null;
@@ -568,7 +569,7 @@ export function Timeline() {
     e.stopPropagation();
     const k = clipKey(t.id, c.id);
     if (view.tool === "split") {
-      const f = snapIt(xToFrame(e.clientX), new Set(), e.metaKey).frame;
+      const f = snapIt(xToFrame(e.clientX), new Set(), e.metaKey || e.ctrlKey).frame;
       void edit({ op: "split_at", tracks: [t.id], frame: f }, `${t.name} · split at ${formatTime(f, rate)}`);
       return;
     }
@@ -596,7 +597,7 @@ export function Timeline() {
     if (e.button !== 0) return;
     setView({ selTrack: t.id });
     if (view.tool === "split") {
-      const f = snapIt(xToFrame(e.clientX), new Set(), e.metaKey).frame;
+      const f = snapIt(xToFrame(e.clientX), new Set(), e.metaKey || e.ctrlKey).frame;
       void edit({ op: "split_at", tracks: [t.id], frame: f }, `${t.name} · split at ${formatTime(f, rate)}`);
       return;
     }
@@ -656,7 +657,7 @@ export function Timeline() {
 
   const onSectionsDown = (e: RPE) => {
     if (e.button !== 0 || e.target !== e.currentTarget) return;
-    const f = snapIt(xToFrame(e.clientX), new Set(), e.metaKey).frame;
+    const f = snapIt(xToFrame(e.clientX), new Set(), e.metaKey || e.ctrlKey).frame;
     setView({ selSection: null });
     setDrag({ kind: "section-new", a: f, b: f });
   };
@@ -745,7 +746,7 @@ export function Timeline() {
             onPointerMove={(e) => setOverHead(e.altKey || nearHead(e))}
             onPointerLeave={() => setOverHead(false)}
             data-testid="ruler"
-            title="Drag the playhead to scrub (⌥-drag anywhere on the ruler) · click to locate · drag to set the loop"
+            title={keysInText("Drag the playhead to scrub (⌥-drag anywhere on the ruler) · click to locate · drag to set the loop")}
           >
             {loop && (view.loopOn || drag?.kind === "loop") && (
               <div className="loop" style={{ left: frameToX(loop[0]) - scrollX, width: frameToX(loop[1] - loop[0]) }} />
@@ -847,7 +848,7 @@ export function Timeline() {
               drag={drag}
               range={range}
               hoverCut={view.tool === "split" ? hoverCut : null}
-              onHoverCut={(t, e) => view.tool === "split" && setHoverCut(e ? { track: t, frame: snapIt(xToFrame(e.clientX), new Set(), e.metaKey).frame } : null)}
+              onHoverCut={(t, e) => view.tool === "split" && setHoverCut(e ? { track: t, frame: snapIt(xToFrame(e.clientX), new Set(), e.metaKey || e.ctrlKey).frame } : null)}
               onClipDown={onClipDown}
               onFadeDown={onFadeDown}
               onLaneDown={onLaneDown}
@@ -1286,8 +1287,8 @@ function ClipView(p: {
           <path className="ln2" d={`M0 0Q${fow * 0.7} ${bodyH * 0.2} ${fow} ${bodyH}`} />
         </svg>
       )}
-      <i className="fh fh-in" style={{ left: Math.max(4, fiw) }} onPointerDown={(e) => p.onFade(e, true)} title="Fade in (⌥ for linear)" />
-      <i className="fh fh-out" style={{ right: Math.max(4, fow), transform: "translate(50%,-25%)" }} onPointerDown={(e) => p.onFade(e, false)} title="Fade out (⌥ for linear)" />
+      <i className="fh fh-in" style={{ left: Math.max(4, fiw) }} onPointerDown={(e) => p.onFade(e, true)} title={keysInText("Fade in (⌥ for linear)")} />
+      <i className="fh fh-out" style={{ right: Math.max(4, fow), transform: "translate(50%,-25%)" }} onPointerDown={(e) => p.onFade(e, false)} title={keysInText("Fade out (⌥ for linear)")} />
       {(prefs.gainBadge || Math.abs(c.gain_db) >= 0.05) && <span className="gain">{c.gain_db > 0.05 ? "+" : c.gain_db < -0.05 ? "−" : ""}{Math.abs(c.gain_db).toFixed(1)} dB</span>}
       {p.trim && <i className={`trim ${p.trim}`} />}
     </div>

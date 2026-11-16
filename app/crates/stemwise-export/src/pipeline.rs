@@ -294,10 +294,11 @@ fn export_inner(
         let mut gain_db = 0.0;
         let mut back = Vec::new();
         let mut under = false;
+        let mut used = kbps;
         for _ in 0..ATTEMPTS {
             let mut y = x.clone();
             scale(&mut y, gain_db);
-            aac::encode_aac(&path, &y, 2, s.rate, kbps)?;
+            used = aac::encode_aac(&path, &y, 2, s.rate, kbps)?;
             if !written.contains(&path) {
                 written.push(path.clone());
             }
@@ -315,7 +316,7 @@ fn export_inner(
             return Err(ExportError::Encoder(format!("the AAC file stays over the {ceiling:.1} dBTP ceiling")));
         }
         write_tags(&path, Container::M4a, s.meta, cover())?;
-        reports.push(report(&path, &format!("AAC {kbps} kbit/s"), &back, s.rate, target_bands));
+        reports.push(report(&path, &format!("AAC {used} kbit/s"), &back, s.rate, target_bands));
         step(progress)?;
     }
     Ok(reports)
