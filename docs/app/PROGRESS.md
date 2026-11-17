@@ -28,8 +28,8 @@ Legenda: ⬜ da iniziare · 🟦 in corso · ✅ chiusa (gate verde) · ⚠️ c
 | F18 Explain this mix | ⚠️ | 2026-11-15 · P-019 · tavole 17a–17j approvate dall'autore (A-092), poi implementate: vista `Explain` nel Mix (⌘E) con la mappa del segnale (tracce per famiglia → gruppi → bus, mandate, sidechain, gruppi ripiegabili, striscia delle sezioni) e lo stesso mix in parole, per tutto il mix, per elemento e per sezione; testo a regole, glossario, copia come testo; **nessun modello**; livelli per famiglia e per sezione misurati dal core in background (`mix_levels`) · ANA-20, UI-14 → UI-16 coperti (1 test Rust, 15 Vitest, 6 Playwright; 103 in tutto) · riserve: non provata nell'app Tauri né nel pacchetto · A-093 · disco 12,28 GB |
 | F19 Tour guidato | ✅ | 2026-11-15 · P-020, issue #5 · tavole 18a–18w e C8 approvate dall'autore (A-095), un solo menu dell'app con Help (UI-20, A-096), poi implementate: brano dimostrativo costruito e sintetizzato dal core (`stemwise_core::demo`, 12 stem, 68 s, tre sezioni, stesso documento e stesso hash a ogni costruzione), sessione effimera nella cache dell'app (niente recenti, autosave, salvataggio, export; eliminata alla fine e all'avvio), proposta del decisore finto in background anche con una chiave e fuori dal registro dei costi, segno "mostrato" nei dati dell'app, tour con riflettore e fumetto e i quindici passi, collegamento nella Welcome, menu di sistema ridotto e ⌘N/⌘O nell'app · PRJ-9, UI-17 → UI-20 coperti (7 test Rust, 6 Vitest, 9 Playwright sul tour; 113 Playwright in tutto) · tempi: brano aperto e suonabile in 1,1 s (soglia 3 s), proposta del decisore finto 36 s in background, mixdown e master 5 s, avvio a freddo 0,6–1,6 s · pacchetto ricostruito, self-test nell'app impacchettata 59/59 · corretti tre aggiornamenti dello store durante il rendering (rack di traccia e del Master, riferimenti del nuovo progetto, A-098) · A-097 · disco 10,5 GB dopo `clean-stale` |
 
-Fasi F0 → F19 chiuse. Repository pubblico dal 2026-11-16 (A-101). Windows è il secondo sistema (A-104, ramo
-`feature/multi-platform-build`). Prossimo passo: la validazione dell'autore.
+Fasi F0 → F19 chiuse. Repository pubblico dal 2026-11-16 (A-101). Windows è il secondo sistema (A-104), in `main` dal
+2026-11-17 con la 0.1.2, i cui pacchetti li costruisce la CI (A-105). Prossimo passo: la validazione dell'autore.
 
 ## Dove riprendere
 
@@ -179,6 +179,12 @@ Fasi F0 → F19 chiuse. Repository pubblico dal 2026-11-16 (A-101). Windows è i
   Foundation, barra dei menu solo su macOS, scorciatoie e testi per sistema, elenco licenze per tre target (497
   librerie). CI anche su `windows-latest` (job `make ci (Windows)`, ancora mai eseguito: parte alla prima PR). Da
   provare a mano: VALIDATION 64–66. Restano Linux e la firma Authenticode · disco 7,85 GB.
+- **0.1.2 per macOS e Windows (A-105, 2026-11-17).** Ramo di Windows in `main` in avanti veloce, versione 0.1.2,
+  `make check` verde. Nuovo workflow `release.yml`: al push di un tag `vX.Y.Z` costruisce `.dmg` e installer NSIS su
+  GitHub e li allega con `SHA256SUMS.txt` a una release in bozza, pubblicata a mano. Pacchetti scaricati e verificati
+  (somme, firma, versione); self-test nel `.dmg` della CI 58 su 59 a Mac in uso, con l'avvio a freddo sopra soglia
+  (3,9–8,5 s): da ripetere a Mac fermo. Test di accessibilità con un tempo massimo di 90 s (superava i 30 s sul runner
+  macOS). README con l'installazione su Windows; sito allineato in `stemwise-promo` · disco 14,8 GB.
 - Prossimo passo: in parallelo la validazione dell'autore (docs/app/VALIDATION.md, nell'ordine
   consigliato), almeno un auto mix col modello vero e il pacchetto su un Mac pulito prima di aprire.
 - Verifica dello stato: `cd app && make check` (verde), `make reqs` per i buchi residui, `git tag` per le fasi.

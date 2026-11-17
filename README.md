@@ -3,9 +3,9 @@
 **Mix and master the songs you recorded, with an assistant that proposes, explains and leaves the decisions to
 you.**
 
-[Website](https://stemwise.pierodetomi.dev) · [Download for macOS](https://github.com/pierodetomi/stemwise/releases/latest) · [Report a problem](https://github.com/pierodetomi/stemwise/issues)
+[Website](https://stemwise.pierodetomi.dev) · [Download for macOS and Windows](https://github.com/pierodetomi/stemwise/releases/latest) · [Report a problem](https://github.com/pierodetomi/stemwise/issues)
 
-Stemwise is a desktop app for macOS. You bring the stems of a song; it gives you a mixing desk, a mastering room
+Stemwise is a desktop app for macOS and Windows. You bring the stems of a song; it gives you a mixing desk, a mastering room
 and an AI assistant that works the way a patient engineer would: it measures your tracks, proposes a mix, tells you
 track by track what it changed and why, and waits for you to listen and decide. Nothing is applied until you say
 so, and everything it does is one undo step away.
@@ -102,7 +102,7 @@ This is a design rule, not a setting.
 - The model receives **numbers and words only**: loudness, spectrum, dynamics and masking measurements, the role
   and name of each track, your brief and your request.
 - It never receives **audio**, **file names**, **paths** or the **title of the song**.
-- All measuring, rendering and processing happens on your Mac.
+- All measuring, rendering and processing happens on your computer.
 - What the model returns is the same kind of change you could make by hand, and it lands in the same undo history.
 
 Every call is logged in **AI usage** inside the app, with the exact request that was sent and its cost, so you can
@@ -110,18 +110,24 @@ check this yourself.
 
 ## Install
 
-**Requirements:** macOS 13 or later, on a Mac with Apple Silicon.
+Download the package for your system from the [releases page](https://github.com/pierodetomi/stemwise/releases).
+Each release lists the SHA-256 checksums of its packages in `SHA256SUMS.txt`, if you want to verify the download.
 
-1. Download the latest `.dmg` from the [releases page](https://github.com/pierodetomi/stemwise/releases).
-2. Open it and drag Stemwise to Applications.
-3. The app is **not signed with an Apple Developer ID**, so macOS will refuse to open it the first time:
+**macOS** 13 or later, on a Mac with Apple Silicon:
+
+1. Download the `.dmg`, open it and drag Stemwise to Applications.
+2. The app is **not signed with an Apple Developer ID**, so macOS will refuse to open it the first time:
    - on macOS 15 or later, try to open it once, then go to **System Settings › Privacy & Security** and choose
      **Open Anyway**;
    - on macOS 13 and 14, right-click the app and choose **Open**.
 
-Each release lists the SHA-256 checksum of its `.dmg`, if you want to verify the download.
+**Windows** 10 or 11, 64-bit:
 
-There is no installer, no account and no telemetry. Projects are folders on your disk (`Name.stemwise`).
+1. Download `Stemwise_<version>_x64-setup.exe` and run it. It installs for your user only, with no administrator
+   rights. If WebView2 is missing, the installer downloads it.
+2. The installer is **not signed**, so Windows SmartScreen may warn you: choose **More info › Run anyway**.
+
+There is no account and no telemetry. Projects are folders on your disk (`Name.stemwise`).
 
 ## The assistant and what it costs
 
@@ -129,7 +135,7 @@ Stemwise itself is free. The assistant runs on AI models that you reach through 
 [OpenRouter](https://openrouter.ai) account**.
 
 - **Connecting.** The app guides you: it opens OpenRouter in your browser to authorise the connection, or you can
-  paste a key. The key stays on your Mac.
+  paste a key. The key stays on your computer.
 - **Cost.** What the models cost is set by OpenRouter and billed by OpenRouter to you. Stemwise shows an estimate
   before each request, lets you set a spending cap, and keeps the history of every call.
 - **Without an account.** The desk, the master room, Explain this mix and the tour work in full. An "offline demo"
@@ -146,7 +152,7 @@ Stemwise mixes and masters audio that already exists. By choice, version 1 has:
 - no third-party plug-ins (AU, VST3, CLAP);
 - no time-stretching or pitch correction;
 - no MP3 export;
-- no Linux build yet; Windows (10 or 11, x64) builds from source, with no published installer yet;
+- no Linux build yet;
 - an interface in English only.
 
 Status: this is a first public version (0.1.x), made by one person. It is covered by a large automated test suite,

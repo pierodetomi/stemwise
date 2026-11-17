@@ -2515,6 +2515,19 @@ pacchetti e allega `SHA256SUMS.txt`. La bozza si pubblica a mano, dopo aver scri
 scaricati: un pacchetto costruito dalla CI non è passato dal self-test. Il ramo entra in `main` in avanti veloce
 (`main` era l'antenato diretto).
 
+**Prima corsa (tag `v0.1.2`).** Windows costruito e allegato (installer NSIS di 7,4 MB); il job macOS annullato da
+GitHub dopo 15 minuti senza un runner Apple Silicon libero, rilanciato e passato. Pacchetti scaricati: le somme di
+`SHA256SUMS.txt` tornano, il `.dmg` ha la firma ad hoc valida (`adhoc,runtime`), versione 0.1.2, `LICENSE` e licenze
+di terze parti dentro, eseguibile `arm64`. Self-test nel `.dmg` della CI su un progetto dimostrativo della CLI, a Mac in
+uso (carico 5, una macchina virtuale accesa): 58 su 59 due volte, con segnale sul bus; manca solo l'avvio a freddo,
+8,5 s al primo avvio del binario appena copiato e 3,9 s al secondo, contro la soglia di 2 s. Un primo tentativo era
+rimasto fermo dopo l'export (come in A-103); il secondo ripartiva da quel progetto col lock rimasto. Non è
+accertato se l'avvio lento dipenda dalla macchina o dal pacchetto: da ripetere a Mac fermo (VALIDATION 63).
+
+**Gate di `main`.** Sul runner macOS il test di accessibilità (axe-core su ogni schermata) ha superato il tempo
+massimo di 30 s: prendeva 19 s sulla stessa CI al commit precedente e 25 s su Windows. Ora ha un tempo massimo di
+90 s, come i test del tour; le verifiche non cambiano.
+
 ## Dipendenze aggiunte
 
 | Libreria | Versione | Licenza | Perché | Fase |
