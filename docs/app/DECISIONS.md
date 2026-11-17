@@ -2498,6 +2498,23 @@ Git Bash con il PATH pulito: verde, 114 test Playwright. Il job gira alla prima 
 Secret Service); prova a mano su un Windows pulito (installer, ascolto, trascinamento dei file con lo scaling,
 finestra minima di 1280×720 su un portatile al 150%: VALIDATION 64–66); benchmark su Windows; firma Authenticode.
 
+### A-105 — Release 0.1.2 con i pacchetti costruiti dalla CI (2026-11-17, chiesto dall'autore)
+
+**Contesto.** L'autore ha riprovato la build su macOS dopo le modifiche per Windows e ha chiesto di chiudere il ramo
+`feature/multi-platform-build` in `main` e di pubblicare la 0.1.2 per macOS e Windows, con il sito allineato. Da un
+solo computer non si costruiscono i pacchetti dei due sistemi: il `.dmg` vuole macOS, l'installer NSIS Windows.
+
+**Alternative.** (a) Release in bozza col solo `.dmg` e l'installer costruito e caricato a mano dall'autore; (b) i
+pacchetti costruiti dalla CI di GitHub; (c) 0.1.2 solo per macOS. **Scelta dell'autore: (b).**
+
+**Come.** `.github/workflows/release.yml` parte dal push di un tag `vX.Y.Z` (o a mano su un tag esistente). Un primo
+job controlla che il tag sia la versione di `tauri.conf.json` e crea la release **in bozza**; due job eseguono
+`make build` dal commit del tag su `macos-15` (Apple Silicon, firma ad hoc verificata da `codesign`, A-103) e su
+`windows-latest` (installer NSIS per l'utente corrente, non firmato) e allegano il pacchetto; l'ultimo scarica i due
+pacchetti e allega `SHA256SUMS.txt`. La bozza si pubblica a mano, dopo aver scritto le note e provato i pacchetti
+scaricati: un pacchetto costruito dalla CI non è passato dal self-test. Il ramo entra in `main` in avanti veloce
+(`main` era l'antenato diretto).
+
 ## Dipendenze aggiunte
 
 | Libreria | Versione | Licenza | Perché | Fase |
