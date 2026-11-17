@@ -42,4 +42,4 @@ yourself and form your own judgement; do not assume the implementation is correc
 
 Findings, most severe first. Each: severity (blocking / should-fix / note), `file:line`, what is wrong, the
 FOUNDATION reference, a concrete scenario that shows it. End with a one-line verdict: "ready to close" or "not
-ready: N blocking findings". Write in Italian.
+ready: N blocking findings". Write in English.

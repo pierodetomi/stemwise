@@ -38,4 +38,4 @@ yourself and form your own judgement; do not assume the implementation is correc
 
 A list of findings, most severe first. Each finding: severity (blocking / should-fix / note), file:line,
 what is wrong, the PRD reference, and a concrete scenario that shows it. End with a one-line verdict:
-"ready to close" or "not ready: N blocking findings". Write in Italian.
+"ready to close" or "not ready: N blocking findings". Write in English.

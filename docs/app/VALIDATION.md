@@ -1,372 +1,372 @@
-# Validazione dell'autore
+# Author validation
 
-Ciò che l'agente non può verificare da solo (FOUNDATION §8.5): ascolto, modello reale, firma. Ogni voce ha passi
-eseguibili e il criterio per dirla superata. L'elenco si completa a ogni fase; l'ordine consigliato è in fondo.
+What the agent cannot verify on its own (FOUNDATION §8.5): listening, the real model, signing. Each item has
+executable steps and the criterion for calling it done. The list is completed at every phase; the recommended order is
+at the bottom.
 
-## Motore audio (F3)
+## Audio engine (F3)
 
-1. **Riproduzione senza click né buchi.** `cd app && make dev`; apri un progetto con almeno 16 tracce (anche il
-   progetto dimostrativo: `cargo run -p stemwise-cli -- demo ~/Music --name Prova --seconds 120`). Premi Play e
-   ascolta in cuffia per due minuti, poi: muovi un fader velocemente, metti e togli mute e solo su più tracce, muovi il
-   fader del bus. Atteso: nessun click, nessuna interruzione; i cambi sono morbidi.
-2. **Modifiche strutturali durante l'ascolto.** Durante la riproduzione aggiungi una mandata o raggruppa due tracce.
-   Atteso: una breve pausa sfumata (qualche decina di ms), poi la riproduzione riprende dallo stesso punto (A-025).
-3. **Loop e locate.** Imposta un loop di 4 battute, avvialo, poi clicca sul righello fuori dal loop e dentro.
-   Atteso: ritorno all'inizio del loop senza scatti di contenuto; nessun click ai salti.
-4. **Dispositivo a frequenza diversa e buffer.** In Impostazioni › Audio scegli un'uscita a 44,1 kHz con un progetto a
-   48 kHz, e prova buffer 128, 512, 2048. Atteso: intonazione giusta, nessun crepitio; con 128 su un Mac lento può
-   servire un buffer più grande (annotare quale).
-5. **Carico con molte tracce.** Con 32 tracce e catene complete, guarda l'indicatore di carico del motore nella barra
-   superiore durante la riproduzione. Atteso: sotto il 30% (sul Mac di sviluppo il benchmark dà il 9% medio,
-   A-023/A-024); nessun crepitio anche con altre app aperte.
-6. **Scollegare il dispositivo.** Durante la riproduzione stacca le cuffie USB o cambia uscita di sistema. Atteso:
-   l'app lo segnala (UI-6) e non si blocca.
+1. **Playback with no clicks or gaps.** `cd app && make dev`; open a project with at least 16 tracks (the demo project
+   works too: `cargo run -p stemwise-cli -- demo ~/Music --name Prova --seconds 120`). Press Play and
+   listen on headphones for two minutes, then: move a fader quickly, toggle mute and solo on several tracks, move the
+   bus fader. Expected: no clicks, no dropouts; changes are smooth.
+2. **Structural edits while listening.** During playback add a send or group two tracks.
+   Expected: a short faded pause (a few tens of ms), then playback resumes from the same point (A-025).
+3. **Loop and locate.** Set a 4-bar loop, start it, then click on the ruler outside the loop and inside it.
+   Expected: return to the start of the loop with no content glitches; no clicks at the jumps.
+4. **Device at a different sample rate, and buffer.** In Settings › Audio pick a 44.1 kHz output with a 48 kHz
+   project, and try buffers 128, 512, 2048. Expected: correct pitch, no crackle; with 128 on a slow Mac a larger
+   buffer may be needed (note which).
+5. **Load with many tracks.** With 32 tracks and full chains, watch the engine load meter in the top bar during
+   playback. Expected: under 30% (on the development Mac the benchmark gives 9% average,
+   A-023/A-024); no crackle even with other apps open.
+6. **Unplugging the device.** During playback unplug the USB headphones or change the system output. Expected:
+   the app reports it (UI-6) and does not freeze.
 
 ## AI (F5)
 
-Tutto il flusso AI è provato offline col decisore finto e contro un server HTTP locale finto. Restano da verificare
-col servizio vero, con la tua chiave (l'agente non usa chiavi né rete):
+The whole AI flow is tested offline with the fake decider and against a fake local HTTP server. What remains to be
+verified with the real service, using your key (the agent uses no keys and no network):
 
-7. **Prima chiamata reale e schema strict.** In Impostazioni › AI incolla la chiave OpenRouter, lascia il modello
-   predefinito e lancia Auto mix sul progetto dimostrativo. Atteso: una proposta con sintesi e motivazioni nella
-   lingua del brief. Nel log della chiamata (cartella `ai/<id>/` del progetto, file `request-0-0.json`) controlla
-   `response_format.type`. Se è `json_schema`, il provider accetta lo schema per progetto (A-031). Se è
-   `json_object`, ha rifiutato lo schema e l'app è passata al JSON mode: funziona comunque, ma annota il modello.
-   Annota anche quante richieste ha fatto la prima iterazione (una sola è il caso atteso).
-   Portachiavi (A-052): all'avvio e all'apertura dei progetti macOS non deve chiedere la password. Può chiederla
-   una volta, alla prima chiamata della sessione, finché l'app non è firmata ("Consenti sempre" vale fino alla
-   build successiva).
-   Menu (A-053): File › Save, Save As…, Close Project, Open… e New Project… della barra dei menu fanno quello che
-   dicono; Edit › Copy e Paste funzionano nei campi di testo.
-8. **Costi.** Dopo due o tre chiamate apri AI usage. Atteso: costo per chiamata uguale a quello del pannello di
-   OpenRouter (Activity) entro qualche centesimo; nessuna voce "stima" se il provider riporta il costo. Poi annulla
-   una chiamata a metà: deve comparire con un costo marcato come stima, e su OpenRouter non deve risultare di più.
-9. **Portachiavi.** Chiudi e riapri l'app: la chiave c'è ancora (Impostazioni › AI dice "Stored in the keychain";
-   la chiave non si mostra mai, nemmeno mascherata, A-044). In Accesso Portachiavi deve
-   esistere una voce "Stemwise". Togli la chiave dall'app: la voce sparisce.
-10. **Rete assente.** Spegni il Wi-Fi e lancia Auto mix. Atteso: un errore chiaro e recuperabile (UI-6), nessun
-    blocco; la chiamata compare in AI usage come fallita.
-11. **Revisione a parole sul serio.** Dopo un auto mix applicato, chiedi "voce un po' più calda nelle strofe".
-    Atteso: cambiano soprattutto voce e tracce che la coprono; le spinte per sezione del primo auto mix restano
-    (corsie azzurre ancora presenti).
+7. **First real call and strict schema.** In Settings › AI paste the OpenRouter key, leave the default model and
+   run Auto mix on the demo project. Expected: a proposal with a summary and rationales in the language of the brief.
+   In the call log (folder `ai/<id>/` of the project, file `request-0-0.json`) check
+   `response_format.type`. If it is `json_schema`, the provider accepts the per-project schema (A-031). If it is
+   `json_object`, it rejected the schema and the app fell back to JSON mode: it works anyway, but note the model.
+   Also note how many requests the first iteration made (a single one is the expected case).
+   Keychain (A-052): at launch and when opening projects macOS must not ask for the password. It may ask once,
+   at the first call of the session, until the app is signed ("Always Allow" holds until the next
+   build).
+   Menu (A-053): File › Save, Save As…, Close Project, Open… and New Project… in the menu bar do what
+   they say; Edit › Copy and Paste work in text fields.
+8. **Costs.** After two or three calls open AI usage. Expected: cost per call equal to that in the OpenRouter panel
+   (Activity) to within a few cents; no "estimate" entry if the provider reports the cost. Then cancel
+   a call halfway: it must appear with a cost marked as an estimate, and on OpenRouter it must not show as more.
+9. **Keychain.** Close and reopen the app: the key is still there (Settings › AI says "Stored in the keychain";
+   the key is never shown, not even masked, A-044). In Keychain Access there must be
+   an entry "Stemwise". Remove the key from the app: the entry disappears.
+10. **No network.** Turn off Wi-Fi and run Auto mix. Expected: a clear, recoverable error (UI-6), no
+    freeze; the call appears in AI usage as failed.
+11. **Revision in words, for real.** After an applied auto mix, ask "voce un po' più calda nelle strofe".
+    Expected: mostly the vocal and the tracks that mask it change; the per-section pushes from the first auto mix stay
+    (blue lanes still present).
 
-## Assistente nell'app (F7)
+## Assistant in the app (F7)
 
-12. **A/B della proposta all'ascolto.** Lancia Auto mix, poi durante la riproduzione alterna "Current mix" e
-    "Proposal" (o premi B). Atteso: il passaggio avviene senza fermare la riproduzione, con una breve dissolvenza;
-    nessun passo nuovo in History.
-13. **Applica in parte.** Togli la spunta a due tracce e premi "Apply selected". Atteso: un solo passo in History, con
-    la scintilla; Undo riporta tutto com'era; in AI usage la chiamata risulta "Applied in part".
-14. **Export della storia.** In AI usage › Export scegli CSV e apri il file in Numbers o Excel. Atteso: una riga
-    per chiamata, con costi e richieste leggibili (le virgolette nelle richieste non spezzano le colonne).
-15. **Pulizia dopo le verifiche dell'agente.** Le prime esecuzioni del self-test (prima di A-041) hanno scritto
-    nella cartella dati dell'app, `~/Library/Application Support/app.stemwise.desktop/`, i progetti recenti di
-    prova e una chiamata da 0 $ della demo offline (`ai-costs.jsonl`). L'agente non tocca file fuori dal
-    repository: se vuoi, cancella i due file prima di usare l'app.
+12. **A/B of the proposal by ear.** Run Auto mix, then during playback alternate "Current mix" and
+    "Proposal" (or press B). Expected: the switch happens without stopping playback, with a short crossfade;
+    no new step in History.
+13. **Partial apply.** Uncheck two tracks and press "Apply selected". Expected: a single step in History, with
+    the spark; Undo brings everything back as it was; in AI usage the call shows as "Applied in part".
+14. **History export.** In AI usage › Export choose CSV and open the file in Numbers or Excel. Expected: one row
+    per call, with readable costs and requests (quotes in the requests do not break the columns).
+15. **Cleanup after the agent's checks.** The first runs of the self-test (before A-041) wrote
+    in the app data folder, `~/Library/Application Support/app.stemwise.desktop/`, test recent projects and
+    a $0 call from the offline demo (`ai-costs.jsonl`). The agent does not touch files outside the
+    repository: if you want, delete the two files before using the app.
 
-## Master ed export (F8)
+## Master and export (F8)
 
-16. **Ascolto del master.** Fai Bounce & go to Master, poi alterna Master, Mixdown e Reference durante la
-    riproduzione. Usa anche un riferimento MP3 o M4A a 44,1 kHz.
-    - Atteso, in "Real level" (predefinito): il master suona come il file esportato, mixdown e riferimento al loro
-      livello vero, il riferimento alla velocità giusta. Gli scarti che senti sono quelli scritti nella sezione
-      Listening della scheda Loudness.
-    - Atteso, con "Same loudness" (o ⇧B): le sorgenti suonano alla stessa loudness percepita. Se sotto le righe
-      compare "everything plays X dB lower", tutto suona più basso della stessa quantità per non saturare.
-    - Atteso: cambiare modo o sorgente durante la riproduzione non la ferma e non fa click. Anche la catena non deve
-      introdurre click quando muovi i controlli o accendi e spegni un blocco. Il salto massimo fra campioni è
-      verificato da un test (A-043), ma conta l'orecchio.
-17. **Destinazioni.** Prova Streaming, Loud e CD. Atteso: l'Integrated del pannello Loudness sta entro ±0,1 LU dalla
-    destinazione dopo qualche secondo di misura (A-055); con Loud il limiter lavora di più ma non distorce in modo
-    udibile.
-    - Con un riferimento a circa −10 LUFS scegli Custom a −18 LUFS. Atteso: l'avviso "Much quieter than your
-      reference" nella scheda Loudness e nel dialogo di export. "Match the reference" porta la destinazione al
-      riferimento con lo stesso tetto, ed è un solo passo di undo. "Keep" toglie l'avviso, ma resta la riga "kept on
-      purpose" con "Warn me again".
-18. **File esportati.** Esporta WAV 24 bit, FLAC 16 bit e AAC 256 kbps con titolo, artista, ISRC e copertina. Apri i
-    tre file in Musica e nel Finder (Ottieni informazioni). Atteso: si aprono, i tag e la copertina compaiono, la
-    durata è giusta; il rapporto dice un true peak sotto il tetto per tutti e tre.
-19. **Mixdown non aggiornato.** Torna a Mix, cambia un fader, poi scegli Master. Atteso: l'app propone il bounce;
-    dopo il nuovo bounce le impostazioni del master sono quelle di prima.
+16. **Listening to the master.** Do Bounce & go to Master, then alternate Master, Mixdown and Reference during
+    playback. Also use an MP3 or M4A reference at 44.1 kHz.
+    - Expected, in "Real level" (default): the master sounds like the exported file, mixdown and reference at their true
+      level, the reference at the right speed. The differences you hear are those written in the Listening section of
+      the Loudness tab.
+    - Expected, with "Same loudness" (or ⇧B): the sources play at the same perceived loudness. If under the rows
+      "everything plays X dB lower" appears, everything plays lower by the same amount to avoid clipping.
+    - Expected: changing mode or source during playback does not stop it and does not click. The chain must not
+      introduce clicks either when you move the controls or turn a block on and off. The maximum sample-to-sample jump is
+      verified by a test (A-043), but the ear is what counts.
+17. **Targets.** Try Streaming, Loud and CD. Expected: the Integrated reading in the Loudness panel is within ±0.1 LU of the
+    target after a few seconds of measurement (A-055); with Loud the limiter works harder but does not distort audibly.
+    - With a reference at about −10 LUFS choose Custom at −18 LUFS. Expected: the warning "Much quieter than your
+      reference" in the Loudness tab and in the export dialog. "Match the reference" brings the target to the
+      reference with the same ceiling, and is a single undo step. "Keep" removes the warning, but the "kept on
+      purpose" row stays with "Warn me again".
+18. **Exported files.** Export WAV 24-bit, FLAC 16-bit and AAC 256 kbps with title, artist, ISRC and cover. Open the
+    three files in Music and in the Finder (Get Info). Expected: they open, the tags and cover appear, the
+    duration is right; the report says a true peak below the ceiling for all three.
+19. **Stale mixdown.** Go back to Mix, change a fader, then choose Master. Expected: the app offers the bounce;
+    after the new bounce the master settings are as before.
 
-20. **Impostazioni (F9).** Apri Impostazioni con ⌘, (o con l'ingranaggio).
-    - Audio: cambia dispositivo e buffer. Atteso: il suono riprende sul dispositivo scelto e il carico del motore si
-      aggiorna. Il segnale di prova non c'è (A-044): ascolta il progetto.
-    - AI: inserisci la chiave vera. Atteso: compare "Stored in the keychain", la chiave non si vede mai.
-    - Aspetto: le scelte restano dopo il riavvio dell'app.
+20. **Settings (F9).** Open Settings with ⌘, (or with the gear).
+    - Audio: change device and buffer. Expected: sound resumes on the chosen device and the engine load
+      updates. There is no test signal (A-044): listen to the project.
+    - AI: enter the real key. Expected: "Stored in the keychain" appears, the key is never visible.
+    - Appearance: the choices persist after restarting the app.
 
-21. **Stati di errore (F9).**
-    - File mancanti: chiudi l'app, cancella un file da `audio/` dentro il pacchetto (Mostra contenuto del pacchetto) e
-      riapri. Atteso: clip a righe, silenziose, banner "missing"; "Locate…" col file originale le riporta. Il bounce si
-      rifiuta finché manca qualcosa.
-    - Dispositivo: durante la riproduzione stacca le cuffie USB o la scheda. Atteso: il banner sotto la barra, la
-      riproduzione ferma, "Use …" riporta il suono.
-    - Rete: con la chiave vera e il Wi-Fi spento, chiedi un Auto mix. Atteso: "No connection to OpenRouter" al posto
-      del riquadro della chiave, il mix intatto.
-    - Accessibilità: con VoiceOver (⌘F5), naviga i controlli del mixer e dell'inspector. Atteso: ogni controllo ha un
-      nome e un valore letti; frecce su/giù cambiano i valori.
-22. **Avvio a freddo (NFR-3).** Apri `Stemwise.app` dal Finder dopo un riavvio del Mac. Atteso: la finestra usabile
-    in meno di 2 secondi.
+21. **Error states (F9).**
+    - Missing files: close the app, delete a file from `audio/` inside the package (Show Package Contents) and
+      reopen. Expected: striped, silent clips, a "missing" banner; "Locate…" with the original file restores them. The bounce
+      refuses until nothing is missing.
+    - Device: during playback unplug the USB headphones or the audio interface. Expected: the banner under the bar,
+      playback stopped, "Use …" brings the sound back.
+    - Network: with the real key and Wi-Fi off, ask for an Auto mix. Expected: "No connection to OpenRouter" in place
+      of the key box, the mix intact.
+    - Accessibility: with VoiceOver (⌘F5), navigate the mixer and inspector controls. Expected: every control has a
+      name and a value read out; up/down arrows change the values.
+22. **Cold start (NFR-3).** Open `Stemwise.app` from the Finder after restarting the Mac. Expected: the window usable
+    in under 2 seconds.
 
-## Pacchetto (F10)
+## Package (F10)
 
-23. **Installazione dal .dmg.** Apri `app/target/release/bundle/dmg/Stemwise_0.1.0_aarch64.dmg` e trascina Stemwise
-    in Applicazioni.
-    - Il pacchetto non è firmato né notarizzato: l'agente non ha certificati. Al primo avvio usa clic destro › Apri,
-      poi conferma.
-    - Atteso: la welcome entro 2 secondi (voce 22). Crea un progetto con stem veri (WAV 24 bit e un FLAC). Atteso:
-      le tracce compaiono con le forme d'onda e i ruoli proposti.
-    - Per distribuirlo ad altri servono un Developer ID e la notarizzazione (fuori dal lavoro dell'agente).
-24. **Un brano vero dall'inizio alla fine.** Su un tuo brano: brief, Auto mix con la chiave vera, ascolto in A/B,
-    applica, una revisione a parole, bounce, master AI, destinazione Streaming, export WAV 24, FLAC 16 e AAC 256.
-    - Atteso: i file si aprono in Musica, la loudness nel rapporto è a −14 ± 0,5 LUFS e il true peak sotto −1 dBTP.
-    - Il giudizio artistico (il mix suona meglio della somma grezza?) è tuo: annotalo con il modello usato.
+23. **Installing from the .dmg.** Open `app/target/release/bundle/dmg/Stemwise_0.1.0_aarch64.dmg` and drag Stemwise
+    into Applications.
+    - The package is not signed or notarized: the agent has no certificates. At first launch use right-click › Open,
+      then confirm.
+    - Expected: the welcome within 2 seconds (item 22). Create a project with real stems (24-bit WAV and a FLAC). Expected:
+      the tracks appear with waveforms and the proposed roles.
+    - Distributing it to others requires a Developer ID and notarization (outside the agent's work).
+24. **A real song from start to finish.** On a song of yours: brief, Auto mix with the real key, A/B listening,
+    apply, a revision in words, bounce, AI master, Streaming target, export WAV 24, FLAC 16 and AAC 256.
+    - Expected: the files open in Music, the loudness in the report is −14 ± 0.5 LUFS and the true peak below −1 dBTP.
+    - The artistic judgment (does the mix sound better than the raw sum?) is yours: note it with the model used.
 
-## Riverbero e compressione parallela (F11)
+## Reverb and parallel compression (F11)
 
-25. **I tre riverberi all'ascolto.** In un progetto con voce e batteria seleziona il ritorno riverbero e manda la voce
-    a −12 dB. Prova Plate (decay 1,2 s), Room (0,6 s) e Hall (2 s) dal selettore nel pannello; poi lo stesso con il
-    rullante. Atteso: tre caratteri diversi, code senza suono metallico né eco che si ripete; nessun click cambiando
-    algoritmo, Decay o Size durante la riproduzione. Ascolta in particolare:
-    - il Plate sotto 1 s: è atteso un po' granuloso (limite noto, A-058); dimmi se da 1 s in su è pulito;
-    - Modulation a 0, 20% e 60% su una coda lunga (Hall, 4 s): a 0 la coda può "suonare" su una nota, al 60% non deve
-      diventare un chorus;
-    - Damping a 0 e all'80%: la coda si scurisce senza accorciarsi sulle medie.
-26. **Compressione parallela.** Sul rullante (o sul gruppo della batteria) imposta Threshold −30 dB, Ratio 6, Makeup
-    +8 dB, poi porta Mix dal 100% al 35%. Atteso: i colpi restano naturali e il corpo cresce; nessun suono "scavato"
-    o metallico (dry e compresso sono allineati al campione). Muovi Mix durante la riproduzione: nessun click.
+25. **The three reverbs by ear.** In a project with vocal and drums select the reverb return and send the vocal
+    at −12 dB. Try Plate (decay 1.2 s), Room (0.6 s) and Hall (2 s) from the selector in the panel; then the same with the
+    snare. Expected: three different characters, tails with no metallic sound or repeating echo; no click when changing
+    algorithm, Decay or Size during playback. Listen in particular for:
+    - Plate under 1 s: a bit grainy is expected (known limit, A-058); tell me whether it is clean from 1 s up;
+    - Modulation at 0, 20% and 60% on a long tail (Hall, 4 s): at 0 the tail may "ring" on a note, at 60% it must not
+      turn into a chorus;
+    - Damping at 0 and at 80%: the tail darkens without shortening in the mids.
+26. **Parallel compression.** On the snare (or the drum group) set Threshold −30 dB, Ratio 6, Makeup
+    +8 dB, then bring Mix from 100% to 35%. Expected: the hits stay natural and the body grows; no "scooped"
+    or metallic sound (dry and compressed are sample-aligned). Move Mix during playback: no click.
 
-## Mix AI strutturale (F12)
+## Structural AI mix (F12)
 
-27. **Proposta con struttura, all'ascolto.** Su un brano con voce e batteria su più tracce lancia Auto mix con
-    "Allow structural changes" attivo. Atteso: nella proposta, sopra le tracce, la sezione "New in this proposal" con
-    i ritorni e i gruppi che il piano crea, ciascuno con il motivo. Ascolta in A/B: la voce nel suo spazio, la batteria
-    più compatta. Poi:
-    - togli la spunta a un elemento nuovo e applica: non viene creato, il resto sì;
-    - annulla con un solo ⌘Z: spariscono anche le tracce nuove;
-    - rilancia Auto mix con la spunta disattivata e confronta le due proposte a orecchio: è qui che si vede se la
-      struttura migliora davvero il mix.
-28. **Doppi veri.** Su un brano con una parte registrata due volte (chitarre, cori) con lo stesso ruolo, lancia Auto
-    mix e guarda in AI usage › dettaglio la voce `doubles` dell'analisi. Atteso: la coppia c'è, non `identical`, e la
-    proposta le apre ai lati. Dimmi se riconosce come doppio qualcosa che non lo è, o se ne manca uno: le soglie sono
-    iniziali (A-059).
-29. **Col modello vero.** Con la chiave, un Auto mix: guarda quante cose nuove propone e se le motivazioni reggono.
-    Atteso: poche e utili; se ne crea troppe o inutili, annota modello e brano.
+27. **Proposal with structure, by ear.** On a song with vocal and drums on several tracks run Auto mix with
+    "Allow structural changes" on. Expected: in the proposal, above the tracks, the "New in this proposal" section with
+    the returns and groups the plan creates, each with its reason. Listen in A/B: the vocal in its own space, the drums
+    more compact. Then:
+    - uncheck a new element and apply: it is not created, the rest is;
+    - undo with a single ⌘Z: the new tracks disappear too;
+    - rerun Auto mix with the checkbox off and compare the two proposals by ear: this is where you see whether the
+      structure really improves the mix.
+28. **True doubles.** On a song with a part recorded twice (guitars, backing vocals) with the same role, run Auto
+    mix and look in AI usage › detail at the `doubles` entry of the analysis. Expected: the pair is there, not `identical`, and the
+    proposal opens them to the sides. Tell me if it recognizes as a double something that is not, or if one is missing: the thresholds
+    are initial (A-059).
+29. **With the real model.** With the key, run an Auto mix: see how many new things it proposes and whether the rationales hold up.
+    Expected: few and useful; if it creates too many or useless ones, note the model and the song.
 
-## Nuova destinazione (A-061)
+## New target (A-061)
 
-30. **Cambio della destinazione in Master.** Su un tuo brano, in Master, passa da Streaming a Loud. Atteso: dopo un
-    istante l'overlay "Bringing the master to the new target" copre lo spazio di lavoro, con la destinazione nuova
-    e quella di prima; la riproduzione si può avviare e fermare e suona ancora al livello di prima; quando
-    l'overlay sparisce il livello è quello nuovo e la scheda Loudness dice "On target". Poi ⌘Z: si torna a
-    Streaming subito, senza overlay. Da giudicare: se l'attesa è chiara e se la barra, che avanza a passate, non
-    confonde.
+30. **Changing the target in Master.** On a song of yours, in Master, switch from Streaming to Loud. Expected: after a
+    moment the overlay "Bringing the master to the new target" covers the workspace, showing the new target
+    and the previous one; playback can be started and stopped and still plays at the previous level; when the
+    overlay disappears the level is the new one and the Loudness tab says "On target". Then ⌘Z: it goes back to
+    Streaming immediately, with no overlay. To judge: whether the wait is clear and whether the bar, which advances in passes, is
+    confusing.
 
-## Bilanciamento del mix AI (A-063)
+## AI mix balance (A-063)
 
-31. **Bilanciamento ed effetti all'ascolto.** Su Balance (o un brano con batteria su molti microfoni, chitarre,
-    voce e cori) lancia Auto mix senza testo. Atteso: almeno due iterazioni; in AI usage, nel JSON della seconda
-    richiesta, `evaluation.balance` con i livelli di `drums`, `guitars`, `lead_vocal`, `backing_vocal` e
-    `returns_lu`. Da giudicare a orecchio: la voce davanti o alla pari della batteria, le chitarre presenti, i cori
-    udibili, un riverbero che si sente sulle voci. Se un rapporto non ti torna, scrivilo nelle note del brief e
-    riprova: i rapporti nel prompt sono punti di partenza da tarare sul tuo gusto.
-32. **Revisione su una sezione oltre i due minuti.** Scrivi una richiesta su una sezione che comincia dopo 2:00
-    (per Balance: "chitarre più avanti nel Solo") e premi il pulsante, che ora dice "Revise mix". Atteso: la
-    proposta dice "You asked: …", cambia quella sezione (corsie di automazione) e il fader può muoversi di più di
-    4 dB se la richiesta lo chiede. Invio nel campo va a capo e non invia.
+31. **Balance and effects by ear.** On Balance (or a song with drums on many mics, guitars,
+    vocal and backing vocals) run Auto mix with no text. Expected: at least two iterations; in AI usage, in the JSON of the second
+    request, `evaluation.balance` with the levels of `drums`, `guitars`, `lead_vocal`, `backing_vocal` and
+    `returns_lu`. To judge by ear: the vocal in front of or level with the drums, the guitars present, the backing vocals
+    audible, a reverb that can be heard on the vocals. If a ratio does not feel right, write it in the brief notes
+    and retry: the ratios in the prompt are starting points to tune to your taste.
+32. **Revision on a section beyond two minutes.** Write a request about a section that starts after 2:00
+    (for Balance: "chitarre più avanti nel Solo") and press the button, which now says "Revise mix". Expected: the
+    proposal says "You asked: …", changes that section (automation lanes) and the fader may move more than
+    4 dB if the request asks for it. Enter in the field starts a new line and does not send.
 
-## Stato del mix a colpo d'occhio (F13)
+## Mix state at a glance (F13)
 
-33. **Leggibilità su un progetto vero da 30 tracce.** Apri Balance (o un brano con 30 stem, gruppi e almeno tre
-    ritorni) in `make dev`, corsie piccole (⌥⌘−). Atteso: su ogni intestazione e strip le sigle HP LP EQ CMP SAT,
-    piene dove il blocco lavora, bordate dove è acceso ma non cambia nulla, tenui in bypass; `CMP` nel colore della
-    traccia ascoltata in sidechain e con due barrette se parallelo; un punto per ritorno e il rombo dell'automazione
-    (blu se scritta dall'assistente). Nel mixer una riga di mandata per ogni ritorno, coi nomi nella colonna a
-    sinistra. Da giudicare: se senza selezionare nulla capisci chi ha effetti, mandate e sidechain, e se le
-    intestazioni da 344 px tolgono troppo spazio alle corsie (A-066).
-34. **Sigle, collegamenti e Overview.** Clic su una sigla in una strip: il blocco va in bypass e ⌘Z lo riaccende in
-    un passo; doppio clic: la traccia si seleziona e l'inspector apre quel blocco. Seleziona un ritorno: le tracce che
-    gli mandano si marcano in lime col livello al posto del ruolo, e la corsia del ritorno le elenca. Seleziona una
-    traccia: il suo gruppo dice "takes …", chi la ascolta "listens to …". In fondo alla colonna del mixer passa
-    all'Overview: un clic su una cella mette o toglie il bypass, su una mandata vuota la crea a −12 dB. Nel browser
-    (`make ui`) più ritorni si aggiungono dalla console con `__stemwiseMock.simulateReturns(4)`.
+33. **Readability on a real 30-track project.** Open Balance (or a song with 30 stems, groups and at least three
+    returns) in `make dev`, small lanes (⌥⌘−). Expected: on every header and strip the badges HP LP EQ CMP SAT,
+    filled where the block is working, outlined where it is on but changes nothing, dim in bypass; `CMP` in the color of the
+    track listened to in sidechain and with two bars if parallel; a dot per return and the automation diamond
+    (blue if written by the assistant). In the mixer a send row for each return, with names in the column on the
+    left. To judge: whether without selecting anything you can tell who has effects, sends and sidechain, and whether the
+    344 px headers take too much space from the lanes (A-066).
+34. **Badges, links and Overview.** Click on a badge in a strip: the block goes into bypass and ⌘Z turns it back on in
+    one step; double-click: the track is selected and the inspector opens that block. Select a return: the tracks that
+    send to it are marked in lime with the level in place of the role, and the return's lane lists them. Select
+    a track: its group says "takes …", whoever listens to it "listens to …". At the bottom of the mixer column
+    switch to Overview: a click on a cell sets or removes bypass, on an empty send it creates it at −12 dB. In the browser
+    (`make ui`) more returns can be added from the console with `__stemwiseMock.simulateReturns(4)`.
 
-## Proposte che restano (A-070)
+## Persistent proposals (A-070)
 
-35. **Riapplicare una proposta.** Nell'app vera, su un tuo brano: chiedi un auto mix e scartalo. Apri la scheda
-    `Proposals` dell'assistente: la proposta è in elenco con data, ora ed esito. `Review…`: torna in revisione con la
-    nota "Received …"; ascoltala in A/B, poi `Apply all`. Atteso: una conferma che dice che il mix attuale cambierà;
-    dopo la conferma il mix è quello della proposta e ⌘Z lo riporta indietro in un passo. Poi muovi qualche fader,
-    elimina una traccia e riapri la stessa proposta: le differenze sono contro il mix di adesso e la traccia eliminata
-    è dichiarata tra gli avvisi. Chiudi e riapri il progetto: la proposta è ancora riapribile. Ripeti in Master con
-    `Master with AI`. Le proposte ricevute prima di questa versione sono in elenco ma col pulsante disattivato.
+35. **Reapplying a proposal.** In the real app, on a song of yours: ask for an auto mix and discard it. Open the
+    `Proposals` tab of the assistant: the proposal is in the list with date, time and outcome. `Review…`: it comes back into review with the
+    note "Received …"; listen to it in A/B, then `Apply all`. Expected: a confirmation saying the current mix will change;
+    after confirming the mix is the proposal's and ⌘Z brings it back in one step. Then move a few faders,
+    delete a track and reopen the same proposal: the differences are against the current mix and the deleted track
+    is declared among the warnings. Close and reopen the project: the proposal can still be reopened. Repeat in Master with
+    `Master with AI`. Proposals received before this version are in the list but with the button disabled.
 
-## Configurazione guidata dell'assistente (A-071, A-072)
+## Guided assistant setup (A-071, A-072)
 
-36. **Collegare il conto dal browser.** In `make dev` (build non firmata): Impostazioni › AI › `Disconnect` se c'è una
-    chiave, poi `Set up the assistant…` › `Connect with OpenRouter`. Atteso: si apre openrouter.ai sulla pagina di
-    autorizzazione, col nome della chiave "Stemwise"; dopo `Authorize` il browser mostra la pagina "Connected" e il
-    dialogo passa da solo ad `Add credit`. Da annotare: se la pagina di OpenRouter fa registrare e ricaricare nello
-    stesso passaggio; cosa succede rifiutando (il dialogo dovrebbe dire "The connection was not approved"; se resta
-    in attesa, il provider non torna dopo un rifiuto e va detto in 14b); se gli importi di `Add credit` sono vicini
-    ai costi veri di un auto mix. Poi un auto mix: nessuna richiesta di password.
-37. **Credito esaurito e chiave revocata.** Con una chiave a limite basso (o cancellandola da openrouter.ai) chiedi
-    un auto mix. Atteso: nella colonna dell'assistente "Your OpenRouter credit has run out", "The key has reached its
-    own limit" oppure "OpenRouter no longer accepts this key", ciascuno col suo pulsante; il mix non cambia e la
-    chiamata è a costo zero in AI usage.
-38. **Dove sta la chiave.** Build non firmata: Impostazioni › AI dice "Stored in a private file of this app"; il file
-    è `~/Library/Application Support/app.stemwise.desktop/openrouter.key`, con permessi `-rw-------`. Pacchetto
-    firmato col tuo Developer ID: dice "Stored in the keychain", e collegare il conto e fare un auto mix non chiedono
-    mai la password, nemmeno dopo aver installato una build successiva firmata allo stesso modo. La chiave salvata
-    nel portachiavi dalle build non firmate precedenti non serve più: si può eliminare da Accesso Portachiavi
-    (elemento "Stemwise").
+36. **Connecting the account from the browser.** In `make dev` (unsigned build): Settings › AI › `Disconnect` if there is a
+    key, then `Set up the assistant…` › `Connect with OpenRouter`. Expected: openrouter.ai opens on the
+    authorization page, with the key name "Stemwise"; after `Authorize` the browser shows the "Connected" page and the
+    dialog moves on by itself to `Add credit`. To note: whether the OpenRouter page lets you sign up and sign in
+    in the same flow; what happens on refusing (the dialog should say "The connection was not approved"; if it stays
+    waiting, the provider does not return after a refusal and that must be stated in 14b); whether the `Add credit` amounts are close
+    to the real costs of an auto mix. Then an auto mix: no password request.
+37. **Credit exhausted and key revoked.** With a low-limit key (or deleting it from openrouter.ai) ask for
+    an auto mix. Expected: in the assistant column "Your OpenRouter credit has run out", "The key has reached its
+    own limit" or "OpenRouter no longer accepts this key", each with its own button; the mix does not change and the
+    call is at zero cost in AI usage.
+38. **Where the key lives.** Unsigned build: Settings › AI says "Stored in a private file of this app"; the file
+    is `~/Library/Application Support/app.stemwise.desktop/openrouter.key`, with permissions `-rw-------`. Package
+    signed with your Developer ID: it says "Stored in the keychain", and connecting the account and running an auto mix never ask
+    for the password, not even after installing a later build signed the same way. The key saved
+    in the keychain by earlier unsigned builds is no longer needed: it can be deleted from Keychain Access
+    (item "Stemwise").
 
-## Master AI misurato (A-077)
+## Measured AI master (A-077)
 
-39. **Master AI su una destinazione forte.** Su Balance, in Master, con la destinazione a −9,6 LUFS e la catena
-    azzerata, chiedi "mantieni il punch del rullante e la dinamica". Atteso: l'avanzamento passa per più decisioni e
-    render; la proposta **non abbassa il target**, usa stadi prima del limiter (compressore veloce, saturazione, EQ sui
-    bassi) e il riepilogo dice quanto lavora ancora il limiter. All'ascolto il rullante deve restare più definito
-    del master col solo limiter. In `ai/<chiamata>/` del progetto, `evaluation-0.json` e `evaluation-1.json` mostrano
-    `limiter.time_over_3_db_pct` in discesa. Se il target scende comunque o il limiter resta strozzato, il limite è
-    negli strumenti (manca il clipper) o nel modello: annota quale delle due cose dice il riepilogo.
+39. **AI master on a loud target.** On Balance, in Master, with the target at −9.6 LUFS and the chain
+    cleared, ask "mantieni il punch del rullante e la dinamica". Expected: progress goes through several decisions and
+    renders; the proposal **does not lower the target**, uses stages before the limiter (fast compressor, saturation, EQ on the
+    lows) and the summary says how much the limiter still works. By ear the snare must stay more defined
+    than in the limiter-only master. In `ai/<call>/` of the project, `evaluation-0.json` and `evaluation-1.json` show
+    `limiter.time_over_3_db_pct` going down. If the target drops anyway or the limiter stays choked, the limit is
+    in the tools (the clipper is missing) or in the model: note which of the two the summary says.
 
-## Il marchio nell'app (A-078)
+## The brand in the app (A-078)
 
-40. **Icona e marchio nuovi.** Dopo `make build`, apri `Stemwise.app`. Atteso: nel Dock e nel Finder l'icona è lo
-    squircle melanzana con le due linee lime e la stanza lilla, riconoscibile anche nella vista a elenco del Finder
-    (16 pt). Se il Dock mostra ancora l'icona a barre, è la cache delle icone di macOS: trascina l'app nel Cestino del
-    Dock e riaprila, oppure riavvia il Dock. Nella barra in alto del Mix sono accese le due linee e la stanza è smorzata;
-    in Master il contrario. Nella schermata iniziale il marchio è a colori sopra il nome. Collegando l'assistente,
-    la pagina finale nel browser ha il marchio a colori accanto a "Stemwise".
+40. **New icon and brand.** After `make build`, open `Stemwise.app`. Expected: in the Dock and in the Finder the icon is the
+    aubergine squircle with the two lime lines and the lilac room, recognizable in the Finder list view too
+    (16 pt). If the Dock still shows the bars icon, it is the macOS icon cache: drag the app to the Dock Trash
+    and reopen it, or restart the Dock. In the top bar of Mix the two lines are lit and the room is dimmed;
+    in Master the opposite. On the start screen the brand is in color above the name. When connecting the assistant,
+    the final page in the browser has the colored brand next to "Stemwise".
 
-## Nessun genere come norma (A-080)
+## No genre as the norm (A-080)
 
-41. **Mix e master AI su musica non rock.** Con due o tre brani di tipo diverso (per esempio uno acustico o jazz
-    registrato dal vivo, uno elettronico, uno strumentale), brief col genere giusto: chiedi auto mix e master AI.
-    Atteso: sull'acustico il mix sposta poco i fader e non aggiunge riverberi evidenti, e il master resta leggero
-    (poca o nessuna compressione, niente clipping) dicendolo nel riepilogo; sull'elettronico cassa e basso guidano il
-    bilanciamento; nessun riepilogo parla di batteria o chitarre dove non ci sono. Annota dove il modello applica
-    comunque abitudini da rock.
+41. **AI mix and master on non-rock music.** With two or three songs of different types (for example an acoustic or live-recorded
+    jazz, an electronic one, an instrumental), brief with the right genre: ask for auto mix and AI master.
+    Expected: on the acoustic the mix moves the faders little and adds no obvious reverbs, and the master stays light
+    (little or no compression, no clipping), saying so in the summary; on the electronic, kick and bass drive the
+    balance; no summary talks about drums or guitars where there are none. Note where the model
+    applies rock habits anyway.
 
-## Catena di master libera (F14, A-082)
+## Free master chain (F14, A-082)
 
-42. **Clipper all'ascolto.** Su Balance a −9,6 LUFS, catena azzerata: accendi il Clipper e porta "Take off up to" a
-    4 dB. Atteso: nella scheda Loudness "Limiter over 3 dB" scende molto; all'ascolto i colpi restano definiti e il
-    mix non "respira" più dopo ognuno. Sali finché senti distorsione e guarda a che percentuale del brano lavora.
-43. **Ordine e blocchi doppi.** Trascina il compressore sopra l'EQ, aggiungi un secondo EQ dopo il multibanda, poi
-    togli un blocco. Atteso: nessuno scatto mentre suona, un passo di undo per ogni mossa, i nomi "EQ 1" e "EQ 2".
-44. **Multibanda.** Accendilo, porta le bande a quattro, metti in solo la più bassa, trascina un crossover. Atteso:
-    il solo si sente subito e non finisce nell'export; con tutti i rapporti a 1 il suono non cambia.
-45. **Sezioni e master AI con gli strumenti nuovi.** Dai +0,5 dB ai ritornelli e ascolta l'ingresso nel ritornello:
-    nessuno scatto. Poi ripeti il punto 39: atteso un piano che usa clipper o multibanda, eventualmente un ordine
-    diverso o un blocco in più, con la tabella prima → dopo nella proposta; prova ad applicare solo alcune voci.
-    Apri anche un progetto salvato prima di questa versione: deve suonare come prima.
+42. **Clipper by ear.** On Balance at −9.6 LUFS, chain cleared: turn on the Clipper and set "Take off up to" to
+    4 dB. Expected: in the Loudness tab "Limiter over 3 dB" drops a lot; by ear the hits stay defined and the
+    mix no longer "breathes" after each one. Raise it until you hear distortion and see at what percentage of the song it works.
+43. **Order and duplicate blocks.** Drag the compressor above the EQ, add a second EQ after the multiband, then
+    remove a block. Expected: no glitch while playing, one undo step per move, the names "EQ 1" and "EQ 2".
+44. **Multiband.** Turn it on, bring the bands to four, solo the lowest, drag a crossover. Expected:
+    the solo is heard immediately and does not end up in the export; with all ratios at 1 the sound does not change.
+45. **Sections and AI master with the new tools.** Give +0.5 dB to the choruses and listen to the entry into the chorus:
+    no glitch. Then repeat point 39: expected a plan that uses clipper or multiband, possibly a different order
+    or an extra block, with the before → after table in the proposal; try applying only some entries.
+    Also open a project saved before this version: it must sound as before.
 
-46. **Forma d'onda del master.** Sul brano che a −9 LUFS dava un rettangolo pieno: dopo la misura la forma d'onda
-    mostra il corpo del brano in colore pieno, con strofe e ritornelli distinguibili, e una linea sottile per i picchi; la parte
-    scura al centro è il mixdown. Cambia destinazione: dopo la nuova misura il corpo cresce o cala.
+46. **Master waveform.** On the song that at −9 LUFS gave a solid rectangle: after the measurement the waveform
+    shows the body of the song in solid color, with verses and choruses distinguishable, and a thin line for the peaks; the
+    dark part in the center is the mixdown. Change target: after the new measurement the body grows or shrinks.
 
-## Catena delle tracce a blocchi ed effetti nuovi (F15, F16, A-087, A-088)
+## Block-based track chain and new effects (F15, F16, A-087, A-088)
 
-47. **Progetti di prima.** Apri un tuo progetto salvato prima di F15 (Balance). Atteso: suona come prima (stesso
-    render: la migrazione è provata a hash identico su progetti sintetici), il mixdown non risulta da rifare, le corsie
-    di automazione sono al loro posto.
-48. **Rack nell'inspector.** Su una traccia: `Add block` › aggiungi un blocco (nasce spento), accendilo, trascinalo
-    sopra il compressore, duplicalo, resettalo, toglilo; ⌘Z annulla ogni passo. Atteso: nessuno scatto quando un blocco
-    si accende o si sposta in riproduzione; sigle sulle intestazioni e sulle strip coerenti (quattro e `+n`).
-49. **Correttivi all'ascolto.** Gate su un tom o un rullante con rientri; de-esser su una voce sibilante (prova
-    `Listen` sul solo segnale rilevato e le due modalità); EQ dinamico su chitarre con la sidechain dalla voce;
-    transient shaper su un rullante. Atteso: fanno quello che dicono senza pompare o tagliare le code in modo innaturale.
-50. **Colore, spazio, movimento, pitch.** Caratteri della saturazione (tape, tube, transistor: `soft` resta come
-    prima), exciter, bass enhancer su un basso DI, ampiezza su un pad (le basse restano mono), chorus/flanger/phaser,
-    tremolo e auto-pan a tempo (la fase resta legata alla battuta anche dopo un seek), harmonizer su una voce (le
-    voci non seguono la tonalità, va detto), doubler, riverbero `shimmer`, delay ping-pong e tape, filtri risonanti.
-    Atteso: nessun artefatto evidente; il giudizio sul suono è tuo.
-51. **Catena dei ritorni.** Su un ritorno di riverbero aggiungi un compressore con la sidechain dalla voce (ducking):
-    il riverbero si abbassa mentre la voce canta e torna nelle pause.
+47. **Earlier projects.** Open a project of yours saved before F15 (Balance). Expected: it sounds as before (same
+    render: the migration is proven with identical hash on synthetic projects), the mixdown does not need redoing, the automation
+    lanes are in place.
+48. **Rack in the inspector.** On a track: `Add block` › add a block (it starts off), turn it on, drag it
+    above the compressor, duplicate it, reset it, remove it; ⌘Z undoes each step. Expected: no glitch when a block
+    is turned on or moved during playback; badges on the headers and strips consistent (four and `+n`).
+49. **Correctives by ear.** Gate on a tom or a snare with bleed; de-esser on a sibilant vocal (try
+    `Listen` on the detected signal only and the two modes); dynamic EQ on guitars with sidechain from the vocal;
+    transient shaper on a snare. Expected: they do what they say without pumping or cutting tails unnaturally.
+50. **Color, space, motion, pitch.** Saturation characters (tape, tube, transistor: `soft` stays as
+    before), exciter, bass enhancer on a DI bass, width on a pad (the lows stay mono), chorus/flanger/phaser,
+    tempo-synced tremolo and auto-pan (the phase stays tied to the bar even after a seek), harmonizer on a vocal (the
+    voices do not follow the key, that must be said), doubler, `shimmer` reverb, ping-pong and tape delay, resonant filters.
+    Expected: no obvious artifacts; the judgment of the sound is yours.
+51. **Return chain.** On a reverb return add a compressor with sidechain from the vocal (ducking):
+    the reverb drops while the vocal sings and comes back in the pauses.
 
-## Idee creative (F17, A-089)
+## Creative ideas (F17, A-089)
 
-52. **Blocchi nella proposta.** Auto mix col modello vero su un brano con una voce sibilante e batteria con rientri.
-    Atteso: un de-esser o un gate appaiono come righe "new block" nel diff della traccia, al posto giusto della catena
-    dopo l'applicazione. La soglia della sibilanza (−3 dB nel prompt) è iniziale: dimmi se il de-esser arriva dove
-    serve e non altrove (A-089).
-53. **Idee col modello vero.** Con "Allow creative ideas" acceso, auto mix: al più tre idee, diverse tra loro, non
-    correttive, spente. Prova `Listen` su ognuna (suona la proposta con quell'idea sola), spuntane una e applica tutto:
-    un solo passo di cronologia che nomina l'idea; la nota della traccia la cita; ⌘Z toglie tutto. Spegni
-    l'interruttore e richiedi: nessuna idea. Prova anche una revisione a parole ("qualcosa di più audace nel bridge").
-54. **Idee all'ascolto.** Le idee spuntate migliorano il brano o lo distraggono? Il giudizio è tuo: è la parte di P-018
-    che nessuna misura verifica.
+52. **Blocks in the proposal.** Auto mix with the real model on a song with a sibilant vocal and drums with bleed.
+    Expected: a de-esser or a gate appear as "new block" rows in the track diff, in the right place in the chain
+    after applying. The sibilance threshold (−3 dB in the prompt) is initial: tell me if the de-esser arrives where
+    needed and not elsewhere (A-089).
+53. **Ideas with the real model.** With "Allow creative ideas" on, auto mix: at most three ideas, different from each other, non-
+    corrective, off. Try `Listen` on each (it plays the proposal with that idea alone), check one and apply all:
+    a single history step naming the idea; the track note cites it; ⌘Z removes everything. Turn the
+    switch off and ask again: no ideas. Also try a revision in words ("qualcosa di più audace nel bridge").
+54. **Ideas by ear.** Do the checked ideas improve the song or distract from it? The judgment is yours: it is the part of P-018
+    that no measurement verifies.
 
 ## Explain this mix (F18, A-092, A-093)
 
-55. **La spiegazione su un brano vero.** Apri un progetto vero, `Explain` nella barra in alto (⌘E). La mappa dice
-    davvero chi va dove? Il testo si capisce senza sapere di mix? Prova una traccia, un ritorno, una sezione, un gruppo
-    ripiegato. Segna le frasi che suonano sbagliate o inutili: sono modelli fissi, si correggono uno a uno.
-56. **I livelli misurati.** Alla prima apertura "Who is in front" dice che sta misurando: quanto ci mette su un brano
-    di 30 stem? Mentre misura la riproduzione resta fluida? I numeri tornano con quello che senti (chi sta davanti,
-    quale sezione è la più forte)? Muovi un fader: la parte si rimisura da sola.
+55. **The explanation on a real song.** Open a real project, `Explain` in the top bar (⌘E). Does the map really say
+    who goes where? Is the text understandable without knowing mixing? Try a track, a return, a section, a collapsed
+    group. Mark the sentences that sound wrong or useless: they are fixed templates, corrected one by one.
+56. **The measured levels.** On first opening "Who is in front" says it is measuring: how long does it take on a song
+    of 30 stems? While it measures does playback stay smooth? Do the numbers match what you hear (who is in front,
+    which section is the loudest)? Move a fader: the part is remeasured by itself.
 
-## Tour guidato (F19, A-094 … A-097)
+## Guided tour (F19, A-094 … A-097)
 
-57. **Primo avvio su dati puliti.** Chiudi l'app e sposta altrove `~/Library/Application Support/app.stemwise.desktop/`
-    (tieni la copia: dentro ci sono i recenti, la chiave in file e il registro dei costi), poi apri l'app. Atteso: la
-    scheda "Welcome to Stemwise" compare da sola sulla Welcome, senza attese; `Start` porta al passo 2 col brano
-    dimostrativo aperto entro 3 s. Chiudi l'app a metà tour e riaprila: il tour non riparte da solo; nella cartella
-    `~/Library/Caches/app.stemwise.desktop/tour` non resta nulla. Rimetti la cartella dei dati al suo posto.
-58. **I testi dei quindici passi.** Fai tutto il giro con `Next`, poi torna indietro con `←` fino all'inizio. Ogni
-    passo dice la cosa giusta su quello che illumina? Segna i testi da cambiare: stanno tutti in
-    `app/ui/src/tour/text.ts` e nelle tavole (`design/tools/s-tour.mjs`). Prova anche a usare l'area illuminata
-    (Play, un fader, l'A/B della proposta) e a cliccare fuori: fuori non deve succedere niente.
-59. **Il suono del brano sintetico.** Al passo 2 premi Play e ascolta tutto il brano (68 s): batteria, basso,
-    chitarre, Rhodes, archi, voce e cori sono riconoscibili come ruoli? Qualcosa dà fastidio (click, fischi, volumi
-    sbagliati)? Il riverbero e l'eco si sentono sulla voce? È sintetico per scelta (A-094): dimmi se basta a capire
-    cosa fa il mix o se serve di più.
-60. **Help › Take the Tour e uscite.** Con un progetto tuo aperto e modificato, `Help › Take the Tour` dal menu dell'app
-    (nome del progetto in alto a sinistra): chiede di salvare con la riga sul perché; `Cancel` lascia tutto com'era.
-    Durante il tour: `Skip tour`, `Esc`, `Done` e ⌘Q finiscono il tour; dopo Skip ed Esc un toast dice dove ritrovarlo.
-    Dopo il tour il progetto dimostrativo non è tra i recenti e AI usage non ha chiamate nuove.
-    Al passo 8 (A-099): `Apply all` e `Discard` (con la conferma sopra il tour) lasciano `Next` attivo; arrivandoci
-    in fretta, `Cancel` mentre la proposta si prepara non blocca il giro. Con Tab su `Back`, Invio torna indietro;
-    Spazio suona anche col fuoco sul fumetto.
-61. **Un solo menu dell'app (UI-20).** La barra dei menu di macOS ha solo Stemwise (About, Services, Hide, Quit),
-    Edit e Window; copia e incolla nei campi di testo funzionano ancora. Nel menu del nome del progetto: New
+57. **First launch on clean data.** Close the app and move `~/Library/Application Support/app.stemwise.desktop/` elsewhere
+    (keep the copy: it holds the recents, the file-based key and the cost log), then open the app. Expected: the
+    "Welcome to Stemwise" card appears by itself on the Welcome screen, with no wait; `Start` leads to step 2 with the demo
+    song open within 3 s. Close the app halfway through the tour and reopen it: the tour does not restart by itself; in the folder
+    `~/Library/Caches/app.stemwise.desktop/tour` nothing is left. Put the data folder back in its place.
+58. **The texts of the fifteen steps.** Go through the whole tour with `Next`, then go back with `←` to the beginning. Does each
+    step say the right thing about what it lights up? Mark the texts to change: they all live in
+    `app/ui/src/tour/text.ts` and in the boards (`design/tools/s-tour.mjs`). Also try using the lit area
+    (Play, a fader, the proposal A/B) and clicking outside: nothing must happen outside.
+59. **The sound of the synthetic song.** At step 2 press Play and listen to the whole song (68 s): drums, bass,
+    guitars, Rhodes, strings, vocal and backing vocals recognizable as roles? Does anything bother you (clicks, whistles, wrong
+    volumes)? Can the reverb and the echo be heard on the vocal? It is synthetic by choice (A-094): tell me if it is enough to understand
+    what the mix does or if more is needed.
+60. **Help › Take the Tour and exits.** With a project of yours open and modified, `Help › Take the Tour` from the app menu
+    (project name at the top left): it asks to save with the line explaining why; `Cancel` leaves everything as it was.
+    During the tour: `Skip tour`, `Esc`, `Done` and ⌘Q end the tour; after Skip and Esc a toast says where to find it again.
+    After the tour the demo project is not among the recents and AI usage has no new calls.
+    At step 8 (A-099): `Apply all` and `Discard` (with the confirmation above the tour) leave `Next` enabled; getting there
+    in a hurry, `Cancel` while the proposal is being prepared does not block the tour. With Tab on `Back`, Enter goes back;
+    Space plays even with focus on the bubble.
+61. **A single app menu (UI-20).** The macOS menu bar has only Stemwise (About, Services, Hide, Quit),
+    Edit and Window; copy and paste in text fields still work. In the project name menu: New
     project ⌘N, Open… ⌘O, Project settings, Save ⌘S, Save as… ⇧⌘S, Close project, Settings… ⌘,, Help › Take the Tour.
-    ⌘N e ⌘O funzionano anche dalla Welcome.
+    ⌘N and ⌘O work from the Welcome screen too.
 
-62. **Landing page (A-100, A-101).** Fatto il 2026-11-16: il sito è su <https://stemwise.pierodetomi.dev> e i suoi
-    link a codice, release, `LICENSE` e `.dmg` rispondono da fuori. Resta da caricare l'immagine di anteprima del
-    repository (Settings › Social preview, `docs/images/social-preview.png`) e, a ogni nuova release, aggiornare
-    l'indirizzo del `.dmg` in `site/config.js` della landing.
+62. **Landing page (A-100, A-101).** Done on 2026-11-16: the site is at <https://stemwise.pierodetomi.dev> and its
+    links to code, release, `LICENSE` and `.dmg` respond from outside. Still to do: upload the repository's preview image
+    (Settings › Social preview, `docs/images/social-preview.png`) and, at every new release, update the
+    `.dmg` address in `site/config.js` of the landing.
 
-63. **Pacchetto scaricato e self-test (A-103).** Scarica il `.dmg` dalla pagina delle release e aprilo come farebbe
-    chiunque: deve comparire l'avviso sullo sviluppatore non verificato, poi **Impostazioni di Sistema › Privacy e
-    sicurezza › Apri comunque**, mai "danneggiato". Il self-test nel pacchetto è stato ripetuto a Mac fermo il
-    2026-11-16: tre volte su tre, 59 su 59.
-64. **Installer su Windows (A-104).** Installa `Stemwise_<versione>_x64-setup.exe` da `app/target/release/bundle/nsis`
-    su un Windows pulito: SmartScreen avvisa perché non è firmato (**Ulteriori informazioni › Esegui comunque**),
-    l'installazione non chiede diritti di amministratore e l'app compare nel menu Start. La finestra non ha una
-    barra dei menu; il menu del nome del progetto ha tutti i comandi, con le scorciatoie scritte `Ctrl+…`.
-65. **Audio su Windows (A-104).** Su un brano vero: riproduzione senza scatti con il dispositivo predefinito
-    (WASAPI), cambio di dispositivo in Impostazioni › Audio, cuffie scollegate durante la riproduzione (13b). Ascolta
-    un export AAC a 256 kbit/s, che su Windows usa Media Foundation, accanto allo stesso export fatto su macOS.
-66. **Percorsi e trascinamento su Windows (A-104).** Nuovo progetto da file trascinati da Esplora file con lo
-    schermo al 125% o al 150%: il riquadro di rilascio sta sotto il puntatore. `Save as…` in una cartella con
-    spazi e lettere accentate, poi riapertura dai recenti. Su un portatile al 150% la finestra minima di 1280×720
-    potrebbe non entrare nello schermo: dimmi se succede.
+63. **Downloaded package and self-test (A-103).** Download the `.dmg` from the releases page and open it as anyone
+    would: the warning about an unverified developer must appear, then **System Settings › Privacy &
+    Security › Open Anyway**, never "damaged". The self-test in the package was repeated with the Mac idle on
+    2026-11-16: three times out of three, 59 out of 59.
+64. **Installer on Windows (A-104).** Install `Stemwise_<version>_x64-setup.exe` from `app/target/release/bundle/nsis`
+    on a clean Windows: SmartScreen warns because it is not signed (**More info › Run anyway**),
+    the installation asks for no administrator rights and the app appears in the Start menu. The window has no
+    menu bar; the project name menu has all the commands, with shortcuts written `Ctrl+…`.
+65. **Audio on Windows (A-104).** On a real song: playback with no glitches on the default device
+    (WASAPI), device change in Settings › Audio, headphones unplugged during playback (13b). Listen to
+    an AAC export at 256 kbit/s, which on Windows uses Media Foundation, next to the same export made on macOS.
+66. **Paths and drag-and-drop on Windows (A-104).** New project from files dragged from File Explorer with the
+    screen at 125% or 150%: the drop box sits under the pointer. `Save as…` into a folder with
+    spaces and accented letters, then reopening from the recents. On a laptop at 150% the minimum window of 1280×720
+    might not fit on the screen: tell me if that happens.
 
-## Ordine consigliato
+## Recommended order
 
-1. Pacchetto e avvio: 23, 22, 40.
-2. Motore e ascolto: 1–6, poi 25–26 (riverberi e compressione parallela), 47–51 (catena a blocchi ed effetti nuovi),
-   16 e 21 (stati di errore).
-3. Assistente col servizio vero: 7–11, poi 12–14, 27–29 (struttura e doppi) e 31–32 (bilanciamento e revisioni), 52–54 (blocchi e idee creative).
-   Stato del mix a colpo d'occhio: 33–34. Proposte che restano: 35. Configurazione guidata: 36–38 (prima di 7–11).
-4. Master ed export: 17–19, 30, poi 39 (master AI misurato), 41 (musica non rock), 42–45 (catena libera) e 46 (forma d'onda).
-5. Impostazioni e accessibilità: 20, 21 (VoiceOver).
-6. Brano vero dall'inizio alla fine: 24. La spiegazione del mix: 55–56.
-7. Tour guidato e menu dell'app: 57 (per primo, su dati puliti), 58–61.
-8. Pulizia: 15.
-9. Landing page e pacchetto scaricato: 62, 63.
+1. Package and launch: 23, 22, 40.
+2. Engine and listening: 1–6, then 25–26 (reverbs and parallel compression), 47–51 (block chain and new effects),
+   16 and 21 (error states).
+3. Assistant with the real service: 7–11, then 12–14, 27–29 (structure and doubles) and 31–32 (balance and revisions), 52–54 (blocks and creative ideas).
+   Mix state at a glance: 33–34. Persistent proposals: 35. Guided setup: 36–38 (before 7–11).
+4. Master and export: 17–19, 30, then 39 (measured AI master), 41 (non-rock music), 42–45 (free chain) and 46 (waveform).
+5. Settings and accessibility: 20, 21 (VoiceOver).
+6. A real song from start to finish: 24. The mix explanation: 55–56.
+7. Guided tour and app menu: 57 (first, on clean data), 58–61.
+8. Cleanup: 15.
+9. Landing page and downloaded package: 62, 63.
 10. Windows: 64, 65, 66.

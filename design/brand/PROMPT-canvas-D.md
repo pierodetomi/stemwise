@@ -1,114 +1,112 @@
-# Prompt della sessione canvas — logo "D · Due stanze"
+# Canvas session prompt — logo "D · Two rooms"
 
-Da incollare in una nuova sessione di Claude Desktop (canvas). Il prompt è autonomo: la sessione non ha accesso al
-repository. Si può allegare in più [directions/logo-directions.html](directions/logo-directions.html) perché veda le
-quattro proposte di partenza, ma non è necessario: il codice della D è già nel prompt.
+To paste into a new Claude Desktop session (canvas). The prompt is self-contained: the session has no access to the
+repository. You may also attach [directions/logo-directions.html](directions/logo-directions.html) so that it sees the
+four starting proposals, but it is not necessary: the code of D is already in the prompt.
 
-Quando la sessione consegna, i file vanno in `design/brand/final/` e il passo successivo è l'adozione nell'app
+When the session delivers, the files go in `design/brand/final/` and the next step is the adoption in the app
 (A-075).
 
 ````text
-Sei il designer del marchio di Stemwise. In questa sessione rifinisci il logo scelto dall'autore, la direzione
-"D · Due stanze", fino a un marchio pronto per l'adozione: marchio, icona dell'app per macOS, marchio piccolo per
-la barra dell'app, favicon e lockup col nome. Tutto quello che ti serve è in questo messaggio. Comunica con me in
-italiano; i testi dentro le tavole che imitano l'app restano in inglese, come l'interfaccia.
+You are the designer of the Stemwise mark. In this session you refine the logo chosen by the author, direction
+"D · Two rooms", into a mark ready for adoption: mark, macOS app icon, small mark for the app bar, favicon and
+lockup with the name. Everything you need is in this message. Communicate with me in Italian; the texts inside the
+boards that imitate the app stay in English, like the interface.
 
-Il lavoro ha due tempi e una sola pausa.
+The work has two phases and a single pause.
 
-TEMPO 1 — Tre varianti dentro la D
-Proponi tre varianti della direzione D, nettamente diverse tra loro (non tre ritocchi della stessa forma): una che
-evolve la proposta di partenza correggendone i difetti (sezione 5) e due che esprimono le "due stanze" in un altro
-modo (la sezione 6 ha alcuni spunti, non obbligatori). Per ciascuna mostra sul canvas:
-- un nome e due righe sull'idea;
-- il marchio grande;
-- l'icona macOS a 1024, 128, 32 e 16 px alle dimensioni reali, e in un Dock accanto a icone neutre;
-- il marchio a 20 px nella barra in alto dell'app, una volta in Mix e una in Master (sezione 4);
-- la versione monocroma;
-- in tre righe: cosa racconta, il rischio, il marchio esistente più vicino.
-Chiudi con un confronto delle tre a 128, 32 e 16 px. Poi fermati e chiedimi quale variante scelgo. È l'unica
-domanda che puoi farmi in tutta la sessione.
+PHASE 1 — Three variants within D
+Propose three variants of direction D, clearly different from one another (not three retouches of the same shape): one
+that evolves the starting proposal by correcting its flaws (section 5) and two that express the "two rooms" in another
+way (section 6 has some hints, not mandatory). For each, show on the canvas:
+- a name and two lines on the idea;
+- the large mark;
+- the macOS icon at 1024, 128, 32 and 16 px at real size, and in a Dock next to neutral icons;
+- the mark at 20 px in the app's top bar, once in Mix and once in Master (section 4);
+- the monochrome version;
+- in three lines: what it tells, the risk, the closest existing brand.
+Close with a comparison of the three at 128, 32 and 16 px. Then stop and ask me which variant I choose. It is the only
+question you may ask me in the whole session.
 
-TEMPO 2 — Rifinitura completa, senza interruzioni
-Dopo la mia scelta rifinisci la variante fino alla consegna della sezione 8, senza fermarti. Se un punto è
-ambiguo, decidi tu nel modo più coerente con questo messaggio e annota la decisione nel README finale. Prima di
-consegnare verifica la variante contro i criteri della sezione 9 e correggi quello che non regge.
+PHASE 2 — Full refinement, without interruptions
+After my choice, refine the variant up to the delivery of section 8, without stopping. If a point is ambiguous, decide
+yourself in the way most consistent with this message and note the decision in the final README. Before delivering,
+check the variant against the criteria of section 9 and fix what does not hold up.
 
 ────────────────────────────────────────
 
-1. IL PRODOTTO
+1. THE PRODUCT
 
-Stemwise è un'app desktop per macOS per mixare e masterizzare brani già registrati. Non registra e non compone: si
-parte dagli stem, le tracce separate di un brano (voce, batteria, basso, chitarre…), e si arriva al master pronto
-da pubblicare.
-- Un assistente AI propone, non guida: ogni sua scelta è numerata, spiegata con una frase e annullabile con un solo
-  passo. L'utente ascolta, corregge, decide. Il modello non riceve mai l'audio, solo misure.
-- Due fasi, due stanze. Prima il Mix (molte tracce che diventano un brano), poi il Master (il brano intero
-  rifinito per la pubblicazione). Sono due spazi di lavoro distinti, con cronologie separate, e si riconoscono a
-  colpo d'occhio dal colore: lime su melanzana per il Mix, lilla su indaco per il Master. Il passaggio dal Mix al
-  Master è un momento esplicito, un dialogo che produce il mixdown; dal Master si può sempre tornare al Mix.
-- Utente: chi scrive e registra bene ma non è un tecnico del suono, e vuole un risultato credibile senza imparare
-  un mestiere. Tono della direzione visiva, chiamata "Atelier": competente, calmo, artigianale. Mai tecnico per
-  esibizione, mai "magico", mai aggressivo.
-- Il nome: stem (le tracce separate, ma anche lo stelo di una pianta) + wise (saggio, "che sa come").
-- Slogan della schermata iniziale: "Mix and master the songs you have already recorded. An assistant proposes,
+Stemwise is a desktop app for macOS for mixing and mastering songs that are already recorded. It does not record and
+does not compose: you start from the stems, the separate tracks of a song (vocals, drums, bass, guitars…), and you end
+up with the master ready to publish.
+- An AI assistant proposes, it does not drive: each of its choices is numbered, explained in one sentence and undoable
+  in a single step. The user listens, corrects, decides. The model never receives the audio, only measurements.
+- Two phases, two rooms. First the Mix (many tracks that become a song), then the Master (the whole song polished for
+  release). They are two distinct workspaces, with separate histories, and are told apart at a glance by color: lime
+  on aubergine for the Mix, lilac on indigo for the Master. The passage from Mix to Master is an explicit moment, a
+  dialog that produces the mixdown; from the Master you can always go back to the Mix.
+- User: someone who writes and records well but is not a sound engineer, and wants a credible result without learning
+  a trade. Tone of the visual direction, called "Atelier": competent, calm, craftsmanlike. Never technical for show,
+  never "magic", never aggressive.
+- The name: stem (the separate tracks, but also the stem of a plant) + wise (sage, "who knows how").
+- Start screen tagline: "Mix and master the songs you have already recorded. An assistant proposes,
   you listen and decide."
 
-2. PRINCIPI VISIVI DELL'INTERFACCIA
+2. VISUAL PRINCIPLES OF THE INTERFACE
 
-1. Due fasi, due stanze: lime su melanzana per il Mix, lilla su indaco per il Master.
-2. L'assistente ha un solo colore, l'azzurro: tutto ciò che ha scritto l'AI è azzurro. Per questo l'azzurro non è
-   il colore del prodotto e non entra nel logo.
-3. Il colore indica suono o stato, mai decorazione.
-4. Leggibile da chi non è fonico.
-5. Riposante al buio: nessun bianco pieno, nessun nero pieno.
-6. Ogni stato ha anche un segnale non cromatico (forma, lettera, contorno, posizione), non solo un colore.
+1. Two phases, two rooms: lime on aubergine for the Mix, lilac on indigo for the Master.
+2. The assistant has a single color, sky blue: everything the AI wrote is sky blue. For this reason sky blue is not
+   the product's color and does not enter the logo.
+3. Color indicates sound or state, never decoration.
+4. Readable by non-engineers.
+5. Restful in the dark: no pure white, no pure black.
+6. Every state also has a non-chromatic signal (shape, letter, outline, position), not only a color.
 
-3. PALETTE, TIPOGRAFIA, FORME
+3. PALETTE, TYPOGRAPHY, SHAPES
 
-Palette (OKLCH è il riferimento, l'hex la conversione sRGB):
-- Fondo finestra Mix, melanzana: oklch(0.195 0.02 320) · #19121B
-- Pannelli Mix: oklch(0.24 0.022 320) · #241C26
-- Pozzetti, più scuro: oklch(0.16 0.018 320) · #110B12
-- Linee: oklch(0.36 0.026 320) · #433946
-- Fondo finestra Master, indaco: oklch(0.19 0.03 290) · #141120
-- Pannelli Master: oklch(0.235 0.032 290) · #1E1B2C
-- Testo principale: oklch(0.96 0.01 320) · #F5F0F6
-- Testo attenuato: oklch(0.75 0.018 320) · #B3AAB5
-- Accento Mix, lime: oklch(0.88 0.17 118) · #CEE654
-- Accento Master, lilla: oklch(0.81 0.12 300) · #CDAFFF
-- Azzurro dell'AI (da non usare nel logo): oklch(0.85 0.09 215) · #85DDF3
-Nel logo: fondo melanzana (anche con un passaggio leggero verso l'indaco), lime e lilla come soli due colori del
-segno, testo #F5F0F6. Mai nero o bianco puro. Sfumature solo leggere e solo per la profondità dell'icona macOS; il
-marchio piatto deve funzionare senza.
+Palette (OKLCH is the reference, the hex the sRGB conversion):
+- Mix window background, aubergine: oklch(0.195 0.02 320) · #19121B
+- Mix panels: oklch(0.24 0.022 320) · #241C26
+- Wells, darker: oklch(0.16 0.018 320) · #110B12
+- Lines: oklch(0.36 0.026 320) · #433946
+- Master window background, indigo: oklch(0.19 0.03 290) · #141120
+- Master panels: oklch(0.235 0.032 290) · #1E1B2C
+- Main text: oklch(0.96 0.01 320) · #F5F0F6
+- Muted text: oklch(0.75 0.018 320) · #B3AAB5
+- Mix accent, lime: oklch(0.88 0.17 118) · #CEE654
+- Master accent, lilac: oklch(0.81 0.12 300) · #CDAFFF
+- AI sky blue (not to be used in the logo): oklch(0.85 0.09 215) · #85DDF3
+In the logo: aubergine background (also with a light transition toward indigo), lime and lilac as the only two colors
+of the mark, text #F5F0F6. Never pure black or white. Gradients only light and only for the depth of the macOS icon;
+the flat mark must work without them.
 
-Tipografia: titoli e nome in Bricolage Grotesque (pesi 500 e 600), il resto dell'interfaccia in Figtree; entrambe
-SIL Open Font License 1.1, su Google Fonts. Il wordmark "Stemwise" è Bricolage Grotesque 600, tracking circa
--0.01em; puoi regolare spaziatura e singoli glifi, ma la famiglia deve restare riconoscibile.
+Typography: titles and name in Bricolage Grotesque (weights 500 and 600), the rest of the interface in Figtree; both
+SIL Open Font License 1.1, on Google Fonts. The "Stemwise" wordmark is Bricolage Grotesque 600, tracking about
+-0.01em; you may adjust spacing and individual glyphs, but the family must stay recognizable.
 
-Forme: le icone dell'app sono su griglia 16 × 16, tratto 1,5 px, estremità e giunzioni arrotondate, senza
-riempimento. Due esempi reali (viewBox 0 0 16 16):
+Shapes: the app's icons are on a 16 × 16 grid, 1.5 px stroke, rounded caps and joins, no fill. Two real examples
+(viewBox 0 0 16 16):
   loop:   <path d="M11 2.5l2 2-2 2M13 4.5H5.5a3 3 0 0 0-3 3M5 13.5l-2-2 2-2M3 11.5h7.5a3 3 0 0 0 3-3"/>
   group:  <rect x="2" y="3" width="12" height="4" rx="1"/><path d="M4.5 7v5.5h9M4.5 9.8h9"/>
-Il resto dell'interfaccia: raggi morbidi (schede 14 px, pulsanti 10 px, clip 6 px), cap dei fader larghi e
-arrotondati, nessun angolo vivo aggressivo, nessuna ombra drammatica. Il marchio deve sembrare della stessa
-famiglia.
+The rest of the interface: soft radii (cards 14 px, buttons 10 px, clips 6 px), wide rounded fader caps, no aggressive
+sharp corners, no dramatic shadows. The mark must look like part of the same family.
 
-4. DOVE VIVE IL LOGO
+4. WHERE THE LOGO LIVES
 
-- Icona dell'app macOS: 1024 × 1024 con la griglia delle icone Apple (corpo circa 824 px centrato, squircle ad
-  angoli continui, margine per l'ombra). Si legge nel Dock a 128 px e nel Finder a 32 e 16 px.
-- Barra in alto dell'app: alta 52 px, sullo sfondo della finestra. All'estrema sinistra il marchio a 20 × 20 px,
-  poi il nome del progetto (Bricolage Grotesque, per esempio "Paper Lanterns") e il selettore "Mix | Master".
-  Oggi il marchio in barra è monocromo nel colore d'accento della fase: lime nel Mix (su #19121B), lilla nel Master
-  (su #141120).
-- Schermata iniziale: marchio a 48 px, sotto "Stemwise" in Bricolage Grotesque 600 a 40 px e lo slogan in Figtree
-  14 px #B3AAB5; a destra l'elenco dei progetti recenti.
-- Pagina nel browser per il collegamento all'AI: marchio piccolo + "Stemwise" nell'intestazione di un riquadro.
-- In futuro: sito di prodotto, README, immagine del disco d'installazione.
+- macOS app icon: 1024 × 1024 with the Apple icon grid (body about 824 px centered, continuous-corner squircle, margin
+  for the shadow). It reads in the Dock at 128 px and in the Finder at 32 and 16 px.
+- App top bar: 52 px high, on the window background. At the far left the mark at 20 × 20 px, then the project name
+  (Bricolage Grotesque, for example "Paper Lanterns") and the "Mix | Master" selector. Today the mark in the bar is
+  monochrome in the phase's accent color: lime in Mix (on #19121B), lilac in Master (on #141120).
+- Start screen: mark at 48 px, below it "Stemwise" in Bricolage Grotesque 600 at 40 px and the tagline in Figtree
+  14 px #B3AAB5; on the right the list of recent projects.
+- Browser page for the AI connection: small mark + "Stemwise" in the header of a card.
+- In the future: product website, README, installer disk image.
 
-5. LA PROPOSTA DI PARTENZA E I SUOI DIFETTI
+5. THE STARTING PROPOSAL AND ITS FLAWS
 
-La direzione D consegnata da un primo giro di esplorazione (viewBox 0 0 100 100):
+Direction D as delivered by a first round of exploration (viewBox 0 0 100 100):
 
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <path d="M16 25H43Q50 25 55 32L64 43Q68 48 76 48H84" fill="none" stroke="#CEE654" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -116,86 +114,86 @@ La direzione D consegnata da un primo giro di esplorazione (viewBox 0 0 100 100)
   <path d="M75 39L86 50L75 61" fill="none" stroke="#CDAFFF" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
 
-Nell'icona sta su un rettangolo #19121B di 824 px con rx 218, scalato di 6 volte e centrato.
+In the icon it sits on a #19121B rectangle of 824 px with rx 218, scaled 6 times and centered.
 
-Cosa funziona: è l'unica delle quattro direzioni che racconta qualcosa di proprio del prodotto (le due fasi coi
-loro due colori); il tratto arrotondato è della stessa famiglia delle icone; lime e lilla sul melanzana stanno
-bene insieme.
+What works: it is the only one of the four directions that tells something of its own about the product (the two
+phases with their two colors); the rounded stroke is of the same family as the icons; lime and lilac on aubergine sit
+well together.
 
-Cosa non funziona, e va risolto:
-1. Si legge come l'icona generica "merge" (due strade che si uniscono, la fusione di due rami): è un simbolo
-   d'interfaccia già visto ovunque, non un marchio.
-2. Racconta la cosa sbagliata: le due linee arrivano insieme, in parallelo, come due ingressi alla pari. Le fasi
-   invece vengono una dopo l'altra: prima si mixa, poi si masterizza; e il Mix è "molte parti → un brano", il
-   Master è "un brano → rifinito".
-3. La punta di freccia è un cliché (export, avanti, invio) e nel punto d'incontro si sovrappone alla fine della
-   linea lime: a 32 px diventa una macchia.
-4. Il segno occupa metà dell'altezza del suo quadrato: a 16–32 px resta una freccia minuscola.
-5. In monocromia, cioè proprio nella barra in alto, le due stanze spariscono e resta solo il "merge".
-6. Il lettering del lockup non è Bricolage Grotesque ma un disegno geometrico a tratto.
-7. Il fondo dell'icona è un rettangolo con raggio semplice, non lo squircle ad angoli continui di macOS.
+What does not work, and must be solved:
+1. It reads as the generic "merge" icon (two roads that join, the merging of two branches): it is an interface symbol
+   already seen everywhere, not a mark.
+2. It tells the wrong thing: the two lines arrive together, in parallel, like two equal inputs. The phases instead come
+   one after the other: first you mix, then you master; and the Mix is "many parts → one song", the Master is
+   "one song → polished".
+3. The arrowhead is a cliché (export, forward, send) and at the meeting point it overlaps the end of the lime line: at
+   32 px it becomes a blotch.
+4. The mark occupies half the height of its square: at 16–32 px it remains a tiny arrow.
+5. In monochrome, that is exactly in the top bar, the two rooms disappear and only the "merge" remains.
+6. The lockup lettering is not Bricolage Grotesque but a geometric stroke drawing.
+7. The icon background is a rectangle with a simple radius, not the continuous-corner squircle of macOS.
 
-6. SPUNTI PER LE VARIANTI (facoltativi)
+6. HINTS FOR THE VARIANTS (optional)
 
-- La soglia: molte linee sottili (gli stem) entrano nella prima stanza e diventano una; quella sola linea passa
-  una soglia ed entra nella seconda stanza, dove si posa o si chiude. Prima lime, poi lilla: la sequenza si legge
-  da sinistra a destra.
-- La pianta: due stanze viste dall'alto, come nella pianta di un architetto (l'Atelier), contigue e con un varco
-  tra loro. La prima è divisa in strisce (le tracce), la seconda è piena o ha una sola forma (il brano). Anche in
-  monocromia restano due stanze, perché lo dice la geometria.
-- Il passaggio continuo: un solo tratto che cambia colore a metà, lime poi lilla, e nel suo percorso disegna una
-  S (Stemwise) o una forma che va da "aperta" a "chiusa".
-Qualunque cosa tu scelga, le due stanze devono riconoscersi anche senza colore (principio 6).
+- The threshold: many thin lines (the stems) enter the first room and become one; that single line crosses a threshold
+  and enters the second room, where it settles or closes. First lime, then lilac: the sequence reads from left to
+  right.
+- The floor plan: two rooms seen from above, as in an architect's plan (the Atelier), contiguous and with an opening
+  between them. The first is divided into strips (the tracks), the second is full or has a single shape (the song). Even
+  in monochrome there remain two rooms, because the geometry says so.
+- The continuous passage: a single stroke that changes color halfway, lime then lilac, and along its path draws an S
+  (Stemwise) or a shape that goes from "open" to "closed".
+Whatever you choose, the two rooms must be recognizable even without color (principle 6).
 
-Un'occasione da valutare per la barra in alto: se il marchio è fatto di due parti separabili, l'app potrebbe
-accendere la stanza della fase corrente nel suo accento e attenuare l'altra (per esempio al 40 %), invece di
-colorare tutto il marchio. Il marchio direbbe così anche in quale fase sei, con la posizione oltre che col colore.
-Mostralo nelle tavole della barra; se non regge a 20 px, resta il marchio monocromo.
+An opportunity to evaluate for the top bar: if the mark is made of two separable parts, the app could light the room
+of the current phase in its accent and dim the other (for example to 40 %), instead of coloring the whole mark. The
+mark would then also say which phase you are in, by position as well as by color. Show it in the bar boards; if it does
+not hold up at 20 px, the monochrome mark remains.
 
-7. COSA EVITARE
+7. WHAT TO AVOID
 
-- Frecce, simboli "merge", "play", "fast forward", segnali stradali.
-- Cliché audio e AI: note, cuffie, microfoni, vinili, onde sinusoidali, barre da equalizzatore, cervelli,
-  scintille, stelline, gufi.
-- Yin-yang, bandiere, simboli astratti di "dualità" senza legame col prodotto.
-- Somiglianze con marchi noti: Logic Pro, GarageBand, Ableton, FL Studio, Reaper, Audacity, iZotope, Spotify,
-  SoundCloud, Splice, LANDR; e con le icone "merge" di Git e GitHub.
-- Dettagli sotto 1,5 px a 20 px, testo nell'icona, effetti 3D pesanti, fotorealismo, immagini raster generate:
-  il logo è vettoriale, disegnato a tracciati.
-- Font o risorse con licenze diverse da SIL OFL, MIT, Apache-2.0, BSD o ISC.
+- Arrows, "merge", "play", "fast forward" symbols, road signs.
+- Audio and AI clichés: notes, headphones, microphones, vinyl records, sine waves, equalizer bars, brains, sparks,
+  little stars, owls.
+- Yin-yang, flags, abstract "duality" symbols with no link to the product.
+- Resemblances to well-known brands: Logic Pro, GarageBand, Ableton, FL Studio, Reaper, Audacity, iZotope, Spotify,
+  SoundCloud, Splice, LANDR; and to the Git and GitHub "merge" icons.
+- Details under 1.5 px at 20 px, text in the icon, heavy 3D effects, photorealism, generated raster images: the logo is
+  vector, drawn with paths.
+- Fonts or resources with licenses other than SIL OFL, MIT, Apache-2.0, BSD or ISC.
 
-8. CONSEGNA (TEMPO 2)
+8. DELIVERY (PHASE 2)
 
-Una cartella "final" scaricabile con questi file. SVG puliti: solo tracciati, niente testo vivo, niente immagini
-incorporate, colori della sezione 3.
-- mark.svg — il marchio a colori, viewBox quadrato.
-- mark-mono.svg — monocromo in currentColor.
-- mark-20.svg — disegnato per 20 px (spessori e posizioni allineati alla griglia di 20, varianti ottiche se
-  servono), in currentColor. Se adotti l'idea della stanza accesa (sezione 6), le due stanze sono due gruppi
-  <g id="room-mix"> e <g id="room-master"> in currentColor, così che l'app possa colorarli e attenuarli da CSS.
-- favicon-32.svg e favicon-16.svg — con il fondo, disegnati per quelle dimensioni.
-- icon-1024.svg — l'icona piatta completa, con lo squircle ad angoli continui.
-- icon-layers/ — i livelli per Icon Composer: background.svg (lo squircle col fondo), e un file per ciascun
-  elemento in primo piano (per esempio room-mix.svg e room-master.svg), tutti a 1024 × 1024 e allineati.
-- lockup.svg — marchio + "Stemwise" in Bricolage Grotesque 600 convertito in tracciati, sul fondo trasparente,
-  pensato per il melanzana; lockup-mono-light.svg (#F5F0F6) e lockup-mono-dark.svg (#19121B).
-- mono-light.svg e mono-dark.svg — il marchio in #F5F0F6 e in #19121B.
-- presentation.html — una pagina autonoma (un solo file, si apre con un doppio clic, font da Google Fonts) con: il
-  marchio e la sua griglia di costruzione; l'icona a 1024, 512, 128, 32 e 16 px alle dimensioni reali e nel Dock;
-  la barra in alto in Mix e in Master; la schermata iniziale col lockup; le monocromie su chiaro e su scuro; area
-  di rispetto e dimensione minima; usi corretti e scorretti (non ruotare, non ricolorare con altre tinte, non
-  allungare, non mettere su fondi chiari a colori).
-- README.md, in italiano: l'idea in tre righe, la costruzione (griglia, spessori, raggi), i colori, l'area di
-  rispetto, le dimensioni minime, l'elenco dei file, le decisioni prese nel tempo 2.
-Se non riesci a convertire Bricolage Grotesque in tracciati nel canvas, consegna il lockup con il testo vivo e il
-font dichiarato, e dillo chiaramente nel README: lo convertirò io. Non sostituirlo con un lettering inventato.
+A downloadable "final" folder with these files. Clean SVGs: paths only, no live text, no embedded images, colors from
+section 3.
+- mark.svg — the color mark, square viewBox.
+- mark-mono.svg — monochrome in currentColor.
+- mark-20.svg — designed for 20 px (thicknesses and positions aligned to the 20 grid, optical variants if needed), in
+  currentColor. If you adopt the lit-room idea (section 6), the two rooms are two groups
+  <g id="room-mix"> and <g id="room-master"> in currentColor, so that the app can color and dim them from CSS.
+- favicon-32.svg and favicon-16.svg — with the background, designed for those sizes.
+- icon-1024.svg — the complete flat icon, with the continuous-corner squircle.
+- icon-layers/ — the layers for Icon Composer: background.svg (the squircle with the background), and one file for each
+  foreground element (for example room-mix.svg and room-master.svg), all at 1024 × 1024 and aligned.
+- lockup.svg — mark + "Stemwise" in Bricolage Grotesque 600 converted to outlines, on a transparent background,
+  meant for the aubergine; lockup-mono-light.svg (#F5F0F6) and lockup-mono-dark.svg (#19121B).
+- mono-light.svg and mono-dark.svg — the mark in #F5F0F6 and in #19121B.
+- presentation.html — a self-contained page (a single file, opens with a double click, fonts from Google Fonts) with:
+  the mark and its construction grid; the icon at 1024, 512, 128, 32 and 16 px at real size and in the Dock; the top
+  bar in Mix and in Master; the start screen with the lockup; the monochromes on light and on dark; clear space and
+  minimum size; correct and incorrect uses (do not rotate, do not recolor with other hues, do not stretch, do not put
+  on light colored backgrounds).
+- README.md, in Italian: the idea in three lines, the construction (grid, thicknesses, radii), the colors, the clear
+  space, the minimum sizes, the list of files, the decisions made in phase 2.
+If you cannot convert Bricolage Grotesque to outlines in the canvas, deliver the lockup with live text and the font
+declared, and say so clearly in the README: I will convert it myself. Do not replace it with an invented lettering.
 
-9. CRITERI DI VERIFICA
+9. VERIFICATION CRITERIA
 
-1. Riconoscibilità: si ricorda dopo averlo visto una volta? A 16 px nel Finder è ancora "quello di Stemwise"?
-2. Pertinenza: racconta le due fasi, una dopo l'altra, e non l'audio in generale né una fusione qualsiasi?
-3. Senza colore: in monocromia restano due stanze?
-4. Coerenza: sta accanto alle icone e ai controlli dell'app come se fosse nato con loro?
-5. Calma: è adatto a uno strumento in cui si passano ore al buio?
-6. Durata: tra due anni sembrerà ancora giusto?
+1. Recognizability: is it remembered after seeing it once? At 16 px in the Finder is it still "the Stemwise one"?
+2. Relevance: does it tell the two phases, one after the other, and not audio in general nor any merge?
+3. Without color: in monochrome do two rooms remain?
+4. Consistency: does it sit next to the app's icons and controls as if it were born with them?
+5. Calm: is it suited to a tool in which you spend hours in the dark?
+6. Durability: in two years will it still look right?
 ````

@@ -1,47 +1,47 @@
-# Stemwise — marchio
+# Stemwise — brand mark
 
-Il lavoro sul logo dell'app: il marchio, l'icona macOS, il marchio nella barra in alto e il lockup col nome. Le
-decisioni sono in [A-075 e A-076](../../docs/app/DECISIONS.md).
+Work on the app logo: the mark, the macOS icon, the mark in the top bar and the lockup with the name. The decisions
+are in [A-075 and A-076](../../docs/app/DECISIONS.md).
 
-> **Diritti riservati.** Nome e logo di Stemwise, e tutto il contenuto di questa cartella, non rientrano nella licenza
-> MIT del repository. Cosa si può fare e cosa no: [TRADEMARKS.md](../../TRADEMARKS.md).
+> **Rights reserved.** The Stemwise name and logo, and everything in this folder, are not covered by the repository's
+> MIT license. What you may and may not do: [TRADEMARKS.md](../../TRADEMARKS.md).
 
-## Stato
+## Status
 
-| Passo | Stato | Dove |
+| Step | Status | Where |
 | --- | --- | --- |
-| Brief per quattro direzioni | ✅ 2026-11-13 | [BRIEF-logo.md](BRIEF-logo.md) |
-| Quattro direzioni (agente esterno) | ✅ 2026-11-13 | [directions/](directions/) |
-| Scelta dell'autore: **D · Due stanze** | ✅ 2026-11-13 | A-075 |
-| Rifinitura della D | ✅ 2026-11-14 | [final/](final/) (apri `final/presentation.html`), A-076; si rigenera con `build-final.py` |
-| Adozione nell'app (icone Tauri, marchio in barra, tavole del design) | ✅ 2026-11-14 | A-078 |
+| Brief for four directions | ✅ 2026-11-13 | [BRIEF-logo.md](BRIEF-logo.md) |
+| Four directions (external agent) | ✅ 2026-11-13 | [directions/](directions/) |
+| The author's choice: **D · Two rooms** | ✅ 2026-11-13 | A-075 |
+| Refinement of D | ✅ 2026-11-14 | [final/](final/) (open `final/presentation.html`), A-076; regenerated with `build-final.py` |
+| Adoption in the app (Tauri icons, mark in the bar, design boards) | ✅ 2026-11-14 | A-078 |
 
-Nell'app il marchio vive in `app/ui/src/shared/Icon.tsx` (`Mark`), nelle tavole in `mark()` di
-`design/tools/lib.mjs`, con i colori in `design/components/components.css`; le icone in `app/src-tauri/icons/` sono
-generate da `final/icon-1024.svg`.
+In the app the mark lives in `app/ui/src/shared/Icon.tsx` (`Mark`), in the boards in `mark()` of
+`design/tools/lib.mjs`, with the colors in `design/components/components.css`; the icons in `app/src-tauri/icons/` are
+generated from `final/icon-1024.svg`.
 
-## Le quattro direzioni
+## The four directions
 
-Disegnate da un agente esterno a partire da [BRIEF-logo.md](BRIEF-logo.md). Sono un archivio e un riferimento: non
-fanno parte del prodotto.
+Drawn by an external agent from [BRIEF-logo.md](BRIEF-logo.md). They are an archive and a reference: they are not
+part of the product.
 
-| Direzione | Idea | Cartella |
+| Direction | Idea | Folder |
 | --- | --- | --- |
-| A · Convergenza | quattro stem entrano distinti e si raccolgono in un'unica uscita | [directions/A-convergenza](directions/A-convergenza) |
-| B · Monogramma | una S costruita come curva di automazione, con tre punti | [directions/B-monogramma](directions/B-monogramma) |
-| C · Il fader | un cap di fader fermo nel punto giusto, non a fondo corsa | [directions/C-fader](directions/C-fader) |
-| **D · Due stanze** (scelta) | due traiettorie, lime (Mix) e lilla (Master), che si incontrano in un'uscita | [directions/D-due-stanze](directions/D-due-stanze) |
+| A · Convergence | four stems come in distinct and gather into a single output | [directions/A-convergence](directions/A-convergence) |
+| B · Monogram | an S built as an automation curve, with three points | [directions/B-monogram](directions/B-monogram) |
+| C · The fader | a fader cap resting at the right spot, not at the end of travel | [directions/C-fader](directions/C-fader) |
+| **D · Two rooms** (chosen) | two trajectories, lime (Mix) and lilac (Master), meeting in one output | [directions/D-two-rooms](directions/D-two-rooms) |
 
-[directions/logo-directions.html](directions/logo-directions.html) mostra le quattro proposte: icona da 1024 a 16 px,
-Dock, barra in alto in Mix e Master, lockup nella welcome, monocromie e confronto finale. Si apre con un doppio clic e
-carica i font da Google Fonts.
+[directions/logo-directions.html](directions/logo-directions.html) shows the four proposals: icon from 1024 down to
+16 px, Dock, top bar in Mix and Master, lockup on the welcome screen, monochrome versions and a final comparison. It
+opens with a double click and loads its fonts from Google Fonts.
 
-Ogni cartella contiene `mark.svg`, `mark-20.svg` (in `currentColor`), `icon-1024.svg`, `icon-layer-bg.svg`,
-`icon-layer-fg.svg`, `lockup.svg`, `mono-light.svg` e `mono-dark.svg`.
+Each folder contains `mark.svg`, `mark-20.svg` (in `currentColor`), `icon-1024.svg`, `icon-layer-bg.svg`,
+`icon-layer-fg.svg`, `lockup.svg`, `mono-light.svg` and `mono-dark.svg`.
 
-Limiti dichiarati dall'agente e osservati qui:
+Limits stated by the agent and observed here:
 
-- il lettering dei lockup è un disegno geometrico a tratto, **non** Bricolage Grotesque 600: va rifatto;
-- il fondo dell'icona è un rettangolo con raggio semplice (`rx="218"`), non lo squircle ad angoli continui di macOS;
-- i livelli per Icon Composer sono solo separati in due file, non assemblati;
-- in `C-fader/mono-dark.svg` i dettagli interni hanno lo stesso colore del cap e spariscono (non riguarda la D).
+- the lettering of the lockups is a geometric stroke drawing, **not** Bricolage Grotesque 600: it must be redone;
+- the icon background is a rectangle with a simple radius (`rx="218"`), not the continuous-corner squircle of macOS;
+- the layers for Icon Composer are only split into two files, not assembled;
+- in `C-fader/mono-dark.svg` the inner details have the same color as the cap and disappear (does not concern D).

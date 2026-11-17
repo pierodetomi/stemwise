@@ -1,916 +1,899 @@
-# Stemwise — documento fondativo del prodotto
+# Stemwise — product foundation document
 
-10 novembre 2026 · autore: Piero De Tomi · stato: **approvato come base di design e implementazione** ·
-esteso l'11 novembre 2026 con il mix AI strutturale e il nuovo riverbero (P-011, fasi F11 e F12) ·
-esteso il 13 novembre 2026 con lo stato del mix a colpo d'occhio (P-013, fase F13) e con le proposte
-che restano (P-014) e con la configurazione guidata dell'assistente (P-015) ·
-esteso il 14 novembre 2026 con il master AI misurato (P-016) e con la catena di master libera, in disegno (P-017) ·
-esteso il 15 novembre 2026 con la spiegazione del mix (P-019, fase F18) e con il tour guidato (P-020, fase F19)
+November 10, 2026 · author: Piero De Tomi · status: **approved as the basis for design and implementation** ·
+extended on November 11, 2026 with the structural AI mix and the new reverb (P-011, phases F11 and F12) ·
+extended on November 13, 2026 with mix state at a glance (P-013, phase F13), persistent proposals (P-014)
+and guided assistant setup (P-015) ·
+extended on November 14, 2026 with the measured AI master (P-016) and the free master chain, in design (P-017) ·
+extended on November 15, 2026 with the mix explanation (P-019, phase F18) and the guided tour (P-020, phase F19)
 
-Questo documento è la fonte di verità del prodotto Stemwise: cosa fa, come è fatto, con quale stack, in quale
-ordine si costruisce e con quali regole lavorano gli agenti. Sostituisce il PRD della PoC ([PRD.md](../poc/docs/PRD.md)) come
-riferimento per il lavoro nuovo; il PRD e il codice Python restano come archivio e come oracolo numerico (§5.7).
+This document is the source of truth for the Stemwise product: what it does, how it is built, with which stack, in
+which order it is built, and by which rules the agents work. It replaces the PoC PRD ([PRD.md](../poc/docs/PRD.md)) as
+the reference for new work; the PRD and the Python code remain as an archive and as the numeric oracle (§5.7).
 
-Il lavoro avviene in **due sessioni**, ciascuna avviata con un prompt già pronto:
+The work happens in **two sessions**, each started with a ready-made prompt:
 
-1. **Sessione di design** (Claude Desktop, canvas) — [§10](#10-prompt-della-sessione-di-design).
-2. **Sessione di implementazione** (Claude Code, in questo repository) — [§11](#11-prompt-della-sessione-di-implementazione).
+1. **Design session** (Claude Desktop, canvas) — [§10](#10-design-session-prompt).
+2. **Implementation session** (Claude Code, in this repository) — [§11](#11-implementation-session-prompt).
 
-In caso di conflitto: questo documento vince su `CLAUDE.md`, che vince sul design, che vince sul PRD della PoC.
-Un conflitto trovato durante l'implementazione si risolve secondo questo ordine e si annota in
-`docs/app/DECISIONS.md`, senza fermarsi.
+In case of conflict: this document wins over `CLAUDE.md`, which wins over the design, which wins over the PoC PRD.
+A conflict found during implementation is resolved in this order and recorded in
+`docs/app/DECISIONS.md`, without stopping.
 
 ---
 
-## 1. Visione
+## 1. Vision
 
-Stemwise è una **DAW multitraccia per mixare e masterizzare brani già registrati**, in cui un modello linguistico
-fa da assistente al mix: propone parametri motivati, l'utente ascolta, corregge a mano o a parole, e tiene il
-controllo. Non è una DAW per registrare o comporre.
+Stemwise is a **multitrack DAW for mixing and mastering already-recorded songs**, in which a language model acts as
+a mixing assistant: it proposes reasoned parameters, the user listens, corrects by hand or in words, and stays in
+control. It is not a DAW for recording or composing.
 
-**Utente.** Chi scrive e registra bene ma non è forte in mixing e mastering (l'autore per primo), e vuole un
-risultato credibile senza imparare un mestiere né pagare abbonamenti. Secondo profilo: chi sa mixare e vuole un
-punto di partenza rapido e spiegato.
+**User.** Someone who writes and records well but is not strong at mixing and mastering (the author first of all),
+and wants a credible result without learning a trade or paying for subscriptions. Second profile: someone who knows
+how to mix and wants a quick, explained starting point.
 
-**Principi di prodotto** (ereditati dalla PoC e confermati dal suo esito, [README](../poc/README.md#esito-della-poc)):
+**Product principles** (inherited from the PoC and confirmed by its outcome, [README](../poc/README.md#poc-outcome)):
 
-- **P1. Il modello non riceve mai audio.** Riceve misure numeriche, ruoli, nomi delle tracce, brief e richieste;
-  restituisce parametri. Tutto l'audio resta sulla macchina. L'utente può sempre vedere cosa viene inviato.
-- **P2. Il documento di progetto è l'unica sorgente di verità.** Stesso progetto ⇒ stesso render offline (stesso
-  hash). L'AI non ha un canale privilegiato: produce le stesse modifiche che l'utente potrebbe fare a mano.
-- **P3. Ogni scelta dell'AI è spiegata** (motivazione per traccia, sintesi del piano) e **reversibile** (una
-  proposta applicata è un solo passo di undo).
-- **P4. Niente è distruttivo.** I file importati non vengono mai modificati; ogni operazione è un comando
-  annullabile.
-- **P5. Mix e master sono due fasi distinte**, con spazi di lavoro, strumenti e cronologie separati.
-- **P6. Nessun compromesso sul motore audio**: tempo reale nativo, senza allocazioni né lock nel thread audio.
+- **P1. The model never receives audio.** It receives numeric measurements, roles, track names, briefs and requests;
+  it returns parameters. All audio stays on the machine. The user can always see what is sent.
+- **P2. The project document is the single source of truth.** Same project ⇒ same offline render (same hash). The AI
+  has no privileged channel: it makes the same changes the user could make by hand.
+- **P3. Every AI choice is explained** (per-track rationale, plan summary) and **reversible** (an applied proposal is
+  a single undo step).
+- **P4. Nothing is destructive.** Imported files are never modified; every operation is an undoable command.
+- **P5. Mix and master are two distinct phases**, with separate workspaces, tools and histories.
+- **P6. No compromise on the audio engine**: native real time, with no allocations or locks in the audio thread.
 
-### 1.1 Decisioni prese con l'autore (2026-11-10)
+### 1.1 Decisions made with the author (2026-11-10)
 
-| Id | Decisione |
+| Id | Decision |
 | --- | --- |
-| P-001 | **Prodotto distribuibile**: solo dipendenze con licenze permissive; nessuna libreria GPL/LGPL. `pedalboard` e `matchering` della PoC non si usano: il DSP è riscritto. |
-| P-002 | **Un solo codice per macOS, Windows e Linux**: stack cross-platform; la v1 si verifica e si pacchettizza su macOS (Apple Silicon e Intel). Dal 2026-11-16 (A-104) anche su Windows 10/11 x64, con un installer NSIS; Linux è il passo successivo. Portare un sistema è lavoro di build e collaudo, non una riscrittura. |
-| P-003 | Nella v1 entrano: **curve di automazione libere**, **editing delle clip**, **delay e saturazione interni**. |
-| P-004 | **Fuori dalla v1: plugin AU/VST3 di terze parti.** |
-| P-005 | **Accesso al modello con chiave propria via OpenRouter**, salvata nel portachiavi di sistema. Nessun backend. |
-| P-006 | Stack: **Tauri 2 + engine Rust + UI React/TypeScript** (§4). |
-| P-007 | Due sessioni autonome (design, implementazione); delega ai subagenti solo dove riduce i costi (§9). |
-| P-008 | Rientrano nella v1 (revisione dell'autore): **ritorni multipli, sidechain e routing strutturato** (gruppi annidati), **automazione di tutti i parametri continui della catena**, **export FLAC e AAC con metadata e ISRC**. Restano fuori il grafo di routing arbitrario, il DDP e l'MP3 (encoder LGPL, in conflitto con P-001). |
-| P-009 | **Pannello "AI usage"** nell'app: modelli, chiamate, costi e storia leggibile di ogni chiamata (AI-14). |
-| P-010 | **Tetto allo spazio su disco** occupato dal repository durante lo sviluppo, con pulizia periodica (§9, regole 18–20). |
-| P-011 | (2026-11-11, dopo la consegna di F10) **Mix AI strutturale e riverbero nuovo.** L'AI può proporre modifiche alla struttura del mix che non alterano il brano: **ritorni dedicati** e **gruppi nuovi** (AI-17 → AI-20); riconosce i **doppi veri** e li apre ai lati (ANA-18, AI-21); usa slapback, "throw" di delay e **compressione parallela** (dry/wet del compressore, FX-3). Il riverbero a pettini è **sostituito** da tre algoritmi di qualità superiore (FX-5, FX-9), **senza retrocompatibilità del render**: non esistono ancora progetti veri. Restano fuori: il finto doppio da una sola take, l'ampiezza per traccia, il delay ping-pong, la creazione o la duplicazione di tracce audio da parte dell'AI. Si costruisce nelle fasi F11 e F12 (§8.1). |
-| P-012 | (2026-11-13, dalla prova dell'autore su un brano di 30 stem) **Bilanciamento ed effetti del mix AI.** I mix proposti lasciavano la batteria davanti a tutto, chitarre e voce indietro, cori quasi assenti e riverberi inudibili: l'unico obiettivo misurato era lo spettro del riferimento. Il modello riceve ora i livelli per famiglia e per ritorno (AI-22), il ciclo fa almeno due iterazioni e tiene l'ultimo piano valido (AI-1), una revisione non ha limiti di passo e parte dallo stesso pulsante dell'auto mix (AI-3). |
-| P-013 | (2026-11-13, dalla prova dell'autore su un brano di 30 stem) **Lo stato del mix a colpo d'occhio.** Per sapere quali tracce avevano effetti, mandate o sidechain bisognava selezionarle una alla volta: lo stato viveva solo nell'inspector, e le strip mostravano due mandate senza nome. Ogni intestazione e ogni strip porta ora i **segni** di ciò che la traccia ha acceso (UI-8), le mandate sono **tutte visibili e nominate** (UI-9), la selezione mostra **a cosa è collegata** (UI-10) e il mixer ha una vista **Overview** a griglia (UI-11). Solo interfaccia: nessun cambio al documento di progetto, al motore o ai contratti dell'AI. Tavole 3e–3g, 7f–7h, C7; si costruisce nella fase F13 (§8.1). |
-| P-015 | (2026-11-13, in vista dell'apertura del repository) **Configurazione guidata dell'assistente.** Chi non sa cosa sia OpenRouter doveva procurarsi una chiave e incollarla. L'app ora **collega il conto dal browser** (flusso OAuth con PKCE del provider): un pulsante, l'approvazione sul sito, e la chiave arriva all'app da sola (AI-24). Il credito e la chiave incollata a mano sono passi guidati; la mancanza di credito ha il suo stato. La chiave sta nel portachiavi solo dove l'app può leggerlo **senza chiedere la password** (build firmata con un certificato Apple); altrimenti in un file privato dell'app (AI-11). Resta P-005: chiave dell'utente, nessun backend. Tavole 14a–14k. |
-| P-014 | (2026-11-13, issue #2) **Proposte che restano.** Una proposta dell'assistente si poteva applicare solo al momento: scartata era persa, e applicata non si poteva riapplicare dopo aver cambiato i parametri a mano. Ogni proposta ricevuta resta nel progetto, in Mix e in Master: si rivede quando e cosa era, si riascolta contro lo stato attuale e si applica dopo una conferma esplicita (AI-23). |
-| P-016 | (2026-11-14, issue #1, dalla prova dell'autore) **Master AI misurato.** Sulle destinazioni forti il master AI lasciava tutto il lavoro al limiter e, alla richiesta di più dinamica, abbassava la loudness: decideva alla cieca, in una sola chiamata, su misure che non dicevano quanto i picchi stanno sopra il corpo del mix. Ora riceve quella distanza, quanta ne toglie la destinazione e quanto lavora il limiter con la catena corrente; ogni piano è **renderizzato e misurato** e la decisione successiva lo corregge (MAS-6). La destinazione resta dell'autore: cambia solo se la richiesta lo chiede a parole. Clipper, ordine della catena e master per sezioni sono il passo successivo, da disegnare. |
-| P-017 | (2026-11-14, issue #1, deciso dall'autore) **Catena di master libera.** Il master multibanda **entra nello scope**. La catena passa a dieci moduli: Input per primo, Limiter e Dither per ultimi, e in mezzo EQ, Match EQ, Compressor, Multiband, Width, Saturation e Clipper in **ordine libero**, a mano e dall'AI. Nuovi: clipper (quanti dB togliere ai picchi più alti), multibanda da due a sei bande, mix parallelo e filtro sul detector del compressore, **scostamenti per sezione** su pochi parametri, la proposta con le misure prima e dopo, il ritorno al mix quando la destinazione chiede troppo. La catena è una **lista di blocchi** mostrata come rack accanto all'editor: EQ, Compressor, Multiband, Saturation e Clipper possono starci due volte, dodici blocchi in tutto (A-080, A-081). Tavole 15a–15j (A-079, A-081), approvate dall'autore il 14 novembre 2026 e implementate nella fase F14 (MAS-11 → MAS-15, schema di progetto 3, `master_plan` v2). |
-| P-018 | (2026-11-14, deciso dall'autore dopo un'analisi degli effetti possibili) **Effetti del mix e idee creative.** La catena di tracce e gruppi diventa una **lista di blocchi in ordine libero**, come quella del master (P-017): i cinque blocchi di sempre restano il punto di partenza, e se ne aggiungono tredici. **Correttivi**: gate ed expander, de-esser, EQ dinamico con sidechain, transient shaper. **Dinamica e colore**: clipper e multibanda anche su tracce e gruppi, caratteri della saturazione (tape, tube, transistor), exciter, bass enhancer. **Spazio**: ampiezza per traccia, una catena di blocchi anche sui ritorni (ducking, EQ del ritorno, riverbero gated), delay ping-pong e tape, riverbero `shimmer`. **Movimento**: modulazione (chorus, flanger, phaser), tremolo e auto-pan a tempo, filtri risonanti. **Pitch**: harmonizer e doubler come effetti sulla traccia. Gli scostamenti per sezione dell'AI arrivano a frequenze dei filtri e blocchi accesi solo in alcune sezioni. Il piano del mix aggiunge e regola blocchi (AI-25) e propone fino a tre **idee creative** in una sotto-sezione della proposta, ciascuna con la sua spunta, spenta per default (AI-26, AI-27). Restano fuori: il finto doppio da una sola take su un'altra traccia, riverbero e delay reverse, freeze, lo-fi e bitcrusher, EQ con più bande e notch stretti, la correzione dell'intonazione. Si disegna e si costruisce nelle fasi F15 → F17 (§8.1), con l'approvazione delle tavole prima dell'implementazione: tavole 16a–16u, 4c e 4d (A-086), approvate dall'autore il 14 novembre 2026. |
-| P-019 | (2026-11-15, chiesto dall'autore) **Explain this mix.** L'interfaccia mostra lo stato del mix a chi sa già leggerlo; mancano il flusso (chi va dove) e l'intento (chi fa cosa e perché), e chi non è fonico si perde. Una vista del Mix, **Explain**, mette a sinistra la **mappa del segnale** (tracce per famiglia → gruppi → bus, mandate, sidechain: UI-15) e a destra **lo stesso mix in parole**, per tutto il mix, per elemento e per sezione (UI-16). È costruita **a regole** dal documento di progetto e da misure del render (ANA-20): **nessun modello**, nessuna chiamata, nessun costo; i motivi sono solo quelli già scritti dall'assistente. Sola lettura: nessun cambio al documento, al motore o ai contratti dell'AI. La narrazione scritta da un modello, locale o remoto, è rimandata. Tavole 17a–17j; fase F18 (§8.1). |
-| P-020 | (2026-11-15, issue #5, deciso con l'autore) **Tour guidato.** Chi apre l'app per la prima volta non sa com'è fatta né da dove cominciare. Al **primo avvio in assoluto** parte da solo un tour che porta in giro per l'app su un **progetto dimostrativo incorporato** (PRJ-9): non è un progetto dell'utente, il documento è costruito dal codice e l'audio è **sintetizzato** da formule chiuse, così nessun file audio entra nel repository o nel pacchetto; si apre all'inizio del tour e sparisce alla fine. Il tour è un **giro completo** in quindici passi (trasporto, timeline, tracce, mixer, inspector, assistente, proposta in revisione, cronologia, Explain, Master, export), **guidato con Next**: riflettore sull'area spiegata, fumetto con Back, Next e Skip; è il tour ad aprire pannelli e viste, e l'area illuminata resta usabile (UI-17 → UI-19). Si salta in ogni momento e si ripete da **Help › Take the Tour** nel menu dell'app (UI-20) e dalla schermata Welcome. **Nessun modello**: la proposta mostrata viene dal decisore finto, senza rete e senza costi. Nessun cambio allo schema di progetto, al motore o ai contratti dell'AI. Restano fuori: passi che avanzano solo quando l'utente compie un'azione, capitoli separati, il progetto dimostrativo apribile fuori dal tour, stem reali nel pacchetto. Tavole della schermata 18, da approvare prima dell'implementazione; fase F19 (§8.1). |
+| P-001 | **Distributable product**: only permissive-license dependencies; no GPL/LGPL library. The PoC's `pedalboard` and `matchering` are not used: the DSP is rewritten. |
+| P-002 | **One codebase for macOS, Windows and Linux**: cross-platform stack; v1 is verified and packaged on macOS (Apple Silicon and Intel). Since 2026-11-16 (A-104) also on Windows 10/11 x64, with an NSIS installer; Linux is the next step. Porting a system is build and testing work, not a rewrite. |
+| P-003 | In v1: **free automation curves**, **clip editing**, **built-in delay and saturation**. |
+| P-004 | **Out of v1: third-party AU/VST3 plugins.** |
+| P-005 | **Model access with the user's own key via OpenRouter**, stored in the system keychain. No backend. |
+| P-006 | Stack: **Tauri 2 + Rust engine + React/TypeScript UI** (§4). |
+| P-007 | Two autonomous sessions (design, implementation); delegation to subagents only where it reduces costs (§9). |
+| P-008 | In v1 (author's review): **multiple returns, sidechain and structured routing** (nested groups), **automation of all continuous chain parameters**, **FLAC and AAC export with metadata and ISRC**. Out: arbitrary routing graph, DDP and MP3 (LGPL encoder, in conflict with P-001). |
+| P-009 | **"AI usage" panel** in the app: models, calls, costs and a readable history of every call (AI-14). |
+| P-010 | **Disk space cap** on the repository during development, with periodic cleanup (§9, rules 18–20). |
+| P-011 | (2026-11-11, after the delivery of F10) **Structural AI mix and new reverb.** The AI can propose changes to the mix structure that do not alter the song: **dedicated returns** and **new groups** (AI-17 → AI-20); it recognizes **true doubles** and opens them to the sides (ANA-18, AI-21); it uses slapback, delay "throws" and **parallel compression** (compressor dry/wet, FX-3). The comb reverb is **replaced** by three higher-quality algorithms (FX-5, FX-9), **with no render backward compatibility**: no real projects exist yet. Out: the fake double from a single take, per-track width, ping-pong delay, creation or duplication of audio tracks by the AI. Built in phases F11 and F12 (§8.1). |
+| P-012 | (2026-11-13, from the author's test on a 30-stem song) **Balance and effects of the AI mix.** The proposed mixes left the drums ahead of everything, guitars and vocals behind, backing vocals almost absent and reverbs inaudible: the only measured goal was the reference's spectrum. The model now receives levels per family and per return (AI-22), the loop runs at least two iterations and keeps the last valid plan (AI-1), a revision has no step limits and starts from the same button as the auto mix (AI-3). |
+| P-013 | (2026-11-13, from the author's test on a 30-stem song) **Mix state at a glance.** To know which tracks had effects, sends or sidechain, you had to select them one at a time: the state lived only in the inspector, and the strips showed two unnamed sends. Every header and every strip now carries the **marks** of what the track has switched on (UI-8), sends are **all visible and named** (UI-9), the selection shows **what it is connected to** (UI-10) and the mixer has a grid **Overview** view (UI-11). UI only: no change to the project document, the engine or the AI contracts. Boards 3e–3g, 7f–7h, C7; built in phase F13 (§8.1). |
+| P-015 | (2026-11-13, ahead of opening the repository) **Guided assistant setup.** Anyone who does not know what OpenRouter is had to get a key and paste it. The app now **connects the account from the browser** (the provider's OAuth flow with PKCE): one button, approval on the site, and the key reaches the app by itself (AI-24). Credit and the manually pasted key are guided steps; running out of credit has its own state. The key lives in the keychain only where the app can read it **without asking for the password** (build signed with an Apple certificate); otherwise in a private app file (AI-11). P-005 stands: the user's key, no backend. Boards 14a–14k. |
+| P-014 | (2026-11-13, issue #2) **Persistent proposals.** An assistant proposal could only be applied on the spot: once discarded it was lost, and once applied it could not be reapplied after changing parameters by hand. Every proposal received stays in the project, in Mix and in Master: you review when and what it was, listen again against the current state, and apply after an explicit confirmation (AI-23). |
+| P-016 | (2026-11-14, issue #1, from the author's test) **Measured AI master.** On loud targets the AI master left all the work to the limiter and, when asked for more dynamics, lowered the loudness: it decided blind, in a single call, on measurements that did not say how far the peaks stand above the body of the mix. It now receives that distance, how much the target removes and how hard the limiter works with the current chain; every plan is **rendered and measured** and the next decision corrects it (MAS-6). The target stays the author's: it changes only if the request asks for it in words. Clipper, chain order and per-section master are the next step, to be designed. |
+| P-017 | (2026-11-14, issue #1, decided by the author) **Free master chain.** The multiband master **enters the scope**. The chain goes to ten modules: Input first, Limiter and Dither last, and in between EQ, Match EQ, Compressor, Multiband, Width, Saturation and Clipper in **free order**, by hand and from the AI. New: clipper (how many dB to remove from the highest peaks), multiband from two to six bands, parallel mix and filter on the compressor detector, **per-section offsets** on a few parameters, the proposal with before and after measurements, the return to the mix when the target asks too much. The chain is a **list of blocks** shown as a rack next to the editor: EQ, Compressor, Multiband, Saturation and Clipper can appear twice, twelve blocks in all (A-080, A-081). Boards 15a–15j (A-079, A-081), approved by the author on November 14, 2026 and implemented in phase F14 (MAS-11 → MAS-15, project schema 3, `master_plan` v2). |
+| P-018 | (2026-11-14, decided by the author after an analysis of possible effects) **Mix effects and creative ideas.** The track and group chain becomes a **list of blocks in free order**, like the master's (P-017): the five existing blocks stay as the starting point, and thirteen are added. **Correctives**: gate and expander, de-esser, dynamic EQ with sidechain, transient shaper. **Dynamics and color**: clipper and multiband also on tracks and groups, saturation characters (tape, tube, transistor), exciter, bass enhancer. **Space**: per-track width, a block chain also on returns (ducking, return EQ, gated reverb), ping-pong and tape delay, `shimmer` reverb. **Movement**: modulation (chorus, flanger, phaser), tempo-synced tremolo and auto-pan, resonant filters. **Pitch**: harmonizer and doubler as effects on the track. The AI's per-section offsets extend to filter frequencies and blocks switched on only in some sections. The mix plan adds and adjusts blocks (AI-25) and proposes up to three **creative ideas** in a sub-section of the proposal, each with its own checkbox, off by default (AI-26, AI-27). Out: the fake double from a single take on another track, reverse reverb and delay, freeze, lo-fi and bitcrusher, EQ with more bands and narrow notches, pitch correction. Designed and built in phases F15 → F17 (§8.1), with approval of the boards before implementation: boards 16a–16u, 4c and 4d (A-086), approved by the author on November 14, 2026. |
+| P-019 | (2026-11-15, requested by the author) **Explain this mix.** The interface shows the state of the mix to those who already know how to read it; what is missing is the flow (who goes where) and the intent (who does what and why), and anyone who is not an engineer gets lost. A Mix view, **Explain**, puts the **signal map** on the left (tracks by family → groups → bus, sends, sidechain: UI-15) and **the same mix in words** on the right, for the whole mix, per element and per section (UI-16). It is built **by rules** from the project document and from render measurements (ANA-20): **no model**, no call, no cost; the reasons are only those already written by the assistant. Read-only: no change to the document, the engine or the AI contracts. Narration written by a model, local or remote, is postponed. Boards 17a–17j; phase F18 (§8.1). |
+| P-020 | (2026-11-15, issue #5, decided with the author) **Guided tour.** Anyone opening the app for the first time does not know how it is laid out or where to start. At the **very first launch** a tour starts by itself that takes you around the app on a **built-in demo project** (PRJ-9): it is not a user project, the document is built by code and the audio is **synthesized** from closed formulas, so no audio file enters the repository or the package; it opens at the start of the tour and disappears at the end. The tour is a **complete round** in fifteen steps (transport, timeline, tracks, mixer, inspector, assistant, proposal under review, history, Explain, Master, export), **driven with Next**: spotlight on the area being explained, speech bubble with Back, Next and Skip; the tour opens panels and views, and the lit area stays usable (UI-17 → UI-19). It can be skipped at any moment and repeated from **Help › Take the Tour** in the app menu (UI-20) and from the Welcome screen. **No model**: the proposal shown comes from the fake decider, with no network and no costs. No change to the project schema, the engine or the AI contracts. Out: steps that advance only when the user performs an action, separate chapters, the demo project openable outside the tour, real stems in the package. Boards of screen 18, to be approved before implementation; phase F19 (§8.1). |
 
-## 2. Scope della v1
+## 2. v1 scope
 
-| Dentro la v1 | Fuori dalla v1 |
+| In v1 | Out of v1 |
 | --- | --- |
-| Import di stem WAV/FLAC/AIFF su tracce separate | Registrazione audio, MIDI, strumenti virtuali |
-| Timeline con clip: taglia, sposta, rifila, fade, gain, mute | Time-stretch, correzione dell'intonazione, warp, comping |
-| Channel strip interno: trim, HPF, LPF, EQ 4 bande, compressore, saturazione, fader, pan, mandate; con P-018 catena a blocchi in ordine libero con gate, de-esser, EQ dinamico, transient shaper, clipper, multibanda, exciter, bass enhancer, ampiezza, modulazione, tremolo e auto-pan, harmonizer e doubler | Plugin AU/VST3/CLAP di terze parti |
-| Ritorni multipli (riverberi e delay) con mandate, gruppi annidati, sidechain del compressore, bus di mix | Grafo di routing arbitrario (traccia verso traccia, uscite multiple, mandate pre-fader) |
-| Sezioni del brano e automazione di tutti i parametri continui della catena, più mute e bypass | Registrazione dell'automazione in tempo reale da controller esterni |
-| Mix AI (ciclo di verifica), revisione a parole, lock delle tracce, pannello di uso e costi dell'AI | Audio inviato al modello, riconoscimento automatico degli strumenti dall'audio, rilevamento automatico delle sezioni |
-| Mix AI strutturale (P-011): ritorni dedicati e gruppi creati dall'AI, doppi veri riconosciuti, compressione parallela | Tracce audio create o duplicate dall'AI, finto doppio da una sola take (copia sfasata e pannata su un'altra traccia) |
-| Riverbero in quattro algoritmi (plate, room, hall, shimmer), delay stereo, ping-pong e tape, catena di blocchi sui ritorni (P-018) | Riverbero a convoluzione e risposte all'impulso; riverbero e delay reverse, freeze |
-| Idee creative dell'AI (P-018): blocchi, mandate, ritorni e scostamenti per sezione proposti a parte, ciascuno con la sua spunta | Lo-fi e bitcrusher; EQ delle tracce con più di 4 bande o notch stretti |
-| Undo/redo illimitato, snapshot con nome, confronto A/B | Collaborazione, cloud, account |
-| Mixdown e fase di master separata, master AI, riferimenti, master multibanda (P-017) | Separazione in stem dei riferimenti |
-| Export WAV, FLAC e AAC con metadata (titolo, artista, album, anno, ISRC, copertina) | MP3 (encoder con licenza LGPL), DDP e assemblaggio di album |
-| macOS 13+, pacchetto `.app`/`.dmg`; Windows 10/11 x64, installer NSIS (A-104) | Build verificati per Linux, firma e notarizzazione (richiedono l'account Apple e un certificato Authenticode dell'autore), aggiornamento automatico |
-| Interfaccia in inglese, stringhe centralizzate | Altre lingue dell'interfaccia |
-| Tour guidato al primo avvio e a richiesta, su un progetto dimostrativo incorporato con audio sintetizzato (P-020) | Tour a compiti (passi che aspettano un'azione), capitoli separati, video, guida in linea; progetto dimostrativo apribile fuori dal tour; stem reali nel pacchetto |
+| Import of WAV/FLAC/AIFF stems onto separate tracks | Audio recording, MIDI, virtual instruments |
+| Timeline with clips: cut, move, trim, fade, gain, mute | Time-stretch, pitch correction, warp, comping |
+| Internal channel strip: trim, HPF, LPF, 4-band EQ, compressor, saturation, fader, pan, sends; with P-018 a free-order block chain with gate, de-esser, dynamic EQ, transient shaper, clipper, multiband, exciter, bass enhancer, width, modulation, tremolo and auto-pan, harmonizer and doubler | Third-party AU/VST3/CLAP plugins |
+| Multiple returns (reverbs and delays) with sends, nested groups, compressor sidechain, mix bus | Arbitrary routing graph (track to track, multiple outputs, pre-fader sends) |
+| Song sections and automation of all continuous chain parameters, plus mute and bypass | Real-time automation recording from external controllers |
+| AI mix (verification loop), revision in words, track locks, AI usage and cost panel | Audio sent to the model, automatic instrument recognition from audio, automatic section detection |
+| Structural AI mix (P-011): dedicated returns and groups created by the AI, true doubles recognized, parallel compression | Audio tracks created or duplicated by the AI, fake double from a single take (phase-shifted, panned copy on another track) |
+| Reverb in four algorithms (plate, room, hall, shimmer), stereo, ping-pong and tape delay, block chain on returns (P-018) | Convolution reverb and impulse responses; reverse reverb and delay, freeze |
+| AI creative ideas (P-018): blocks, sends, returns and per-section offsets proposed separately, each with its own checkbox | Lo-fi and bitcrusher; track EQ with more than 4 bands or narrow notches |
+| Unlimited undo/redo, named snapshots, A/B comparison | Collaboration, cloud, accounts |
+| Mixdown and separate master phase, AI master, references, multiband master (P-017) | Stem separation of the references |
+| WAV, FLAC and AAC export with metadata (title, artist, album, year, ISRC, cover art) | MP3 (LGPL-licensed encoder), DDP and album assembly |
+| macOS 13+, `.app`/`.dmg` package; Windows 10/11 x64, NSIS installer (A-104) | Verified builds for Linux, signing and notarization (they require the author's Apple account and an Authenticode certificate), automatic update |
+| English interface, centralized strings | Other interface languages |
+| Guided tour at first launch and on request, on a built-in demo project with synthesized audio (P-020) | Task-based tour (steps that wait for an action), separate chapters, video, online help; demo project openable outside the tour; real stems in the package |
 
-Regola: ciò che sta a destra **non si implementa**, nemmeno in parte. Se serve, si annota in
-`docs/app/DECISIONS.md` alla voce "Fuori scope segnalato" e si prosegue.
+Rule: what is on the right is **not implemented**, not even in part. If needed, it is noted in
+`docs/app/DECISIONS.md` under "Flagged out of scope" and work continues.
 
-## 3. Requisiti funzionali
+## 3. Functional requirements
 
-Ogni requisito ha un id stabile. Ogni id deve avere almeno un test automatico che lo cita (§8.3) oppure una
-giustificazione scritta in `docs/app/REQS-JUSTIFIED.md`.
+Every requirement has a stable id. Every id must have at least one automated test that cites it (§8.3) or a written
+justification in `docs/app/REQS-JUSTIFIED.md`.
 
-### 3.1 Progetto e file (PRJ)
+### 3.1 Project and files (PRJ)
 
-- **PRJ-1.** Un progetto è una cartella-pacchetto `<Nome>.stemwise/` (§5.2) con `project.json` versionato.
-- **PRJ-2.** Nuovo, apri, salva, salva con nome, progetti recenti. Autosave ogni 30 s e a ogni transazione AI;
-  recupero dopo un crash.
-- **PRJ-3.** L'import **copia** i file nel pacchetto (`audio/`); gli originali non vengono mai toccati né
-  riferiti. I file in `audio/` sono immutabili: nessun comando li riscrive.
-- **PRJ-4.** Import per trascinamento o da finestra di dialogo, più file insieme: ogni file diventa una traccia
-  con una clip che parte da zero. Formati: WAV (PCM 16/24, float 32, anche EXTENSIBLE/RF64), FLAC, AIFF; mono o
+- **PRJ-1.** A project is a package folder `<Name>.stemwise/` (§5.2) with a versioned `project.json`.
+- **PRJ-2.** New, open, save, save as, recent projects. Autosave every 30 s and at every AI transaction;
+  recovery after a crash.
+- **PRJ-3.** Import **copies** the files into the package (`audio/`); the originals are never touched or
+  referenced. The files in `audio/` are immutable: no command rewrites them.
+- **PRJ-4.** Import by drag and drop or from a dialog, several files at once: each file becomes a track
+  with a clip starting at zero. Formats: WAV (PCM 16/24, float 32, also EXTENSIBLE/RF64), FLAC, AIFF; mono or
   stereo.
-- **PRJ-5.** La frequenza del progetto è quella del primo import. Un file a frequenza diversa non viene
-  ricampionato in silenzio: l'app chiede se convertirlo (copia convertita nel pacchetto) o annullare.
-- **PRJ-6.** A ogni traccia si assegna un **ruolo** (elenco della PoC, PRD §6.1, più `room`, `strings`, `brass` e, per la
-  musica acustica e classica, `piano`, `woodwinds`, `choir`: A-080).
-  Il ruolo è proposto dal nome del file con regole semplici e sempre modificabile.
-- **PRJ-7.** Brief del brano: genere, mood, note libere. Tracce di riferimento (0–3; WAV/FLAC/AIFF/MP3/AAC),
-  copiate nel pacchetto e usate solo per analisi e ascolto di confronto.
-- **PRJ-8.** `project.json` è valido rispetto a uno schema JSON esportato in `app/schemas/`; un progetto di una
-  versione di schema precedente viene migrato all'apertura.
-- **PRJ-9.** **Progetto dimostrativo incorporato** (P-020). L'app contiene un progetto dimostrativo che serve solo al
-  tour (UI-17) e **non è un progetto dell'utente**. Il core lo costruisce dal codice: un documento valido per lo
-  schema corrente (nessuna versione nuova di schema) e l'audio **sintetizzato** da formule chiuse con seme fisso,
-  mai da file inclusi nel repository o nel pacchetto.
-  - **Contenuto**: un brano di 60–75 s a 48 kHz con 8–12 stem mono e stereo, coi nomi e i ruoli del brano delle
-    tavole dove possibile (batteria, basso, chitarre o tastiere, voce, cori), abbastanza da mostrare ogni cosa che
-    il tour nomina: almeno due gruppi, due ritorni (un riverbero e un delay) con mandate, una sidechain, tre
-    sezioni con nome, una corsia di automazione, catene coi blocchi classici e qualche valore non neutro, brief
-    compilato, nessun riferimento.
-  - **Deterministico**: due costruzioni danno lo stesso documento e lo stesso hash di render.
-  - **Effimero**: all'avvio del tour il progetto è materializzato in una cartella nella cache dell'app (mai tra i
-    documenti dell'utente) ed è eliminato quando il tour finisce, in qualunque modo finisca; un residuo lasciato da
-    un crash è eliminato all'avvio successivo. Non compare tra i recenti, non ha autosave né recupero, non si salva
-    (Save e Save As non agiscono), non esporta file. Le modifiche fatte durante il tour si perdono: ogni tour parte
-    dallo stesso stato.
-  - **Senza modello**: la proposta dell'assistente e il mixdown che il tour mostra sono calcolati sul computer,
-    la proposta **sempre col decisore finto**, anche se una chiave è configurata; nessuna chiamata di rete (NFR-7),
-    niente nel registro dei costi tra progetti.
-  - **Tempi** (Apple Silicon): il primo passo del tour è a schermo senza attese; il progetto è aperto e suonabile
-    entro 3 s dall'avvio del tour; proposta e mixdown si preparano in background e un passo che ne ha bisogno
-    prima che siano pronti lo dice e aspetta. L'avvio a freddo dell'app resta sotto i 2 s (NFR-3).
-  - Che il progetto aperto è quello dimostrativo è un attributo della **sessione**, esposto all'interfaccia: non è
-    scritto nel documento.
+- **PRJ-5.** The project rate is that of the first import. A file at a different rate is not silently
+  resampled: the app asks whether to convert it (converted copy in the package) or cancel.
+- **PRJ-6.** Every track is assigned a **role** (the PoC's list, PRD §6.1, plus `room`, `strings`, `brass` and, for
+  acoustic and classical music, `piano`, `woodwinds`, `choir`: A-080).
+  The role is suggested from the file name with simple rules and is always editable.
+- **PRJ-7.** Song brief: genre, mood, free notes. Reference tracks (0–3; WAV/FLAC/AIFF/MP3/AAC),
+  copied into the package and used only for analysis and comparison listening.
+- **PRJ-8.** `project.json` is valid against a JSON schema exported to `app/schemas/`; a project of an
+  earlier schema version is migrated on opening.
+- **PRJ-9.** **Built-in demo project** (P-020). The app contains a demo project that serves only the
+  tour (UI-17) and is **not a user project**. The core builds it from code: a document valid for the current
+  schema (no new schema version) and audio **synthesized** from closed formulas with a fixed seed,
+  never from files included in the repository or the package.
+  - **Content**: a 60–75 s song at 48 kHz with 8–12 mono and stereo stems, with the names and roles of the song in
+    the boards where possible (drums, bass, guitars or keyboards, vocals, backing vocals), enough to show everything
+    the tour names: at least two groups, two returns (a reverb and a delay) with sends, a sidechain, three
+    named sections, an automation lane, chains with the classic blocks and a few non-neutral values, brief
+    filled in, no references.
+  - **Deterministic**: two builds give the same document and the same render hash.
+  - **Ephemeral**: when the tour starts the project is materialized in a folder in the app cache (never among the
+    user's documents) and is deleted when the tour ends, however it ends; a leftover from a crash is deleted at
+    the next launch. It does not appear among the recents, has no autosave or recovery, cannot be saved
+    (Save and Save As do nothing), exports no files. Changes made during the tour are lost: every tour starts from
+    the same state.
+  - **No model**: the assistant's proposal and the mixdown the tour shows are computed on the computer,
+    the proposal **always with the fake decider**, even if a key is configured; no network call (NFR-7),
+    nothing in the cross-project cost log.
+  - **Timing** (Apple Silicon): the first step of the tour is on screen with no wait; the project is open and playable
+    within 3 s of the start of the tour; proposal and mixdown are prepared in the background and a step that needs
+    them before they are ready says so and waits. The cold start of the app stays under 2 s (NFR-3).
+  - That the open project is the demo one is an attribute of the **session**, exposed to the interface: it is not
+    written in the document.
 
-### 3.2 Trasporto e timeline (TRN, CLP, SEC)
+### 3.2 Transport and timeline (TRN, CLP, SEC)
 
-- **TRN-1.** Play, stop, pausa, ritorno all'inizio, posizionamento col clic sul righello, loop di una regione,
-  scorrimento che segue il cursore.
-- **TRN-2.** Righello in minuti:secondi; griglia facoltativa in battute se l'utente imposta BPM e metro (solo
-  visualizzazione e snap).
-- **TRN-3.** Zoom orizzontale e verticale, scorrimento fluido, forme d'onda disegnate da piramidi di picchi
-  precalcolate.
-- **CLP-1.** Operazioni sulle clip: seleziona (anche multipla), sposta nel tempo e tra tracce dello stesso
-  formato, dividi al cursore, rifila i bordi, duplica, elimina, mute.
-- **CLP-2.** Fade in e fade out per clip (lineare o a potenza costante) e gain di clip (−24…+24 dB).
-- **CLP-3.** Snap a griglia, bordi delle clip, cursore e confini di sezione; disattivabile.
-- **CLP-4.** Le clip di una traccia non si sovrappongono: spostare una clip sopra un'altra rifila quella sotto
-  (operazione annullabile come un solo passo).
-- **SEC-1.** Sezioni del brano: intervalli con nome (intro, verse, chorus…) e colore su una corsia dedicata;
-  crea, rinomina, sposta i confini, elimina. Le sezioni non si sovrappongono.
-- **SEC-2.** Le sezioni sono la griglia su cui l'AI decide parametri diversi (AI-6) e su cui l'analisi misura nel
-  tempo (ANA-15).
+- **TRN-1.** Play, stop, pause, return to start, positioning by clicking on the ruler, loop of a region,
+  scrolling that follows the cursor.
+- **TRN-2.** Ruler in minutes:seconds; optional bar grid if the user sets BPM and meter (display and snap
+  only).
+- **TRN-3.** Horizontal and vertical zoom, smooth scrolling, waveforms drawn from precomputed peak
+  pyramids.
+- **CLP-1.** Clip operations: select (also multiple), move in time and between tracks of the same
+  format, split at the cursor, trim the edges, duplicate, delete, mute.
+- **CLP-2.** Fade in and fade out per clip (linear or constant power) and clip gain (−24…+24 dB).
+- **CLP-3.** Snap to grid, clip edges, cursor and section boundaries; can be disabled.
+- **CLP-4.** The clips of a track do not overlap: moving a clip over another trims the one underneath
+  (undoable as a single step).
+- **SEC-1.** Song sections: named intervals (intro, verse, chorus…) with a color on a dedicated lane;
+  create, rename, move the boundaries, delete. Sections do not overlap.
+- **SEC-2.** Sections are the grid on which the AI decides different parameters (AI-6) and on which the analysis
+  measures over time (ANA-15).
 
-### 3.3 Tracce, mixer e catena (TRK, FX)
+### 3.3 Tracks, mixer and chain (TRK, FX)
 
-- **TRK-1.** Tipi di traccia: audio, gruppo, ritorno (riverbero o delay), bus di mix. I ritorni si creano e si
-  eliminano liberamente (fino a 8); un progetto nuovo ne ha uno per tipo. Ordina, rinomina,
-  colora, elimina, duplica.
-- **TRK-2.** Mute, solo (solo-in-place; i ritorni seguono), fader (−∞…+12 dB), pan (potenza costante per mono,
-  bilanciamento per stereo), meter di picco e RMS per traccia, true peak e LUFS sul bus di mix.
-- **TRK-3.** Routing strutturato: l'uscita di una traccia audio, di un gruppo o di un ritorno va al bus di mix
-  o a un gruppo. I gruppi si annidano (fino a 4 livelli) e hanno la stessa catena di una traccia. Il core
-  rifiuta ogni assegnazione che creerebbe un ciclo.
-- **TRK-5.** Mandate post-fader da tracce audio e gruppi verso qualunque ritorno, ciascuna col suo livello.
-- **TRK-4.** Vista mixer (strip verticali) e intestazioni di traccia nella timeline mostrano lo stesso stato.
-- **FX-1.** Catena per traccia e per gruppo: trim → blocchi (FX-10) → fader → pan → mandate (post-fader) ai
-  ritorni. Una traccia o un gruppo nuovi hanno i cinque blocchi **classici** nell'ordine di partenza: passa-alto →
-  passa-basso → EQ (4 bande: peak, low shelf, high shelf) → compressore → saturazione. Ogni blocco ha un bypass.
-- **FX-2.** Filtri ed EQ sono biquad RBJ come nella PoC ([analysis.md](../poc/docs/analysis.md), "Render"); stessi limiti
-  dei parametri (§5.5).
-- **FX-3.** Compressore feed-forward con detector **collegato in stereo** (chiude D-034 della PoC): soglia,
-  ratio, attacco, rilascio, knee, makeup; meter della riduzione di guadagno. **Sidechain**: il detector può
-  ascoltare un'altra traccia o un gruppo (segnale post-fader), con passa-alto sul detector; il core rifiuta le
-  sorgenti che creerebbero un ciclo. **Mix** (dry/wet, 0–100%, default 100%): miscela il segnale compresso con
-  quello non compresso, allineati al campione; è la **compressione parallela** di tracce e gruppi (P-011) e si
-  automatizza come gli altri parametri (AUT-1). Il compressore del master non lo ha.
-- **FX-4.** Saturazione: waveshaper morbido con oversampling 4x, parametri `drive_db` e `mix`, compensazione
-  automatica del livello.
-- **FX-5.** Ritorno di tipo riverbero (algoritmico, implementazione propria) in **tre algoritmi** a scelta:
-  `plate` (plate di Dattorro: denso e brillante, senza riflessioni iniziali, pensato per le voci), `room` e
-  `hall` (rete di ritardi con retroazione di almeno 8 linee, con riflessioni iniziali; `hall` più lungo e più
-  diffuso). Parametri: algoritmo, tempo di decadimento (0,1–10 s), dimensione, pre-delay (0–200 ms), damping
-  delle alte, modulazione, passa-alto, passa-basso e livello del ritorno. Sostituisce il riverbero a pettini
-  della prima consegna, che viene **rimosso** (P-011): un progetto precedente si apre con il riverbero convertito
-  in `room` (PRJ-8), senza garanzia di render identico. Con P-018 si aggiunge un quarto algoritmo, `shimmer`
+- **TRK-1.** Track types: audio, group, return (reverb or delay), mix bus. Returns are freely created and
+  deleted (up to 8); a new project has one of each type. Reorder, rename,
+  color, delete, duplicate.
+- **TRK-2.** Mute, solo (solo-in-place; returns follow), fader (−∞…+12 dB), pan (constant power for mono,
+  balance for stereo), peak and RMS meter per track, true peak and LUFS on the mix bus.
+- **TRK-3.** Structured routing: the output of an audio track, a group or a return goes to the mix bus
+  or to a group. Groups nest (up to 4 levels) and have the same chain as a track. The core
+  rejects any assignment that would create a cycle.
+- **TRK-5.** Post-fader sends from audio tracks and groups to any return, each with its own level.
+- **TRK-4.** Mixer view (vertical strips) and track headers in the timeline show the same state.
+- **FX-1.** Chain per track and per group: trim → blocks (FX-10) → fader → pan → sends (post-fader) to the
+  returns. A new track or group has the five **classic** blocks in the starting order: high-pass →
+  low-pass → EQ (4 bands: peak, low shelf, high shelf) → compressor → saturation. Every block has a bypass.
+- **FX-2.** Filters and EQs are RBJ biquads as in the PoC ([analysis.md](../poc/docs/analysis.md), "Render"); same parameter
+  limits (§5.5).
+- **FX-3.** Feed-forward compressor with **stereo-linked** detector (closes the PoC's D-034): threshold,
+  ratio, attack, release, knee, makeup; gain reduction meter. **Sidechain**: the detector can
+  listen to another track or a group (post-fader signal), with a high-pass on the detector; the core rejects
+  sources that would create a cycle. **Mix** (dry/wet, 0–100%, default 100%): blends the compressed signal with
+  the uncompressed one, sample-aligned; it is the **parallel compression** of tracks and groups (P-011) and is
+  automated like the other parameters (AUT-1). The master compressor does not have it.
+- **FX-4.** Saturation: soft waveshaper with 4x oversampling, parameters `drive_db` and `mix`, automatic level
+  compensation.
+- **FX-5.** Reverb-type return (algorithmic, own implementation) in **three algorithms** to choose from:
+  `plate` (Dattorro plate: dense and bright, no early reflections, meant for vocals), `room` and
+  `hall` (delay network with feedback of at least 8 lines, with early reflections; `hall` longer and more
+  diffuse). Parameters: algorithm, decay time (0.1–10 s), size, pre-delay (0–200 ms), high-frequency damping,
+  modulation, high-pass, low-pass and return level. It replaces the comb reverb
+  of the first delivery, which is **removed** (P-011): an earlier project opens with the reverb converted
+  to `room` (PRJ-8), with no guarantee of an identical render. With P-018 a fourth algorithm is added, `shimmer`
   (FX-22).
-- **FX-6.** Ritorno di tipo delay stereo: tempo (ms, o valore musicale se c'è il BPM), feedback, passa-alto e
-  passa-basso nel feedback, livello del ritorno; con P-018 anche il modo ping-pong e il carattere tape (FX-23).
-- **FX-7.** Editor grafico dell'EQ (curva con maniglie trascinabili e spettro della traccia in tempo reale) e
-  pannello del compressore con curva di trasferimento.
-- **FX-8.** Bus di mix: fader e meter. Nessun processore sul bus nella fase di mix: la dinamica finale appartiene
-  al master.
-- **FX-9.** Qualità del riverbero, verificata da test su proprietà per ciascuno dei tre algoritmi (soglie
-  motivate nel test e riportate in `docs/app/dsp.md`):
-  - il tempo di decadimento misurato su un impulso (RT60 tra 500 Hz e 2 kHz) sta entro ±10% del valore impostato;
-  - la coda è densa: l'autocorrelazione normalizzata della coda non ha picchi isolati (nessuna eco ripetuta né
-    risonanza metallica dominante);
-  - con ingresso mono, sinistra e destra della coda sono decorrelate (|correlazione| < 0,3);
-  - col damping le alte decadono prima delle medie; il pre-delay è rispettato; la coda finisce in silenzio esatto;
-  - la modulazione è deterministica: oscillatori con fase iniziale fissa, azzerati all'inizio di ogni render,
-    nessun generatore casuale in esecuzione; il risultato non dipende dalla dimensione del blocco (ENG-4);
-  - nessuna allocazione in `process`, stabilità con parametri che cambiano ogni 32 campioni (AUT-6);
-  - NFR-1 resta rispettato con 4 ritorni riverbero aggiunti al benchmark.
-- **FX-10.** **Catena a blocchi** (P-018). Tra trim e fader la catena di tracce e gruppi è una **lista** di blocchi in
-  ordine libero, come quella del master (MAS-15). Tipi: i classici `hpf`, `lpf`, `eq`, `compressor`, `saturation` e i
-  nuovi `gate`, `deesser`, `dynamic_eq`, `transient`, `clipper`, `multiband`, `exciter`, `bass_enhancer`, `width`,
-  `modulation`, `tremolo`, `harmonizer`, `doubler` (FX-12 → FX-21). Ogni tipo al più **due volte**, al più **12
-  blocchi** per catena. Aggiungere, togliere, spostare, duplicare e riportare un blocco ai valori iniziali sono un
-  passo di undo ciascuno; togliere un blocco classico è permesso e lo si può rimettere. Requisiti comuni:
-  - un cambio di struttura in riproduzione non produce scatti; mettere o togliere un bypass, a mano o
-    dall'automazione, passa con una dissolvenza di circa 10 ms;
-  - la **latenza** di una traccia non dipende dalla sua catena: è la stessa per ogni traccia, gruppo e ritorno, e
-    aggiungere un blocco non sposta mai una traccia rispetto alle altre (ENG-5);
-  - una traccia mono resta mono fino al primo blocco **stereo** (`width`, `modulation`, `tremolo` in auto-pan,
-    `harmonizer`, `doubler`); da lì la catena è stereo e il pan fa da bilanciamento (TRK-2). Un blocco stereo che
-    riceve un segnale mono lo dice nel suo pannello quando non ha effetto (`width`);
-  - un progetto dello schema 3 si apre con i cinque blocchi classici nell'ordine di sempre e **lo stesso render**
-    (stesso hash);
-  - i segni della catena (UI-8) e la vista Overview (UI-11) seguono la lista (UI-12).
-- **FX-11.** **Catena dei ritorni** (P-018). Ogni ritorno ha, dopo il suo processore, una lista di blocchi degli
-  stessi tipi di FX-10, vuota per default, al più 6. Serve al **ducking** (compressore con sidechain dalla traccia
-  che suona sopra l'effetto), all'EQ del ritorno e al **riverbero gated** (gate con sidechain dal rullante). Le
-  sidechain seguono FX-3: il core rifiuta le sorgenti che creerebbero un ciclo. Un ritorno continua a non mandare ad
-  altri ritorni (TRK-5).
-- **FX-12.** **Filtri risonanti**: passa-alto e passa-basso hanno una `resonance` (Q da 0,5 a 10; 0,707, il
-  comportamento di oggi, è il default), automatizzabile come la frequenza. Con gli scostamenti per sezione (AI-6)
-  e l'automazione fanno i filtri che si aprono e si chiudono tra le sezioni.
-- **FX-13.** **Gate / expander**: soglia, range (0–80 dB: quanto abbassa sotto la soglia), ratio (1–20; a 20 è un
-  gate), attacco, hold, rilascio, passa-alto e passa-basso sul detector, sidechain facoltativa da un'altra traccia o
-  da un gruppo (FX-3). Apertura e chiusura senza click.
-- **FX-14.** **De-esser**: frequenza (3–12 kHz), soglia, riduzione massima (0–12 dB), modo `split` (abbassa solo ciò
-  che sta sopra la frequenza) o `wide` (abbassa tutto il segnale); ascolto del solo segnale rilevato, che non entra
-  nel progetto né nell'export.
-- **FX-15.** **EQ dinamico**: una o due bande (peak, low shelf, high shelf) con frequenza, Q, soglia, guadagno
-  massimo (−12…+6 dB: negativo taglia, positivo esalta quando il segnale della banda supera la soglia), attacco e
-  rilascio. Il detector ascolta la stessa banda oppure, con la sidechain, la stessa banda di un'altra traccia o di un
-  gruppo (FX-3): così le chitarre scendono a 3 kHz **solo quando canta la voce**.
-- **FX-16.** **Transient shaper**: attacco (±12 dB), sustain (±12 dB), velocità (0–1: quanto è corta la parte di
-  attacco), mix. Non ha soglia: il risultato non dipende dal livello d'ingresso.
-- **FX-17.** **Clipper e multibanda su tracce e gruppi**: lo stesso processore di MAS-12 per il multibanda (2–6
-  bande); il clipper è quello di MAS-11 con una **soglia assoluta** (−24…0 dBFS) al posto della soglia misurata sul
-  brano, perché sulla traccia il suo ingresso cambia a ogni parametro precedente.
-- **FX-18.** **Colore**: la saturazione ha un `character`: `soft` (quella di FX-4, default e valore dei progetti
-  esistenti), `tape` (picchi arrotondati e un leggero calo delle alte), `tube` (asimmetrica, armoniche pari),
-  `transistor` (più dura, armoniche dispari). **Exciter**: frequenza (1–12 kHz), drive, quantità: satura solo ciò che
-  sta sopra la frequenza e lo rimescola. **Bass enhancer**: frequenza (40–160 Hz), armoniche (0–1), mix: genera
-  armoniche della banda bassa perché il basso si legga anche su casse piccole; non genera ottave sotto. Tutti con
-  oversampling 4x e compensazione automatica del livello, come FX-4.
-- **FX-19.** **Ampiezza** per traccia, gruppo e ritorno: ampiezza (0–200%, guadagno del side) e mono sotto una
-  frequenza (0–250 Hz), come il blocco Width del master (MAS-1).
-- **FX-20.** **Movimento**. **Modulazione**: modo `chorus`, `flanger` o `phaser`; velocità (0,02–10 Hz, o valore
-  musicale se c'è il BPM), profondità, feedback (flanger e phaser, −0,9…0,9), voci (chorus, 1–3), stadi (phaser: 4,
-  6, 8, 12), apertura stereo (0–180°), mix. **Tremolo**: modo `tremolo` o `autopan`, velocità (Hz o valore musicale),
-  profondità, forma (sinusoide, triangolo, quadra smussata), sfasamento stereo per il tremolo. Per tutti e due la
-  **fase dipende solo dalla posizione nel brano**: lo stesso campione del brano ha la stessa fase in riproduzione da
-  qualunque punto e nel render offline; col BPM la fase è agganciata alla battuta 1.
-- **FX-21.** **Pitch**. **Harmonizer**: una o due voci, ciascuna con intervallo (−12…+12 semitoni, più ±50 cent),
-  livello e pan, più il mix. **Doubler**: una o due voci con un piccolo scostamento d'intonazione (0–30 cent), un
-  ritardo (5–40 ms) che si muove lentamente, apertura stereo e mix. Pitch shifter scritto da noi, deterministico, con
-  latenza costante compensata (FX-10). Il doubler è un effetto **dentro la traccia**: non crea tracce né copie della
-  clip (§2). Nessuna correzione dell'intonazione.
-- **FX-22.** **Riverbero `shimmer`**: un quarto algoritmo di FX-5, con una trasposizione d'intonazione nel ricircolo:
-  intervallo (+5, +7 o +12 semitoni, default +12) e quantità (0–1). Con quantità 0 vale tutto FX-9; con quantità
-  sopra 0 la coda resta limitata, finisce in silenzio esatto e non dipende dalla dimensione del blocco.
-- **FX-23.** **Delay ping-pong e tape**: modo `stereo` (quello di FX-6, default) o `ping_pong` (ingresso sommato in
-  mono, ripetizioni alternate tra sinistra e destra); carattere `clean` (default) o `tape`, con wow e flutter
-  (0–1, fase legata alla posizione nel brano come FX-20) e drive nel feedback (0–12 dB) con il livello compensato.
-- **FX-24.** **Qualità dei blocchi nuovi**, verificata da test su proprietà per ciascun blocco (soglie motivate nel
-  test e riportate in `docs/app/dsp.md`):
-  - in posizione neutra (mix a 0, quantità o profondità a 0, guadagni a 0 dB) il blocco lascia il segnale com'è
-    (differenza ≤ 1e-6, a parte la latenza compensata);
-  - nessuna allocazione in `process`, risultato indipendente dalla dimensione del blocco (ENG-4), stabilità con
-    parametri che cambiano ogni 32 campioni (AUT-6), uscita limitata con rumore a piena scala;
-  - gate: sotto la soglia il segnale scende del range impostato (±0,5 dB); de-esser in `split`: sotto la frequenza
-    il segnale non cambia; EQ dinamico: la banda si muove solo quando il detector supera la soglia; transient
-    shaper: una sinusoide stabile non cambia livello; harmonizer: intervallo misurato su una sinusoide entro ±5 cent;
-    modulazione e tremolo: il render che parte a 30 s dà gli stessi campioni del render intero da 30 s in poi;
-    ping-pong: le ripetizioni si alternano tra i canali;
-  - NFR-1 è rispettato con la catena classica; con 8 delle 32 tracce che portano anche un harmonizer, un multibanda a
-    quattro bande e un chorus il callback resta sotto il 50% del periodo.
+- **FX-6.** Stereo delay-type return: time (ms, or musical value if there is a BPM), feedback, high-pass and
+  low-pass in the feedback, return level; with P-018 also the ping-pong mode and the tape character (FX-23).
+- **FX-7.** Graphical EQ editor (curve with draggable handles and real-time track spectrum) and
+  compressor panel with transfer curve.
+- **FX-8.** Mix bus: fader and meter. No processor on the bus in the mix phase: the final dynamics belong to the
+  master.
+- **FX-9.** Reverb quality, verified by property tests for each of the three algorithms (thresholds
+  motivated in the test and reported in `docs/app/dsp.md`):
+  - the decay time measured on an impulse (RT60 between 500 Hz and 2 kHz) is within ±10% of the set value;
+  - the tail is dense: the normalized autocorrelation of the tail has no isolated peaks (no repeated echo or
+    dominant metallic resonance);
+  - with mono input, left and right of the tail are decorrelated (|correlation| < 0.3);
+  - with damping the highs decay before the mids; the pre-delay is respected; the tail ends in exact silence;
+  - modulation is deterministic: oscillators with a fixed initial phase, reset at the start of every render,
+    no random generator at run time; the result does not depend on the block size (ENG-4);
+  - no allocation in `process`, stability with parameters changing every 32 samples (AUT-6);
+  - NFR-1 is still met with 4 reverb returns added to the benchmark.
+- **FX-10.** **Block chain** (P-018). Between trim and fader the chain of tracks and groups is a **list** of blocks in
+  free order, like the master's (MAS-15). Types: the classic `hpf`, `lpf`, `eq`, `compressor`, `saturation` and the
+  new `gate`, `deesser`, `dynamic_eq`, `transient`, `clipper`, `multiband`, `exciter`, `bass_enhancer`, `width`,
+  `modulation`, `tremolo`, `harmonizer`, `doubler` (FX-12 → FX-21). Each type at most **twice**, at most **12
+  blocks** per chain. Adding, removing, moving, duplicating and resetting a block to its initial values are one
+  undo step each; removing a classic block is allowed and it can be put back. Common requirements:
+  - a structure change during playback produces no clicks; switching a bypass on or off, by hand or from
+    automation, goes through a fade of about 10 ms;
+  - the **latency** of a track does not depend on its chain: it is the same for every track, group and return, and
+    adding a block never shifts a track relative to the others (ENG-5);
+  - a mono track stays mono until the first **stereo** block (`width`, `modulation`, `tremolo` in auto-pan,
+    `harmonizer`, `doubler`); from there the chain is stereo and the pan acts as balance (TRK-2). A stereo block that
+    receives a mono signal says so in its panel when it has no effect (`width`);
+  - a schema 3 project opens with the five classic blocks in the usual order and **the same render**
+    (same hash);
+  - the chain marks (UI-8) and the Overview view (UI-11) follow the list (UI-12).
+- **FX-11.** **Return chain** (P-018). Every return has, after its processor, a list of blocks of the same
+  types as FX-10, empty by default, at most 6. It serves **ducking** (compressor with sidechain from the track
+  playing over the effect), return EQ and **gated reverb** (gate with sidechain from the snare). Sidechains
+  follow FX-3: the core rejects sources that would create a cycle. A return still does not send to
+  other returns (TRK-5).
+- **FX-12.** **Resonant filters**: high-pass and low-pass have a `resonance` (Q from 0.5 to 10; 0.707, today's
+  behavior, is the default), automatable like the frequency. With per-section offsets (AI-6)
+  and automation they make filters that open and close between sections.
+- **FX-13.** **Gate / expander**: threshold, range (0–80 dB: how much it lowers below the threshold), ratio (1–20; at
+  20 it is a gate), attack, hold, release, high-pass and low-pass on the detector, optional sidechain from another
+  track or a group (FX-3). Opening and closing without clicks.
+- **FX-14.** **De-esser**: frequency (3–12 kHz), threshold, maximum reduction (0–12 dB), `split` mode (lowers only what
+  is above the frequency) or `wide` (lowers the whole signal); listening to the detected signal alone, which enters
+  neither the project nor the export.
+- **FX-15.** **Dynamic EQ**: one or two bands (peak, low shelf, high shelf) with frequency, Q, threshold, maximum
+  gain (−12…+6 dB: negative cuts, positive boosts when the band's signal exceeds the threshold), attack and
+  release. The detector listens to the same band or, with the sidechain, to the same band of another track or of a
+  group (FX-3): so the guitars drop at 3 kHz **only when the voice sings**.
+- **FX-16.** **Transient shaper**: attack (±12 dB), sustain (±12 dB), speed (0–1: how short the attack part is),
+  mix. It has no threshold: the result does not depend on the input level.
+- **FX-17.** **Clipper and multiband on tracks and groups**: the same processor as MAS-12 for the multiband (2–6
+  bands); the clipper is the one from MAS-11 with an **absolute threshold** (−24…0 dBFS) in place of the threshold
+  measured on the song, because on a track its input changes with every preceding parameter.
+- **FX-18.** **Color**: saturation has a `character`: `soft` (that of FX-4, default and the value of existing
+  projects), `tape` (rounded peaks and a slight loss of highs), `tube` (asymmetric, even harmonics),
+  `transistor` (harder, odd harmonics). **Exciter**: frequency (1–12 kHz), drive, amount: it saturates only what
+  is above the frequency and mixes it back in. **Bass enhancer**: frequency (40–160 Hz), harmonics (0–1), mix: it
+  generates harmonics of the low band so the bass reads on small speakers too; it does not generate octaves below.
+  All with 4x oversampling and automatic level compensation, like FX-4.
+- **FX-19.** **Width** per track, group and return: width (0–200%, gain of the side) and mono below a
+  frequency (0–250 Hz), like the master's Width block (MAS-1).
+- **FX-20.** **Movement**. **Modulation**: mode `chorus`, `flanger` or `phaser`; rate (0.02–10 Hz, or musical value if
+  there is a BPM), depth, feedback (flanger and phaser, −0.9…0.9), voices (chorus, 1–3), stages (phaser: 4,
+  6, 8, 12), stereo spread (0–180°), mix. **Tremolo**: mode `tremolo` or `autopan`, rate (Hz or musical value),
+  depth, shape (sine, triangle, smoothed square), stereo phase offset for the tremolo. For both the
+  **phase depends only on the position in the song**: the same sample of the song has the same phase in playback from
+  any point and in the offline render; with BPM the phase is locked to bar 1.
+- **FX-21.** **Pitch**. **Harmonizer**: one or two voices, each with interval (−12…+12 semitones, plus ±50 cents),
+  level and pan, plus the mix. **Doubler**: one or two voices with a small pitch offset (0–30 cents), a
+  delay (5–40 ms) that moves slowly, stereo spread and mix. Pitch shifter written by us, deterministic, with
+  constant compensated latency (FX-10). The doubler is an effect **inside the track**: it creates no tracks or copies
+  of the clip (§2). No pitch correction.
+- **FX-22.** **`shimmer` reverb**: a fourth algorithm of FX-5, with a pitch transposition in the recirculation:
+  interval (+5, +7 or +12 semitones, default +12) and amount (0–1). With amount 0 all of FX-9 holds; with amount
+  above 0 the tail stays bounded, ends in exact silence and does not depend on the block size.
+- **FX-23.** **Ping-pong and tape delay**: mode `stereo` (that of FX-6, default) or `ping_pong` (input summed to
+  mono, repeats alternating between left and right); character `clean` (default) or `tape`, with wow and flutter
+  (0–1, phase tied to the position in the song like FX-20) and drive in the feedback (0–12 dB) with the level compensated.
+- **FX-24.** **Quality of the new blocks**, verified by property tests for each block (thresholds motivated in the
+  test and reported in `docs/app/dsp.md`):
+  - in the neutral position (mix at 0, amount or depth at 0, gains at 0 dB) the block leaves the signal as it is
+    (difference ≤ 1e-6, apart from the compensated latency);
+  - no allocation in `process`, result independent of the block size (ENG-4), stability with
+    parameters changing every 32 samples (AUT-6), bounded output with full-scale noise;
+  - gate: below the threshold the signal drops by the set range (±0.5 dB); de-esser in `split`: below the frequency
+    the signal does not change; dynamic EQ: the band moves only when the detector exceeds the threshold; transient
+    shaper: a steady sine does not change level; harmonizer: interval measured on a sine within ±5 cents;
+    modulation and tremolo: the render starting at 30 s gives the same samples as the full render from 30 s on;
+    ping-pong: the repeats alternate between channels;
+  - NFR-1 is met with the classic chain; with 8 of the 32 tracks also carrying a harmonizer, a four-band
+    multiband and a chorus the callback stays under 50% of the period.
 
-### 3.4 Automazione (AUT)
+### 3.4 Automation (AUT)
 
-- **AUT-1.** Corsie di automazione per **ogni parametro continuo** di tracce audio, gruppi e ritorni: fader,
-  pan, mandate, trim, frequenze dei filtri, frequenza/gain/Q di ogni banda di EQ, soglia/ratio/attacco/
-  rilascio/makeup del compressore, drive e mix della saturazione, parametri dei ritorni e, con P-018, ogni parametro
-  continuo dei blocchi di FX-10 → FX-23 (anche nelle catene dei ritorni); più mute e bypass dei blocchi. Punti con interpolazione lineare; mute e bypass sono a gradini.
-- **AUT-6.** I parametri automatizzati di filtri, EQ e compressore si aggiornano a intervalli di al più 32
-  campioni con coefficienti interpolati: nessun click né instabilità, anche con curve ripide (verificato da un
-  test su sweep rapidi).
-- **AUT-2.** Modifica: aggiungi, sposta, elimina punti; selezione a intervallo; disegno a mano libera
-  semplificato in punti; copia/incolla di un intervallo.
-- **AUT-3.** Con una corsia attiva, il controllo corrispondente mostra il valore automatizzato; muoverlo a
-  trasporto fermo sposta l'intera curva (offset), non scrive punti.
-- **AUT-4.** Il render applica le curve con rampa a campione (nessun gradino udibile) ed è identico tra
-  riproduzione e render offline.
-- **AUT-5.** Le decisioni per sezione dell'AI (AI-6) vengono scritte **come punti di automazione** nelle stesse
-  corsie, con una rampa ai confini di sezione (default 80 ms): restano modificabili a mano.
+- **AUT-1.** Automation lanes for **every continuous parameter** of audio tracks, groups and returns: fader,
+  pan, sends, trim, filter frequencies, frequency/gain/Q of every EQ band, threshold/ratio/attack/
+  release/makeup of the compressor, drive and mix of the saturation, return parameters and, with P-018, every
+  continuous parameter of the blocks of FX-10 → FX-23 (also in the return chains); plus mute and block bypass. Points with linear interpolation; mute and bypass are stepped.
+- **AUT-6.** The automated parameters of filters, EQ and compressor are updated at intervals of at most 32
+  samples with interpolated coefficients: no click or instability, even with steep curves (verified by a
+  test on fast sweeps).
+- **AUT-2.** Editing: add, move, delete points; range selection; freehand drawing
+  simplified into points; copy/paste of a range.
+- **AUT-3.** With an active lane, the corresponding control shows the automated value; moving it with the
+  transport stopped shifts the whole curve (offset), it does not write points.
+- **AUT-4.** The render applies the curves with a per-sample ramp (no audible step) and is identical between
+  playback and offline render.
+- **AUT-5.** The AI's per-section decisions (AI-6) are written **as automation points** in the same
+  lanes, with a ramp at section boundaries (default 80 ms): they remain editable by hand.
 
-### 3.5 Cronologia e non distruttività (HIS)
+### 3.5 History and non-destructiveness (HIS)
 
-- **HIS-1.** Ogni modifica del progetto è un **comando** con il suo inverso. Undo e redo illimitati nella
-  sessione, da menu, scorciatoia e pannello cronologia (elenco leggibile dei passi, clic per tornare a un punto).
-- **HIS-2.** I gesti continui (trascinare un fader, una clip, un punto) producono un solo passo.
-- **HIS-3.** L'applicazione di una proposta AI è **una sola transazione**, con etichetta e riferimento al log
-  della chiamata.
-- **HIS-4.** Snapshot del mix con nome, persistenti nel progetto: salva, ripristina (annullabile), confronta A/B
-  due stati durante l'ascolto senza interrompere la riproduzione.
-- **HIS-5.** Mix e master hanno cronologie separate.
-- **HIS-6.** Mute/solo, zoom, selezione e posizione del cursore non entrano nella cronologia (stato di vista).
+- **HIS-1.** Every change to the project is a **command** with its inverse. Unlimited undo and redo in the
+  session, from menu, shortcut and history panel (readable list of steps, click to return to a point).
+- **HIS-2.** Continuous gestures (dragging a fader, a clip, a point) produce a single step.
+- **HIS-3.** The application of an AI proposal is **a single transaction**, with a label and a reference to the call
+  log.
+- **HIS-4.** Named mix snapshots, persistent in the project: save, restore (undoable), A/B compare
+  two states during listening without interrupting playback.
+- **HIS-5.** Mix and master have separate histories.
+- **HIS-6.** Mute/solo, zoom, selection and cursor position do not enter the history (view state).
 
-### 3.6 Motore audio (ENG)
+### 3.6 Audio engine (ENG)
 
-- **ENG-1.** Riproduzione in tempo reale dell'intero grafo, con lettura da disco in streaming (thread di lettura
-  e buffer circolari per traccia). Il thread audio non alloca, non blocca, non fa I/O.
-- **ENG-2.** Scelta del dispositivo di uscita e della dimensione del buffer; se il dispositivo non supporta la
-  frequenza del progetto, ricampionamento in uscita.
-- **ENG-3.** Ogni modifica di parametro arriva al motore entro un buffer, con smoothing (nessun click).
-- **ENG-4.** **Render offline** con lo stesso codice del grafo in tempo reale, più veloce del tempo reale,
-  deterministico: stesso progetto ⇒ stesso hash del file. Il risultato non dipende dalla dimensione del blocco
-  (differenza ≤ 1e-6 di picco tra blocchi da 64 e da 4096 campioni).
-- **ENG-5.** Compensazione dei ritardi introdotti dall'oversampling della saturazione e dal lookahead del limiter.
-- **ENG-6.** Meter e posizione di riproduzione inviati all'interfaccia ad almeno 30 Hz, senza passare dal thread
-  audio in modo bloccante.
-- **ENG-7.** Un CLI senza interfaccia (`stemwise-cli`) espone analisi, render, mix AI con decisore finto,
-  mixdown e master su un progetto: serve ai test di flusso completo e alla verifica autonoma.
+- **ENG-1.** Real-time playback of the whole graph, with streaming reads from disk (read thread
+  and per-track ring buffers). The audio thread does not allocate, does not block, does no I/O.
+- **ENG-2.** Choice of output device and buffer size; if the device does not support the
+  project rate, resampling on output.
+- **ENG-3.** Every parameter change reaches the engine within one buffer, with smoothing (no clicks).
+- **ENG-4.** **Offline render** with the same code as the real-time graph, faster than real time,
+  deterministic: same project ⇒ same file hash. The result does not depend on the block size
+  (difference ≤ 1e-6 of peak between blocks of 64 and 4096 samples).
+- **ENG-5.** Compensation of the delays introduced by the saturation oversampling and the limiter lookahead.
+- **ENG-6.** Meters and playback position sent to the interface at at least 30 Hz, without going through the audio
+  thread in a blocking way.
+- **ENG-7.** A headless CLI (`stemwise-cli`) exposes analysis, render, AI mix with the fake decider,
+  mixdown and master on a project: it serves the full-flow tests and autonomous verification.
+### 3.7 Analysis (ANA)
 
-### 3.7 Analisi (ANA)
+- **ANA-1 → ANA-12.** The PoC measurements (PRD §5.2), with the formulas of [analysis.md](../poc/docs/analysis.md),
+  rewritten in Rust and verified against the oracle (§5.7).
+- **ANA-13.** The analysis JSON sent to the model stays under 12,000 estimated tokens for 24 tracks and 8 sections.
+- **ANA-14.** Measurements are computed on the track content **after clip editing and before the
+  chain**. The cache is invalidated when the clips change, not when the parameters change.
+- **ANA-15.** Compact measurements over time: loudness of each track per section and percentage of active time per
+  section; band profile of the mix per section.
+- **ANA-16.** Families: stems with drum roles (or in the same group) are also reported as a family
+  (loudness and bands of the sum); masking **within** a family does not enter the main collisions.
+- **ANA-17.** Analysis in parallel across tracks, with visible progress; 16 stems of 4 minutes in under 30 s
+  on Apple Silicon.
+- **ANA-18.** **True doubles** (P-011): for every pair of audio tracks with the same role the analysis measures how
+  much they are two performances of the same part: correlation of the level envelopes, similarity of the band
+  profile, overlap of active time, and the frame-by-frame difference of the spectral shape to tell two
+  performances (a few dB) from two copies of the same signal (a fraction of a dB, even at different levels or with
+  a few milliseconds of delay: marked `identical`, opening them to the sides is pointless). Roles considered: guitars,
+  keyboards, synth, pads, strings, brass and vocals. Pairs
+  above the threshold enter the analysis document as `doubles` (ids of the two tracks, score, `identical`).
+  Initial thresholds motivated in the test and to be tuned in the author's validation; the ANA-13 cap is still met.
+- **ANA-19.** **Measurements for the new blocks** (P-018), computed like ANA-14 and under the ANA-13 cap: for tracks
+  with vocal roles the **sibilance** (by how much short peaks between 5 and 10 kHz exceed the body of the voice, and
+  the frequency where they fall); for every track the **crest** (peak over short RMS) and the **transients** (by how
+  much the attacks detected by the onsets stand above the level that follows them); for tracks with drum roles the
+  **floor** (level between one hit and the next relative to the hits, which says how much bleed there is); for stereo
+  tracks the correlation and the side share; the tempo and meter of the project, if known. For every track, group and
+  return the analysis also lists the blocks that are not classic (id, type, state, position).
 
-- **ANA-1 → ANA-12.** Le misure della PoC (PRD §5.2), con le formule di [analysis.md](../poc/docs/analysis.md), riscritte in
-  Rust e verificate contro l'oracolo (§5.7).
-- **ANA-13.** Il JSON di analisi inviato al modello resta sotto 12.000 token stimati per 24 tracce e 8 sezioni.
-- **ANA-14.** Le misure si calcolano sul contenuto della traccia **dopo l'editing delle clip e prima della
-  catena**. La cache si invalida quando cambiano le clip, non quando cambiano i parametri.
-- **ANA-15.** Misure nel tempo, compatte: loudness di ogni traccia per sezione e percentuale di tempo attivo per
-  sezione; profilo in bande del mix per sezione.
-- **ANA-16.** Famiglie: gli stem con ruoli di batteria (o nello stesso gruppo) si riportano anche come famiglia
-  (loudness e bande della somma); il mascheramento **dentro** una famiglia non entra nelle collisioni principali.
-- **ANA-17.** Analisi in parallelo sulle tracce, con avanzamento visibile; 16 stem di 4 minuti in meno di 30 s
-  su Apple Silicon.
-- **ANA-18.** **Doppi veri** (P-011): per ogni coppia di tracce audio con lo stesso ruolo l'analisi misura quanto
-  sono due esecuzioni della stessa parte: correlazione degli inviluppi di livello, somiglianza del profilo in
-  bande, sovrapposizione del tempo attivo, e differenza della forma spettrale frame per frame per distinguere due
-  esecuzioni (alcuni dB) da due copie dello stesso segnale (una frazione di dB, anche a livelli diversi o con
-  pochi millisecondi di ritardo: marcate `identical`, aprirle ai lati non serve). Ruoli considerati: chitarre,
-  tastiere, synth, pad, archi, fiati e voci. Le coppie
-  sopra soglia entrano nel documento di analisi come `doubles` (id delle due tracce, punteggio, `identical`).
-  Soglie iniziali motivate nel test e da tarare nella validazione dell'autore; il tetto ANA-13 resta rispettato.
-- **ANA-19.** **Misure per i blocchi nuovi** (P-018), calcolate come ANA-14 e sotto il tetto di ANA-13: per le tracce
-  con ruoli vocali la **sibilanza** (di quanto i picchi brevi tra 5 e 10 kHz superano il corpo della voce, e la
-  frequenza dove cadono); per ogni traccia la **cresta** (picco su RMS breve) e i **transienti** (di quanto gli
-  attacchi rilevati dagli onset stanno sopra il livello che li segue); per le tracce con ruoli di batteria il
-  **fondo** (livello tra un colpo e l'altro rispetto ai colpi, che dice quanto rientro c'è); per le tracce stereo la
-  correlazione e la quota del side; il tempo e la metrica del progetto, se noti. Per ogni traccia, gruppo e ritorno
-  l'analisi elenca anche i blocchi che non sono classici (id, tipo, stato, posizione).
+- **ANA-20.** **Levels for the explanation** (P-019). For the Explain view the core measures, from the render of the
+  mix as it is (the same renders as AI-22): the loudness of every family and every return relative to the mix, over
+  the whole song and per section, and the loudness of the whole mix and of every section. The measurement runs in the
+  background, does not block the interface, is cancelled if the mix changes and stays in memory until the mix
+  changes. No data leaves the computer.
 
-- **ANA-20.** **Livelli per la spiegazione** (P-019). Per la vista Explain il core misura, dal render del mix com'è
-  (stessi render di AI-22): la loudness di ogni famiglia e di ogni ritorno rispetto al mix, sull'intero brano e per
-  sezione, e la loudness del mix intero e di ogni sezione. La misura gira in background, non blocca l'interfaccia, si
-  annulla se il mix cambia e resta in memoria finché il mix non cambia. Nessun dato esce dal computer.
+### 3.8 AI-assisted mix (AI)
 
-### 3.8 Mix assistito dall'AI (AI)
+- **AI-1.** **Auto mix**: from brief, analysis and reference profile, the model returns a complete plan
+  (§5.5). Verification loop as in the PoC (offline render, evaluation, up to 3 iterations, stop criteria and
+  best plan: PRD §5.5), with two differences (P-012): an auto mix runs **at least two iterations**, because only
+  the second knows the balance of a rendered plan (AI-22); the plan kept is the **last valid one**,
+  unless it moves away from the reference by more than 1 dB compared with an earlier one.
+- **AI-2.** The plan is not applied by itself: it becomes a **proposal** under review, with summary, per-track
+  rationale, parameter diff against the current state, evaluation (distance from the reference before/after,
+  technical constraints) and cost. The user listens to the proposal in A/B with the current state, then **applies all**,
+  **applies only the chosen tracks** or **discards**.
+- **AI-3.** **Revision in words**: a natural-language request ("vocals more forward, less reverb on the
+  guitars") produces a single-iteration proposal that starts from the current state, manual changes
+  included. The variation limits between iterations (AI-8) **do not apply** to a revision: it is a single step,
+  requested by the author and judged by ear (P-012). In the interface request and auto mix start from the
+  **same button**: with text it is a revision, without it is an auto mix; Enter in the field inserts a new line.
+- **AI-4.** **Lock**: a locked track (or group) is not modified by the AI; the model receives it as
+  context and validation restores its values.
+- **AI-5.** Scope: the user can limit a request to the selected tracks; the others behave as
+  locked for that request.
+- **AI-6.** **Per-section parameters**: if the project has sections, the plan can contain for every track
+  per-section offsets of gain, sends and EQ band gains (D-048 of the PoC), applied as automation (AUT-5).
+  With P-018 also the high-pass and low-pass frequency (in octaves) and the **blocks switched on only in some sections**
+  (bypassed in the others, with the fade of FX-10).
+- **AI-7.** Input normalization: the auto mix sets the **trim** of every track toward −23 LUFS (REN-1
+  of the PoC), as a visible part of the proposal; can be disabled.
+- **AI-8.** Strict validation of the plan against schema and limits; up to 2 new attempts with the error
+  sent back to the model; variation limits between the iterations of an auto mix (PRD DEC-5). If the provider rejects the `strict`
+  schema, an automatic fallback to JSON mode plus validation (Q-40 of the PoC, option b).
+- **AI-9.** `Decider` interface with two implementations: OpenRouter and a deterministic **fake decider** (the PoC
+  rules extended to sections, delay, saturation and, with P-011, to structure, reverb algorithms, parallel
+  compression and doubles). The fake decider can be selected in the settings ("Offline demo") and is the only one used
+  in the tests.
+- **AI-10.** Transparency: for every call the request, response, tokens, cost and duration are saved in the project;
+  the detail can be consulted in the "AI usage" panel (AI-14). The model never receives audio, paths, file
+  names or the song title.
+- **AI-11.** OpenRouter key **in the system keychain when the app can read it without the system asking for
+  the password** (on macOS: build signed with a certificate issued by Apple, whose identity does not change from one build
+  to the next); **otherwise in a file in the app data folder readable only by the user** (permissions 600; on Windows the data folder in the user's profile), never
+  in the project, in the logs or in the settings file. The interface always says where the key is. Model, reasoning effort and temperature
+  configurable; no model hard-wired in the code (configuration default: `openai/gpt-6.1-sol`, medium
+  effort, D-047). Clear state when the key or the network is missing.
+- **AI-12.** Calls do not block the interface, show progress by phase (analysis, decision, render,
+  evaluation) and can be cancelled.
+- **AI-13.** `rationale` and `summary` in the language of the brief.
+- **AI-14.** **"AI usage" panel**, reachable from both phases:
+  - project summary: number of calls, input and output tokens, total cost, total duration,
+    broken down by type (auto mix, revision, master) and **by model used**;
+  - chronological history of calls: date, type, model and effort, attempts, tokens, cost, duration, outcome
+    (applied, partly applied, discarded, failed, cancelled) and link to the history step;
+  - detail of a call in readable form: request rendered as a brief, user request, tracks with
+    roles and locks, measurement tables; response rendered as summary, per-track changes and rationales; the raw
+    JSON of request and response remains viewable and copyable;
+  - export of the history as CSV and JSON;
+  - total of costs **across all projects** in the AI settings (log in the app data area).
+- **AI-15.** The cost is the one reported by the provider in the response; if missing, it is estimated from the tokens and the
+  model's price list and marked as an estimate. Failed or cancelled calls count for what they spent.
+- **AI-16.** Before a call the app shows an estimate of tokens and cost; an optional spending cap per project
+  asks for confirmation when it would be exceeded.
+- **AI-17.** **Structural changes** (P-011): the plan can, in the `structure` section (§5.5):
+  - **create returns** (reverb, with its algorithm, or delay), up to 3 per proposal and within the cap of 8
+    (TRK-1), to give a family of tracks its own space (for example a plate for the vocals, a short delay for
+    slapback);
+  - **create groups**, up to 3 per proposal and within the 4 levels (TRK-3), and move existing audio tracks or groups into them:
+    at least two members, all with the same output; the group takes that output and the position of the
+    first member. Sends and parameters of the members do not change as a result of the move.
 
-- **AI-1.** **Auto mix**: da brief, analisi e profilo dei riferimenti, il modello restituisce un piano completo
-  (§5.5). Ciclo di verifica come nella PoC (render offline, valutazione, fino a 3 iterazioni, criteri di stop e
-  piano migliore: PRD §5.5), con due differenze (P-012): un auto mix fa **almeno due iterazioni**, perché solo
-  la seconda conosce il bilanciamento di un piano renderizzato (AI-22); il piano tenuto è l'**ultimo valido**,
-  a meno che si allontani dal riferimento di oltre 1 dB rispetto a uno precedente.
-- **AI-2.** Il piano non si applica da solo: diventa una **proposta** in revisione, con sintesi, motivazione per
-  traccia, diff dei parametri rispetto allo stato attuale, valutazione (distanza dal riferimento prima/dopo,
-  vincoli tecnici) e costo. L'utente ascolta la proposta in A/B con lo stato attuale, poi **applica tutto**,
-  **applica solo le tracce scelte** o **scarta**.
-- **AI-3.** **Revisione a parole**: una richiesta in linguaggio naturale ("voce più avanti, meno riverbero sulle
-  chitarre") produce una proposta di una sola iterazione che parte dallo stato attuale, comprese le modifiche
-  manuali. I limiti di variazione tra iterazioni (AI-8) **non valgono** per una revisione: è un passo solo,
-  chiesto dall'autore e giudicato a orecchio (P-012). Nell'interfaccia richiesta e auto mix partono dallo
-  **stesso pulsante**: col testo è una revisione, senza è un auto mix; Invio nel campo va a capo.
-- **AI-4.** **Lock**: una traccia (o un gruppo) bloccata non viene modificata dall'AI; il modello la riceve come
-  contesto e la validazione ne ripristina i valori.
-- **AI-5.** Ambito: l'utente può limitare una richiesta alle tracce selezionate; le altre si comportano come
-  bloccate per quella richiesta.
-- **AI-6.** **Parametri per sezione**: se il progetto ha sezioni, il piano può contenere per ogni traccia
-  scostamenti per sezione di gain, mandate e gain delle bande di EQ (D-048 della PoC), applicati come automazione (AUT-5).
-  Con P-018 anche la frequenza di passa-alto e passa-basso (in ottave) e i **blocchi accesi solo in alcune sezioni**
-  (bypass nelle altre, con la dissolvenza di FX-10).
-- **AI-7.** Normalizzazione d'ingresso: l'auto mix imposta il **trim** di ogni traccia verso −23 LUFS (REN-1
-  della PoC), come parte visibile della proposta; disattivabile.
-- **AI-8.** Validazione stretta del piano rispetto a schema e limiti; fino a 2 nuovi tentativi con l'errore
-  rimandato al modello; limiti di variazione tra le iterazioni di un auto mix (PRD DEC-5). Se il provider rifiuta lo schema
-  `strict`, un ripiego automatico alla modalità JSON più validazione (Q-40 della PoC, opzione b).
-- **AI-9.** Interfaccia `Decider` con due implementazioni: OpenRouter e **decisore finto** deterministico (regole
-  della PoC estese a sezioni, delay, saturazione e, con P-011, a struttura, algoritmi di riverbero, compressione
-  parallela e doppi). Il decisore finto è selezionabile nelle impostazioni ("Offline demo") ed è l'unico usato
-  nei test.
-- **AI-10.** Trasparenza: per ogni chiamata si salvano nel progetto richiesta, risposta, token, costo e durata;
-  il dettaglio è consultabile nel pannello "AI usage" (AI-14). Al modello non vanno mai audio, percorsi, nomi
-  di file o titolo del brano.
-- **AI-11.** Chiave OpenRouter **nel portachiavi di sistema quando l'app può leggerlo senza che il sistema chieda
-  la password** (su macOS: build firmata con un certificato emesso da Apple, la cui identità non cambia da una build
-  all'altra); **altrimenti in un file della cartella dati dell'app leggibile solo dall'utente** (permessi 600; su Windows la cartella dati nel profilo dell'utente), mai
-  nel progetto, nei log o nel file delle impostazioni. L'interfaccia dice sempre dove sta la chiave. Modello, sforzo di ragionamento e temperatura
-  configurabili; nessun modello cablato nel codice (default di configurazione: `openai/gpt-6.1-sol`, sforzo
-  medio, D-047). Stato chiaro quando manca la chiave o la rete.
-- **AI-12.** Le chiamate non bloccano l'interfaccia, mostrano l'avanzamento per fase (analisi, decisione, render,
-  valutazione) e si possono annullare.
-- **AI-13.** `rationale` e `summary` nella lingua del brief.
-- **AI-14.** **Pannello "AI usage"**, raggiungibile da entrambe le fasi:
-  - riepilogo del progetto: numero di chiamate, token in ingresso e in uscita, costo totale, durata totale,
-    ripartiti per tipo (auto mix, revisione, master) e **per modello usato**;
-  - storia cronologica delle chiamate: data, tipo, modello e sforzo, tentativi, token, costo, durata, esito
-    (applicata, applicata in parte, scartata, fallita, annullata) e collegamento al passo di cronologia;
-  - dettaglio di una chiamata in forma leggibile: richiesta resa come brief, richiesta dell'utente, tracce con
-    ruoli e lock, tabelle delle misure; risposta resa come sintesi, modifiche per traccia e motivazioni; il JSON
-    grezzo di richiesta e risposta resta consultabile e copiabile;
-  - export della storia in CSV e JSON;
-  - totale dei costi **su tutti i progetti** nelle impostazioni dell'AI (registro nell'area dati dell'app).
-- **AI-15.** Il costo è quello riportato dal provider nella risposta; se manca, viene stimato dai token e dal
-  listino del modello e marcato come stima. Le chiamate fallite o annullate contano con ciò che hanno speso.
-- **AI-16.** Prima di una chiamata l'app mostra una stima di token e costo; un tetto di spesa per progetto,
-  facoltativo, chiede conferma quando verrebbe superato.
-- **AI-17.** **Modifiche strutturali** (P-011): il piano può, nella sezione `structure` (§5.5):
-  - **creare ritorni** (riverbero, con il suo algoritmo, o delay), fino a 3 per proposta ed entro il tetto di 8
-    (TRK-1), per dare a una famiglia di tracce il suo spazio (per esempio un plate per la voce, un delay corto per
-    lo slapback);
-  - **creare gruppi**, fino a 3 per proposta ed entro i 4 livelli (TRK-3), e spostarvi tracce audio o gruppi
-    esistenti: almeno due membri, tutti con la stessa uscita; il gruppo prende quell'uscita e la posizione del
-    primo membro. Mandate e parametri dei membri non cambiano per effetto dello spostamento.
+  The plan does **not** create, duplicate or delete audio tracks, does not delete returns or groups, does not move tracks between
+  existing groups and does not touch clips and sections: the song stays the same. Every structural change is a change
+  the user can make by hand with the same commands (P2).
+- **AI-18.** Structural changes can be **disabled** from the AI panel ("Allow structural changes",
+  on by default, remembered in the project): when disabled, the schema sent does not contain `structure`. A
+  request limited to some tracks (AI-5) carries no structure: a return is shared and a group changes the
+  path of its members. A locked track (AI-4) is not moved into a new group.
+- **AI-19.** **Stable structure in the loop**: the structure is decided at the first iteration; the following
+  iterations receive it as given and adjust only parameters (their schema does not contain `structure`). A
+  revision in words (AI-3) can propose structure in its single iteration. Validation (AI-8) discards with
+  a warning, without failing the plan, a new return that no track sends to and a new group with
+  fewer than two valid members.
+- **AI-20.** **Proposal and application** (extends AI-2, HIS-3): new returns and groups appear in the proposal
+  as rows of their own, with name, rationale and parameters; A/B listening includes them. "Apply all" creates them
+  in the same transaction as the other changes: a single undo step removes them. Every new element has its
+  **own checkbox**: when unchecked, it is not created, and the sends toward it or the move into the group are dropped, while
+  the other track changes stay. With "apply only the chosen tracks" a checked new return is created
+  if at least one chosen track sends to it, and a checked new group is created with only the chosen members,
+  if there are at least two; otherwise the proposal says why it is not created. "Discard" creates nothing.
+- **AI-21.** **Mixing techniques in the prompt and in the fake decider** (P-011):
+  - **true doubles**: a pair reported by ANA-18 and not `identical` is treated as a pair: opposite and
+    symmetric pans, aligned levels, same processing;
+  - **slapback**: a dedicated delay with a short time (80–140 ms) and zero feedback, to which the vocals send;
+  - **delay "throw"**: delay send raised only in some sections (AI-6);
+  - **parallel compression**: compressor decided with `mix` below 1 on drums, vocals or their groups;
+  - **distinct spaces**: reverb algorithm and decay chosen per family (short plate for the vocals,
+    room or hall for the rest).
+  - with P-018, among the corrections: **de-esser** on vocals with high sibilance; **dynamic EQ** with sidechain in
+    place of a fixed cut when two tracks mask each other only while playing together; **gate** on drums
+    with a high floor; **transient shaper** to add or remove punch; **ducking** of returns from the vocals; **sidechain
+    pumping** (kick to bass or pad) where the genre asks for it and never as a default; width on pads and
+    stereo keyboards, never on bass and kick; saturation character chosen by role and brief;
+  - with P-018, among the creative ideas (AI-26): modulation, tremolo and auto-pan, harmonizer, doubler, shimmer,
+    ping-pong, tape delay, gated reverb, filters that open between sections, throw.
 
-  Il piano **non** crea, duplica o elimina tracce audio, non elimina ritorni o gruppi, non sposta tracce tra
-  gruppi esistenti e non tocca clip e sezioni: il brano resta quello. Ogni modifica strutturale è una modifica
-  che l'utente può fare a mano con gli stessi comandi (P2).
-- **AI-18.** Le modifiche strutturali si possono **disattivare** dal pannello AI ("Allow structural changes",
-  attivo per default, ricordato nel progetto): disattivate, lo schema inviato non contiene `structure`. Una
-  richiesta limitata ad alcune tracce (AI-5) non porta struttura: un ritorno è condiviso e un gruppo cambia il
-  percorso dei suoi membri. Una traccia bloccata (AI-4) non viene spostata in un gruppo nuovo.
-- **AI-19.** **Struttura stabile nel ciclo**: la struttura si decide alla prima iterazione; le iterazioni
-  successive la ricevono come data e regolano solo i parametri (il loro schema non contiene `structure`). Una
-  revisione a parole (AI-3) può proporre struttura nella sua unica iterazione. La validazione (AI-8) scarta con
-  un avviso, senza far fallire il piano, un ritorno nuovo verso cui nessuna traccia manda e un gruppo nuovo con
-  meno di due membri validi.
-- **AI-20.** **Proposta e applicazione** (estende AI-2, HIS-3): ritorni e gruppi nuovi compaiono nella proposta
-  come righe proprie, con nome, motivazione e parametri; l'ascolto in A/B li comprende. "Applica tutto" li crea
-  nella stessa transazione delle altre modifiche: un solo passo di undo li toglie. Ogni elemento nuovo ha la
-  **sua spunta**: tolta, non viene creato, e le mandate verso di esso o lo spostamento nel gruppo cadono, mentre
-  le altre modifiche delle tracce restano. Con "applica solo le tracce scelte" un ritorno nuovo spuntato si crea
-  se almeno una traccia scelta manda verso di esso, e un gruppo nuovo spuntato si crea con i soli membri scelti,
-  se sono almeno due; altrimenti la proposta dice perché non viene creato. "Scarta" non crea nulla.
-- **AI-21.** **Tecniche di mix nel prompt e nel decisore finto** (P-011):
-  - **doppi veri**: una coppia riportata da ANA-18 e non `identical` si tratta come coppia: pan opposti e
-    simmetrici, livelli allineati, stessa elaborazione;
-  - **slapback**: un delay dedicato con tempo breve (80–140 ms) e feedback nullo, a cui manda la voce;
-  - **"throw" di delay**: mandata al delay alzata solo in alcune sezioni (AI-6);
-  - **compressione parallela**: compressore deciso con `mix` sotto 1 su batteria, voce o sui loro gruppi;
-  - **spazi distinti**: algoritmo e decadimento del riverbero scelti per famiglia (plate corto per la voce,
-    room o hall per il resto).
-  - con P-018, tra le correzioni: **de-esser** sulle voci con sibilanza alta; **EQ dinamico** con sidechain al
-    posto di un taglio fisso quando due tracce si mascherano solo mentre suonano insieme; **gate** sulle batterie
-    con fondo alto; **transient shaper** per dare o togliere colpo; **ducking** dei ritorni dalla voce; **pompa da
-    sidechain** (cassa verso basso o pad) dove il genere la chiede e mai come default; ampiezza sui pad e sulle
-    tastiere stereo, mai su basso e cassa; carattere della saturazione scelto per ruolo e brief;
-  - con P-018, tra le idee creative (AI-26): modulazione, tremolo e auto-pan, harmonizer, doubler, shimmer,
-    ping-pong, delay tape, riverbero gated, filtri che si aprono tra le sezioni, throw.
+  The prompt describes each technique with the case in which it is needed and the one in which it should be avoided; the fake decider
+  applies each with a deterministic rule, verified by the full flow of `stemwise-cli`.
+- **AI-22.** **Measured balance** (P-012): the model receives how loud every **family** of tracks (lead vocal,
+  backing vocals, drums, percussion, bass, guitars, keyboards, other) and every **return** is relative to the whole
+  mix, in LU, over the song and per section. It receives it before deciding (auto mix: with all faders at 0 dB on the
+  normalized trims; revision: on the current mix) and in the evaluation of every iteration, measured on the render of the
+  plan. Every level is a solo render of the project: the family without the returns, the return alone. The
+  prompt gives the starting ratios between the families and the threshold below which a return is not heard, says that the
+  reference profile describes tone and not balance, and that brief and requests come first.
+- **AI-23.** **Persistent proposals** (P-014). Every call that comes back with a proposal, of mix or master,
+  keeps it in its project folder, whatever became of it (applied, partly applied,
+  discarded). The assistant lists them in Mix and in Master, most recent first, with when it arrived, the request
+  and the outcome. A proposal from the list comes back **under review on the current state**: the differences are recomputed
+  on the mix (or the master) of now, tracks that no longer exist or are locked stay out and this is stated,
+  returns and groups already created are not created twice, A/B works as for a new proposal. Applying it
+  asks for an **explicit confirmation** saying that the current mix will change, and is a single history step
+  (AI-2, HIS-3); closing it changes nothing and does not alter its recorded outcome. Reopening a proposal does not
+  call the model and costs nothing.
+- **AI-24.** **Guided assistant setup** (P-015). A three-step dialog, the same from first launch,
+  from the Settings and from the assistant column with no key. **Connection**: the app opens OpenRouter's
+  authorization page in the browser (OAuth with PKCE S256 and `state`), waits for the return on `localhost`,
+  exchanges the code for a key of the user and stores it (AI-11); the key never passes through the browser or
+  the interface. Refusal, expiry (ten minutes), absent network and cancellation each have their own outcome, and
+  leaving the dialog stops the wait. **Credit**: how much a mix and a revision cost at the prices of the chosen
+  model, the link to the credits page, and a plain statement that the app cannot read the balance.
+  **Manually pasted key** as a secondary route, in three numbered steps. When the provider rejects a call
+  the assistant tells **credit exhausted**, **key limit** and **key no longer valid** apart, each with its
+  own way out; a rejected call costs nothing and does not change the mix. The offline demo is always one
+  click away.
+- **AI-25.** **Blocks in the plan** (P-018): the plan can add blocks to the chains of tracks, groups and returns
+  (FX-10, FX-11) and adjust those that exist, within the limits of §5.5; at most 3 new blocks per chain in a
+  proposal. The model does not move existing blocks and does not remove them: it turns them off with the bypass. A new block goes in
+  a named position (`first`, `before_compressor`, `after_compressor`, `last`); by hand it is moved like any
+  other. Lock (AI-4) and scope (AI-5) also apply to chains: a return is shared, so a request
+  limited to some tracks does not change its chain. In the proposal a new block is a row marked as new
+  in the diff of its track.
+- **AI-26.** **Creative ideas** (P-018): the plan can propose up to **3 ideas**, each with an id (`i1`–`i3`), a name (in
+  English, at most 32 characters), a rationale (in the language of the brief) and, if needed, the sections in which it plays. The
+  elements of an idea are marked with its id and can only be **additions**: new blocks, new sends,
+  new returns (AI-17, if structural changes are allowed) and per-section offsets. An idea does not change the
+  parameters of what exists: validation (AI-8) discards with a warning an element that does, without failing the
+  plan. Removing an idea leaves the rest of the plan identical. Ideas come from the brief, the roles and the sections,
+  not from the measurements: the prompt asks for them optional, different from each other and not corrective. They are decided at the first
+  iteration and stay fixed in the loop (like AI-19); the loop renders and evaluates the plan **without** ideas. A
+  revision in words can propose them in its single iteration ("something bolder in the bridge"). The fake
+  decider proposes them with deterministic rules on roles and sections.
+- **AI-27.** **Ideas in the proposal** (P-018): the proposal has a **Creative ideas** sub-section, one card per idea
+  with name, rationale, sections and elements. Every idea has its **own checkbox, off by default**. A/B plays the
+  proposal with the checked ideas; every card has a listen of the proposal with that idea alone. "Apply all"
+  applies the checked ideas in the same transaction (one undo step, HIS-3); with "apply only the chosen tracks"
+  the elements of the chosen tracks of an idea are applied, and a new return of the idea follows AI-20. An
+  "Allow creative ideas" switch in the AI panel, on by default and remembered in the project, removes `ideas` from the schema.
+  A request limited to some tracks (AI-5) can propose ideas only on those and without new returns. Persistent
+  proposals (AI-23) also reopen their ideas.
 
-  Il prompt descrive ogni tecnica con il caso in cui serve e quello in cui va evitata; il decisore finto ne
-  applica ciascuna con una regola deterministica, verificata dal flusso completo di `stemwise-cli`.
-- **AI-22.** **Bilanciamento misurato** (P-012): il modello riceve quanto suona ogni **famiglia** di tracce (voce
-  principale, cori, batteria, percussioni, basso, chitarre, tastiere, altro) e ogni **ritorno** rispetto al mix
-  intero, in LU, sul brano e per sezione. Lo riceve prima di decidere (auto mix: con tutti i fader a 0 dB sui
-  trim normalizzati; revisione: sul mix attuale) e nella valutazione di ogni iterazione, misurato sul render del
-  piano. Ogni livello è un render in solo del progetto: la famiglia senza i ritorni, il ritorno da solo. Il
-  prompt dà i rapporti di partenza tra le famiglie e la soglia sotto cui un ritorno non si sente, dice che il
-  profilo dei riferimenti descrive il tono e non il bilanciamento, e che brief e richieste vengono prima.
-- **AI-23.** **Proposte che restano** (P-014). Ogni chiamata che torna con una proposta, di mix o di master, la
-  conserva nella sua cartella del progetto, qualunque cosa ne sia stato (applicata, applicata in parte,
-  scartata). L'assistente le elenca in Mix e in Master, dalla più recente, con quando è arrivata, la richiesta
-  e l'esito. Una proposta dell'elenco torna **in revisione sullo stato attuale**: le differenze sono ricalcolate
-  sul mix (o sul master) di adesso, le tracce che non ci sono più o sono bloccate restano fuori e lo si dice,
-  ritorni e gruppi già creati non si creano due volte, l'A/B funziona come per una proposta nuova. Applicarla
-  chiede una **conferma esplicita** che dice che il mix attuale cambierà, ed è un solo passo di cronologia
-  (AI-2, HIS-3); chiuderla non cambia nulla e non ne altera l'esito registrato. Riaprire una proposta non
-  chiama il modello e non costa.
-- **AI-24.** **Configurazione guidata dell'assistente** (P-015). Un dialogo in tre passi, lo stesso dal primo avvio,
-  dalle Impostazioni e dalla colonna dell'assistente senza chiave. **Collegamento**: l'app apre la pagina di
-  autorizzazione di OpenRouter nel browser (OAuth con PKCE S256 e `state`), aspetta il ritorno su `localhost`,
-  scambia il codice con una chiave dell'utente e la salva (AI-11); la chiave non passa mai dal browser né
-  dall'interfaccia. Rifiuto, scadenza (dieci minuti), rete assente e annullamento hanno ciascuno il suo esito, e
-  uscire dal dialogo ferma l'attesa. **Credito**: quanto costano un mix e una revisione ai prezzi del modello
-  scelto, il collegamento alla pagina dei crediti, e detto in chiaro che l'app non può leggere il saldo.
-  **Chiave incollata a mano** come via secondaria, in tre passi numerati. Quando il provider rifiuta una chiamata
-  l'assistente distingue **credito esaurito**, **limite della chiave** e **chiave non più valida**, ciascuno con la
-  sua via d'uscita; una chiamata rifiutata non costa nulla e non cambia il mix. La demo offline resta sempre a un
-  clic.
-- **AI-25.** **Blocchi nel piano** (P-018): il piano può aggiungere blocchi alle catene di tracce, gruppi e ritorni
-  (FX-10, FX-11) e regolare quelli che ci sono, entro i limiti di §5.5; al più 3 blocchi nuovi per catena in una
-  proposta. Il modello non sposta i blocchi esistenti e non li toglie: li spegne con il bypass. Un blocco nuovo va in
-  una posizione nominata (`first`, `before_compressor`, `after_compressor`, `last`); a mano si sposta come ogni
-  altro. Lock (AI-4) e ambito (AI-5) valgono anche per le catene: un ritorno è condiviso, quindi una richiesta
-  limitata ad alcune tracce non ne cambia la catena. Nella proposta un blocco nuovo è una riga marcata come nuova
-  nel diff della sua traccia.
-- **AI-26.** **Idee creative** (P-018): il piano può proporre fino a **3 idee**, ciascuna con id (`i1`–`i3`), nome (in
-  inglese, al più 32 caratteri), motivazione (nella lingua del brief) e, se serve, le sezioni in cui suona. Gli
-  elementi di un'idea sono marcati con il suo id e possono essere solo **aggiunte**: blocchi nuovi, mandate nuove,
-  ritorni nuovi (AI-17, se le modifiche strutturali sono permesse) e scostamenti per sezione. Un'idea non cambia i
-  parametri di ciò che esiste: la validazione (AI-8) scarta con un avviso un elemento che lo fa, senza far fallire il
-  piano. Togliere un'idea lascia il resto del piano identico. Le idee nascono dal brief, dai ruoli e dalle sezioni,
-  non dalle misure: il prompt le chiede facoltative, diverse tra loro e non correttive. Si decidono alla prima
-  iterazione e restano ferme nel ciclo (come AI-19); il ciclo renderizza e valuta il piano **senza** idee. Una
-  revisione a parole può proporne nella sua unica iterazione ("qualcosa di più audace nel bridge"). Il decisore
-  finto ne propone con regole deterministiche sui ruoli e sulle sezioni.
-- **AI-27.** **Idee nella proposta** (P-018): la proposta ha una sotto-sezione **Creative ideas**, una scheda per idea
-  con nome, motivazione, sezioni ed elementi. Ogni idea ha la **sua spunta, spenta per default**. L'A/B suona la
-  proposta con le idee spuntate; ogni scheda ha un ascolto della proposta con quella sola idea. "Applica tutto"
-  applica le idee spuntate nella stessa transazione (un passo di undo, HIS-3); con "applica solo le tracce scelte"
-  di un'idea si applicano gli elementi delle tracce scelte, e un ritorno nuovo dell'idea segue AI-20. Un interruttore
-  "Allow creative ideas" nel pannello AI, attivo per default e ricordato nel progetto, toglie `ideas` dallo schema.
-  Una richiesta limitata ad alcune tracce (AI-5) può proporre idee solo su quelle e senza ritorni nuovi. Le proposte
-  conservate (AI-23) riaprono anche le loro idee.
+### 3.9 From mix to master (MDN)
 
-### 3.9 Dal mix al master (MDN)
-
-- **MDN-1.** Il passaggio alla fase di master è un'azione esplicita ("Bounce & go to Master"): render offline
-  del mix in `mixdowns/` (WAV float 32), con trim solo in attenuazione per restare entro −3 dBTP.
-- **MDN-2.** Il master lavora **sul mixdown congelato**, non sul mix vivo. Se il mix cambia dopo il mixdown, la
-  fase di master lo segnala e offre di rifarlo mantenendo le impostazioni di master.
-- **MDN-3.** Si può tornare al mix in ogni momento; lo stato del master resta nel progetto.
-- **MDN-4.** Ogni mixdown registra l'hash dello stato di mix da cui nasce.
+- **MDN-1.** The move to the master phase is an explicit action ("Bounce & go to Master"): offline render
+  of the mix into `mixdowns/` (WAV float 32), with a trim in attenuation only to stay within −3 dBTP.
+- **MDN-2.** The master works **on the frozen mixdown**, not on the live mix. If the mix changes after the mixdown, the
+  master phase flags it and offers to redo it keeping the master settings.
+- **MDN-3.** You can return to the mix at any time; the master state stays in the project.
+- **MDN-4.** Every mixdown records the hash of the mix state it comes from.
 
 ### 3.10 Master (MAS)
 
-- **MAS-1.** La catena di master (P-017): gain d'ingresso → i **blocchi liberi** nell'ordine scelto → guadagno di
-  loudness trovato dall'app → limiter true peak con lookahead → dither (solo a 16 bit). I blocchi liberi sono EQ
-  parametrico (6 bande), match EQ verso il profilo del riferimento (8 bande, quantità 0–100%), compressore collegato,
-  compressore multibanda (MAS-12), ampiezza stereo (gain del side, mono sotto una frequenza), saturazione e clipper
-  (MAS-11). Input, limiter e dither restano al loro posto: il limiter chiude la catena perché il tetto (MAS-3) vale
-  solo se nulla lo segue. Ogni blocco ha un bypass.
-- **MAS-2.** Destinazioni predefinite e personalizzabili: Streaming (−14 LUFS, −1 dBTP), Loud (−9 LUFS, −1 dBTP),
-  CD (−10 LUFS, −0,3 dBTP).
-- **MAS-3.** Il limiter **garantisce** il tetto di true peak (misurato con oversampling 4x sul file esportato):
-  chiude D-074 della PoC.
-- **MAS-4.** Meter: LUFS momentaneo, short-term e integrato, LRA, true peak, correlazione, spettro con il profilo
-  del riferimento sovrapposto.
-- **MAS-5.** Confronto A/B **a pari loudness** tra master, mixdown non processato e riferimento.
-- **MAS-6.** **Master AI**: il modello riceve le misure del mixdown, il profilo e la loudness dei riferimenti
-  (facoltativi), brief e destinazione, e restituisce un piano di master motivato (§5.5), come proposta (stesse regole
-  di AI-2, AI-8, AI-10). Revisione a parole anche qui (D-077 della PoC). **È un ciclo misurato** (P-016): prima della
-  decisione il master corrente è renderizzato alla loudness della destinazione e misurato; ogni piano proposto lo è a
-  sua volta, e la decisione successiva riceve piano e misura (loudness raggiunta, riduzione del limiter e del
-  compressore in profondità e in tempo, punch perso, distanza dal riferimento). Al più tre piani; il ciclo si chiude
-  quando il modello conferma il piano appena misurato, e la proposta è l'ultimo piano. La **destinazione è
-  dell'autore**: senza richiesta il piano la conserva; con una richiesta cambia solo se questa chiede a parole
-  un'altra loudness, e chiedere più dinamica non lo è. Una richiesta su un master mai toccato chiede un master
-  intero, non una revisione.
-- **MAS-7.** Export: WAV (16/24 bit, float 32), FLAC (16/24 bit) e AAC in contenitore M4A (bitrate a scelta);
-  44,1/48/88,2/96 kHz con conversione di qualità; dither TPDF a 16 bit; più formati in un solo export; rapporto
-  di export (LUFS, true peak, LRA, distanza dal riferimento).
-- **MAS-9.** Metadata: titolo, artista, album, anno, genere, numero di traccia, ISRC (validato nel formato),
-  copertina. Scritti nei tag propri di ogni formato (chunk `LIST/INFO`, `bext` e `ID3` per WAV; commenti Vorbis
-  e immagine per FLAC; atomi per M4A) e conservati nel progetto.
-- **MAS-10.** L'AAC usa l'encoder del sistema operativo dietro un'interfaccia isolata (AudioToolbox su macOS, Media Foundation su Windows);
-  dove l'encoder manca, il formato non viene offerto. Per i formati con perdita, il true peak si misura sul file
-  decodificato e, se supera il tetto, l'export si ripete con il margine necessario.
-- **MAS-8.** Il master è deterministico: stesso mixdown e stesso piano ⇒ stesso file.
-- **MAS-11.** **Clipper**: toglie fino a N dB ai picchi più alti che gli arrivano (0–12 dB), con sovracampionamento
-  4x e una morbidezza regolabile; sotto la soglia non tocca nulla. La soglia è il picco misurato al suo ingresso
-  sull'intero brano meno N dB: vale in ogni posizione della catena e con ogni destinazione. Finché quel picco non è
-  misurato il clipper lascia passare tutto.
-- **MAS-12.** **Compressore multibanda**: da due a sei bande separate da crossover Linkwitz-Riley del quarto ordine
-  (la somma delle bande è piatta), ciascuna col suo compressore collegato (soglia, rapporto, attacco, rilascio,
-  guadagno) e il suo bypass; crossover ad almeno un terzo d'ottava l'uno dall'altro. Il numero di bande si cambia a
-  mano e dall'AI; l'ascolto di una banda in solo non entra nel progetto né nell'export.
-- **MAS-13.** Il compressore di master ha un **mix** (compressione parallela) e un filtro passa-alto sul **detector**
-  ("Listens above", 0 = spento): ciò che sta sotto quella frequenza non lo fa lavorare.
-- **MAS-14.** **Scostamenti per sezione**: ogni sezione del brano può avere, sopra il master di tutto il brano e solo
-  mentre suona, uno scostamento di livello verso il limiter (±3 dB), di guadagno dei lati (±3 dB, con il blocco
-  Width acceso), di rilascio del limiter (±200 ms) e dei guadagni delle bande di un EQ (±3 dB). Entrano ed escono
-  con una rampa di circa un decimo di secondo. La loudness della destinazione resta misurata sull'intero brano.
-- **MAS-15.** **Blocchi ripetibili e ordine libero**: la catena è una lista. EQ, compressore, multibanda, saturazione
-  e clipper possono esserci **due volte**, match EQ e ampiezza una; al più nove blocchi liberi (dodici con input,
-  limiter e dither). Aggiungere, togliere, spostare e riportare un blocco ai valori iniziali sono un passo di undo
-  ciascuno. All'ascolto un cambio di struttura non produce scatti; la latenza è la stessa per ogni catena.
+- **MAS-1.** The master chain (P-017): input gain → the **free blocks** in the chosen order → loudness
+  gain found by the app → true peak limiter with lookahead → dither (16 bit only). The free blocks are parametric
+  EQ (6 bands), match EQ toward the reference profile (8 bands, amount 0–100%), linked compressor,
+  multiband compressor (MAS-12), stereo width (gain of the side, mono below a frequency), saturation and clipper
+  (MAS-11). Input, limiter and dither stay in their place: the limiter closes the chain because the ceiling (MAS-3) holds
+  only if nothing follows it. Every block has a bypass.
+- **MAS-2.** Predefined and customizable targets: Streaming (−14 LUFS, −1 dBTP), Loud (−9 LUFS, −1 dBTP),
+  CD (−10 LUFS, −0.3 dBTP).
+- **MAS-3.** The limiter **guarantees** the true peak ceiling (measured with 4x oversampling on the exported file):
+  closes D-074 of the PoC.
+- **MAS-4.** Meters: momentary, short-term and integrated LUFS, LRA, true peak, correlation, spectrum with the reference
+  profile overlaid.
+- **MAS-5.** **Loudness-matched** A/B comparison between master, unprocessed mixdown and reference.
+- **MAS-6.** **AI master**: the model receives the measurements of the mixdown, the profile and loudness of the references
+  (optional), brief and target, and returns a reasoned master plan (§5.5), as a proposal (same rules
+  as AI-2, AI-8, AI-10). Revision in words here too (D-077 of the PoC). **It is a measured loop** (P-016): before the
+  decision the current master is rendered at the target loudness and measured; every proposed plan is in
+  turn, and the next decision receives plan and measurement (loudness reached, reduction of the limiter and of the
+  compressor in depth and in time, punch lost, distance from the reference). At most three plans; the loop closes
+  when the model confirms the plan just measured, and the proposal is the last plan. The **target belongs to
+  the author**: without a request the plan keeps it; with a request it changes only if the request asks in words
+  for a different loudness, and asking for more dynamics is not that. A request on a master never touched asks for a whole
+  master, not a revision.
+- **MAS-7.** Export: WAV (16/24 bit, float 32), FLAC (16/24 bit) and AAC in an M4A container (bitrate of choice);
+  44.1/48/88.2/96 kHz with quality conversion; TPDF dither at 16 bit; several formats in one export; export
+  report (LUFS, true peak, LRA, distance from the reference).
+- **MAS-9.** Metadata: title, artist, album, year, genre, track number, ISRC (format-validated),
+  cover art. Written in the native tags of each format (`LIST/INFO`, `bext` and `ID3` chunks for WAV; Vorbis comments
+  and picture for FLAC; atoms for M4A) and kept in the project.
+- **MAS-10.** AAC uses the operating system's encoder behind an isolated interface (AudioToolbox on macOS, Media Foundation on Windows);
+  where the encoder is missing, the format is not offered. For lossy formats, the true peak is measured on the decoded
+  file and, if it exceeds the ceiling, the export is repeated with the necessary margin.
+- **MAS-8.** The master is deterministic: same mixdown and same plan ⇒ same file.
+- **MAS-11.** **Clipper**: removes up to N dB from the highest peaks that reach it (0–12 dB), with 4x oversampling
+  and an adjustable softness; below the threshold it touches nothing. The threshold is the peak measured at its input
+  over the whole song minus N dB: it holds in every position of the chain and with every target. Until that peak is
+  measured the clipper lets everything through.
+- **MAS-12.** **Multiband compressor**: two to six bands separated by fourth-order Linkwitz-Riley crossovers
+  (the sum of the bands is flat), each with its own linked compressor (threshold, ratio, attack, release,
+  gain) and its own bypass; crossovers at least a third of an octave apart. The number of bands is changed by
+  hand and from the AI; listening to a band in solo does not enter the project or the export.
+- **MAS-13.** The master compressor has a **mix** (parallel compression) and a high-pass filter on the **detector**
+  ("Listens above", 0 = off): what is below that frequency does not make it work.
+- **MAS-14.** **Per-section offsets**: every section of the song can have, on top of the whole-song master and only
+  while it plays, a level offset toward the limiter (±3 dB), a side gain offset (±3 dB, with the Width block
+  on), a limiter release offset (±200 ms) and offsets of the band gains of an EQ (±3 dB). They enter and leave
+  with a ramp of about a tenth of a second. The loudness of the target stays measured on the whole song.
+- **MAS-15.** **Repeatable blocks and free order**: the chain is a list. EQ, compressor, multiband, saturation
+  and clipper can appear **twice**, match EQ and width once; at most nine free blocks (twelve with input,
+  limiter and dither). Adding, removing, moving and resetting a block to its initial values are one undo step
+  each. In listening a structure change produces no clicks; the latency is the same for every chain.
 
-### 3.11 Interfaccia e impostazioni (UI, SET)
+### 3.11 Interface and settings (UI, SET)
 
-- **UI-1.** Due spazi di lavoro, **Mix** e **Master**, con un selettore di fase sempre visibile e un'identità
-  visiva che li distingue a colpo d'occhio.
-- **UI-2.** Schermate e stati elencati in §6, fedeli al design consegnato.
-- **UI-3.** Scorciatoie da tastiera per trasporto, editing, undo/redo, zoom, strumenti; elenco consultabile.
-- **UI-4.** Finestra minima 1280×720; layout fluido fino a 4K; pannelli ridimensionabili e richiudibili.
-- **UI-5.** Ogni controllo continuo: trascinamento, rotella, doppio clic per il default, inserimento numerico,
-  modificatore per la regolazione fine.
-- **UI-6.** Errori e stati vuoti espliciti e recuperabili (file mancanti, frequenze diverse, chiave assente, rete
-  assente, dispositivo audio scollegato).
-- **UI-7.** Accessibilità di base: navigazione da tastiera dei controlli, contrasto AA per testo e stati,
-  etichette per i lettori di schermo sui controlli non testuali.
-- **UI-8.** **Segni della catena** (P-013). Ogni intestazione di traccia e di gruppo nella timeline e ogni strip
-  del mixer mostra, senza selezionare nulla, cinque segni in ordine di segnale (passa-alto, passa-basso, EQ,
-  compressore, saturazione), **ciascuno con la sua sigla** (`HP`, `LP`, `EQ`, `CMP`, `SAT`), così che si legga quale
-  blocco è senza ricordarne la posizione, e in uno di tre stati: **spento** (bypass), **acceso ma neutro** (non in bypass,
-  ma non cambia il suono: EQ con tutte le bande attive a 0 dB o senza bande attive, saturazione con mix a 0),
-  **al lavoro**. Il compressore con sidechain prende il colore della traccia che ascolta; quello con mix sotto il
-  100% è segnato come parallelo. Un segno a parte dice che la traccia ha automazione, nel colore dell'assistente se
-  le corsie le ha scritte lui. I segni restano a tutte le altezze di corsia e alla finestra minima, hanno
-  un'etichetta a parole (tooltip e lettore di schermo) e derivano dal documento: nessuno stato proprio. Nelle strip
-  le sigle stanno in colonna, larghe quanto la strip: lì un clic su una sigla mette o toglie il bypass del blocco e
-  un doppio clic lo apre nell'inspector, con lo stesso comando dell'inspector (un passo di undo). Nelle
-  intestazioni le sigle sono di sola lettura: il clic seleziona la traccia. Con P-018 i segni seguono la catena a
-  blocchi (UI-12).
-- **UI-9.** **Mandate leggibili** (P-013). Ogni strip mostra una mandata per **ogni** ritorno del progetto (fino a
-  8), nello stesso ordine, col suo livello; una colonna di etichette fissa a sinistra del mixer dà il nome di ogni
-  riga. Ogni intestazione mostra un punto per ritorno, acceso dove la traccia manda. La corsia di un ritorno
-  elenca sempre chi gli manda, con colore, nome e livello.
-- **UI-10.** **Collegamenti della selezione** (P-013). Selezionare una traccia, un gruppo o un ritorno marca in
-  timeline e nel mixer ciò a cui è collegato, dicendo il motivo a parole: il gruppo che ne prende l'uscita, i
-  ritorni a cui manda, le tracce che gli mandano (con il livello), le tracce il cui compressore lo ascolta. I
-  segni dei collegamenti non cambiano il documento e non entrano nella cronologia.
-- **UI-11.** **Overview del mixer** (P-013). Il mixer ha due viste sulle stesse colonne, scelte da un selettore:
-  i fader, e una griglia con una riga per blocco della catena, una per ritorno, l'uscita e l'automazione. Ogni
-  cella dice lo stato e il valore principale del blocco (frequenza, numero di bande, rapporto, drive, livello della
-  mandata). Un clic su una cella mette o toglie il bypass (su una mandata assente la crea al livello predefinito);
-  un doppio clic apre il blocco nell'inspector. Ogni modifica è lo stesso comando dell'inspector: un passo di undo.
-- **UI-12.** **Catena a blocchi nell'interfaccia** (P-018). L'inspector mostra la catena come una lista, come il rack
-  del master (schermata 15): un menu per aggiungere un blocco diviso per famiglia (Dynamics, Tone, Space, Movement,
-  Pitch), trascinamento per l'ordine, duplica, riporta ai valori iniziali, bypass; ogni blocco nuovo ha il suo
-  editor, con le curve dove servono (riduzione del de-esser e dell'EQ dinamico, curva del gate, forma della
-  modulazione). Un ritorno mostra la sua lista sotto il processore. I segni di UI-8 diventano uno per blocco,
-  nell'ordine della catena, ciascuno con la sua sigla (`HP`, `LP`, `EQ`, `CMP`, `SAT`, `GT`, `DS`, `DEQ`, `TR`, `CLP`,
-  `MB`, `EXC`, `BAS`, `WID`, `MOD`, `TRM`, `HRM`, `DBL`); quando non ci stanno se ne vedono i primi e un `+n`. La vista
-  Overview (UI-11) ha una riga per ogni tipo di blocco presente nel progetto.
-- **UI-13.** **Idee creative nell'interfaccia** (P-018): la sotto-sezione Creative ideas nella proposta (schermata 4),
-  con spunta e ascolto per idea (AI-27); l'interruttore "Allow creative ideas" nel pannello AI; gli elementi di
-  un'idea applicata portano il nome dell'idea nel tooltip e nella motivazione della traccia.
-- **UI-14.** **Vista Explain** (P-019, schermata 17). Nel Mix un pulsante `Explain` nella barra in alto (⌘E; `Esc`
-  chiude) sostituisce timeline, mixer e pannelli con la mappa (UI-15) e il testo (UI-16). La barra in alto resta
-  viva: trasporto, loop e undo funzionano. La vista è di **sola lettura**: non crea passi di cronologia e non
-  modifica il progetto. Non chiama alcun modello e non usa la rete; a parità di progetto e di misure mostra la
-  stessa pagina. Segue ogni modifica del progetto mentre è aperta.
-- **UI-15.** **Mappa del mix** (P-019). Colonne da sinistra a destra: tracce audio raggruppate per famiglia (le
-  famiglie di AI-22), gruppi accanto ai loro membri (una colonna per livello di annidamento), bus di mix; i ritorni
-  ("shared effects") sotto i gruppi. Linea piena: uscita, tanto più spessa quanto più alto è il fader; tratteggiata:
-  mandata; punteggiata con freccia nel colore della sorgente: sidechain. Sui riquadri: rombo dell'automazione
-  (assistente o mano), lucchetto, numero della nota dell'assistente. Un clic seleziona un elemento: restano accesi
-  il suo percorso fino al bus, le sue mandate col livello, chi lo alimenta e le sidechain; il resto si attenua.
-  Doppio clic: chiude la vista e seleziona l'elemento nello spazio di lavoro. Un gruppo si ripiega in una riga col
-  conteggio delle tracce. Una striscia delle sezioni sceglie tutto il brano o una sezione (le sezioni con lo stesso
-  nome contano come una): le tracce che lì non suonano si attenuano, quelle che suonano solo lì o hanno valori
-  diversi portano un'etichetta.
-- **UI-16.** **Il mix in parole** (P-019). Testo in inglese costruito da frasi fisse riempite coi valori del
-  progetto, in parti sempre nello stesso ordine (una parte senza contenuto non compare): in breve; struttura
-  (gruppi, ritorni, tracce dirette al bus); chi sta davanti (ANA-20; finché la misura non c'è la parte lo dice);
-  da sinistra a destra (pan); spazio (mandate per ritorno); chi reagisce a chi (sidechain); cosa cambia lungo il
-  brano (clip presenti per sezione, automazione); motivi (`summary` e note dell'assistente, **citati**). Con un
-  elemento selezionato il testo è la sua scheda: dove va, dove sta, i blocchi accesi della catena in ordine di
-  segnale con una frase su cosa fa ciascuno, il motivo dell'assistente se c'è. Con una sezione: cosa suona, cosa è
-  diverso, la loudness a confronto con le altre. I nomi sono chip col colore dell'elemento e lo selezionano nella
-  mappa; i termini tecnici hanno una spiegazione di una frase da un glossario fisso. Il testo descrive e non
-  giudica: nessun consiglio. `Copy as text` copia il testo semplice.
-- **UI-17.** **Tour: avvio e ripetizione** (P-020, schermata 18). L'app ricorda nella sua cartella dei dati (non nel
-  progetto) se il tour è già stato mostrato. Se non lo è mai stato, al primo avvio il tour **parte da solo** appena
-  l'interfaccia è pronta, anche se esistono progetti recenti; il segno "mostrato" si scrive quando compare il primo
-  passo, così un tour interrotto o un'app chiusa a metà non lo fanno ripartire da solo. A richiesta parte dalla voce
-  **Help › Take the Tour** del **menu dell'app** (UI-20) e da un collegamento nella schermata Welcome. Con un
-  progetto aperto il tour chiede prima quello che chiede la chiusura del progetto (salva, scarta, annulla), poi lo
-  chiude. La voce di menu è disabilitata mentre l'assistente lavora o è in corso un bounce o un export. Il tour non
-  parte mai da solo nel self-test dell'app né sul backend finto, se non chiesto in modo esplicito: i test
-  esistenti non cambiano.
-- **UI-18.** **Tour: i passi** (P-020). Ogni passo ha un **riflettore** sull'area di cui parla (il resto è attenuato)
-  e un **fumetto** accanto: titolo, una o due frasi in inglese, contatore (`3 of 15`), `Back`, `Next` (`Done`
-  all'ultimo), `Skip tour`. Il primo e l'ultimo passo sono schede al centro, senza riflettore.
-  - **È il tour a guidare l'interfaccia.** Ogni passo dichiara lo stato che gli serve (fase, pannelli aperti, vista,
-    selezione, proposta in revisione o applicata) e lo stabilisce da solo, andando avanti come tornando indietro:
-    un passo si raggiunge da qualunque altro e mostra sempre la stessa cosa. Se l'utente ha cambiato qualcosa
-    nell'area illuminata, il passo che ne dipende lo ripristina.
-  - **L'area illuminata resta usabile**: si può premere Play, muovere un fader, aprire un blocco. Fuori dal
-    riflettore i clic non agiscono. Per avanzare basta `Next`: nessun passo aspetta un'azione.
-  - **Tastiera**: `→` o `Invio` avanti, `←` indietro, `Esc` salta il tour; la barra spaziatrice resta al trasporto.
-    Le altre scorciatoie dell'app sono sospese finché il tour è attivo. I comandi di progetto del menu dell'app
-    (New, Open, Close), raggiungibili quando la barra in alto è illuminata, chiudono prima il tour; Save e Save as non
-    agiscono (PRJ-9).
-  - **Passi, in quest'ordine** (i testi definitivi stanno nelle tavole): 1 scheda di apertura (cos'è Stemwise, che
-    cosa si vedrà, circa tre minuti, `Start` e `Skip tour`); 2 trasporto e barra in alto (Play fa sentire il brano
-    dimostrativo); 3 timeline, clip e sezioni (ogni file importato è una traccia, niente è distruttivo); 4
-    intestazione di traccia (ruolo, mute, solo, lock, segni della catena); 5 mixer (strip, fader, mandate, gruppi,
-    ritorni, vista Overview); 6 inspector e catena a blocchi della traccia selezionata; 7 assistente (brief, Auto
-    mix e revisione a parole, **il modello non riceve mai audio**, stima del costo prima dell'invio); 8 proposta in
-    revisione (sintesi, diff e motivi per traccia, A/B, applica tutto o le tracce scelte o scarta); 9 cronologia
-    (la proposta applicata è un solo passo di undo; snapshot); 10 Explain; 11 selettore di fase e mixdown (mix e
-    master sono due fasi); 12 Master: catena e destinazione; 13 Master: meter e A/B; 14 export (formati e
-    metadata); 15 scheda di chiusura (da dove cominciare: New project, collegare l'assistente; il tour si rifà da
-    Help).
-  - **Accessibilità** (UI-7): il fumetto è un dialogo con etichetta, il fuoco resta tra il fumetto e l'area
-    illuminata, il cambio di passo è annunciato ai lettori di schermo, contrasto AA, nessuna animazione con
-    "reduce motion". Alla finestra minima (UI-4) il fumetto sta sempre dentro la finestra e l'area illuminata è
-    portata in vista.
-- **UI-19.** **Tour: uscita** (P-020). `Done`, `Skip tour`, `Esc` e la chiusura dell'app finiscono il tour allo stesso
-  modo: la riproduzione si ferma, il progetto dimostrativo si chiude e si elimina (PRJ-9), l'interfaccia torna alla
-  schermata Welcome e le preferenze dell'utente (aspetto, pannelli, larghezze) restano quelle di prima del tour.
-  Chi salta riceve una notifica che dice dove ritrovarlo. Al primo avvio, finito il tour, la Welcome mostra come
-  sempre l'invito a configurare l'assistente (schermata 1b). Senza dispositivo audio il tour prosegue senza suono,
-  con lo stato di UI-6. Se il progetto dimostrativo non si può preparare, il tour lo dice, finisce e l'app resta
-  usabile.
-- **UI-20.** **Un solo menu dell'app** (2026-11-15, deciso dall'autore con P-020). Tutti i comandi di Stemwise stanno
-  nel menu che si apre dal nome del progetto nella barra in alto, in Mix e in Master: `New project…` (⌘N), `Open…`
-  (⌘O); `Project settings…`, `Save` (⌘S), `Save as…` (⇧⌘S), `Close project`; `Settings…` (⌘,); il sottomenu `Help`
-  con `Take the Tour`. La barra dei menu di macOS tiene solo ciò che dà macOS: il menu Stemwise con About, Services,
-  Hide, Hide Others, Show All e Quit; Edit, che serve ai campi di testo; Window. Su Windows e Linux la finestra non ha
-  una barra dei menu (A-104). Le scorciatoie restano le stesse e le gestisce l'interfaccia (UI-3); fuori da macOS si
-  leggono con Ctrl, Alt e Shift. Sulla schermata Welcome, dove non c'è un progetto, gli stessi comandi sono i suoi
-  pulsanti e collegamenti.
-- **SET-1.** Impostazioni: dispositivo audio e buffer; AI (chiave, modello, sforzo, decisore finto); aspetto;
-  scorciatoie (solo consultazione nella v1).
+- **UI-1.** Two workspaces, **Mix** and **Master**, with an always-visible phase selector and a visual identity that
+  tells them apart at a glance.
+- **UI-2.** Screens and states listed in §6, faithful to the delivered design.
+- **UI-3.** Keyboard shortcuts for transport, editing, undo/redo, zoom, tools; a browsable list.
+- **UI-4.** Minimum window 1280×720; fluid layout up to 4K; resizable and collapsible panels.
+- **UI-5.** Every continuous control: drag, wheel, double-click for the default, numeric entry, modifier for fine
+  adjustment.
+- **UI-6.** Explicit, recoverable errors and empty states (missing files, different sample rates, missing key, no
+  network, disconnected audio device).
+- **UI-7.** Basic accessibility: keyboard navigation of the controls, AA contrast for text and states, screen-reader
+  labels on non-text controls.
+- **UI-8.** **Chain marks** (P-013). Every track and group header in the timeline and every mixer strip shows, without
+  selecting anything, five marks in signal order (high-pass, low-pass, EQ, compressor, saturation), **each with its
+  badge** (`HP`, `LP`, `EQ`, `CMP`, `SAT`), so that you can read which block it is without remembering its position, and
+  in one of three states: **off** (bypassed), **on but neutral** (not bypassed, but does not change the sound: EQ with
+  all active bands at 0 dB or with no active bands, saturation with mix at 0), **working**. A compressor with a
+  sidechain takes the color of the track it listens to; one with mix below 100% is marked as parallel. A separate mark
+  says the track has automation, in the assistant's color if the assistant wrote the lanes. The marks stay at every lane
+  height and at the minimum window size, have a worded label (tooltip and screen reader) and are derived from the
+  document: no state of their own. In the strips the badges sit in a column, as wide as the strip: there a click on a
+  badge toggles the block's bypass and a double click opens it in the inspector, with the same command as the
+  inspector (one undo step). In the headers the badges are read-only: a click selects the track. With P-018 the marks
+  follow the block-based chain (UI-12).
+- **UI-9.** **Readable sends** (P-013). Every strip shows a send for **every** return in the project (up to 8), in the
+  same order, with its level; a label column fixed at the left of the mixer names each row. Every header shows one dot
+  per return, lit where the track sends. A return's lane always lists who sends to it, with color, name and level.
+- **UI-10.** **Selection links** (P-013). Selecting a track, a group or a return marks in the timeline and in the mixer
+  what it is connected to, giving the reason in words: the group that takes its output, the returns it sends to, the
+  tracks that send to it (with the level), the tracks whose compressor listens to it. The link marks do not change the
+  document and do not enter the history.
+- **UI-11.** **Mixer Overview** (P-013). The mixer has two views on the same columns, chosen by a selector: the
+  faders, and a grid with one row per chain block, one per return, the output and the automation. Every cell states the
+  block's state and main value (frequency, number of bands, ratio, drive, send level). A click on a cell toggles the
+  bypass (on a missing send it creates it at the default level); a double click opens the block in the inspector. Every
+  change is the same command as the inspector: one undo step.
+- **UI-12.** **Block chain in the interface** (P-018). The inspector shows the chain as a list, like the master rack
+  (screen 15): a menu to add a block divided by family (Dynamics, Tone, Space, Movement, Pitch), drag to reorder,
+  duplicate, reset to initial values, bypass; every new block has its own editor, with curves where they are needed
+  (de-esser and dynamic EQ reduction, gate curve, modulation shape). A return shows its list under the processor. The
+  marks of UI-8 become one per block, in chain order, each with its badge (`HP`, `LP`, `EQ`, `CMP`, `SAT`, `GT`, `DS`,
+  `DEQ`, `TR`, `CLP`, `MB`, `EXC`, `BAS`, `WID`, `MOD`, `TRM`, `HRM`, `DBL`); when they do not fit, the first ones are
+  shown plus a `+n`. The Overview view (UI-11) has one row for every block type present in the project.
+- **UI-13.** **Creative ideas in the interface** (P-018): the Creative ideas sub-section in the proposal (screen 4),
+  with a checkbox and listening per idea (AI-27); the "Allow creative ideas" switch in the AI panel; the elements of an
+  applied idea carry the idea's name in the tooltip and in the track's rationale.
+- **UI-14.** **Explain view** (P-019, screen 17). In Mix, an `Explain` button in the top bar (⌘E; `Esc` closes)
+  replaces timeline, mixer and panels with the map (UI-15) and the text (UI-16). The top bar stays live: transport,
+  loop and undo work. The view is **read-only**: it creates no history steps and does not modify the project. It calls
+  no model and uses no network; given the same project and measurements it shows the same page. It follows every
+  change to the project while it is open.
+- **UI-15.** **Mix map** (P-019). Columns from left to right: audio tracks grouped by family (the families of AI-22),
+  groups next to their members (one column per nesting level), mix bus; the returns ("shared effects") below the
+  groups. Solid line: output, thicker the higher the fader; dashed: send; dotted with an arrow in the source's color:
+  sidechain. On the boxes: automation diamond (assistant or hand), lock, number of the assistant's note. A click selects
+  an element: its path to the bus, its sends with the level, what feeds it and the sidechains stay lit; the rest is
+  dimmed. Double click: closes the view and selects the element in the workspace. A group folds into one row with the
+  track count. A section strip chooses the whole song or one section (sections with the same name count as one): tracks
+  that do not play there are dimmed, those that play only there or have different values carry a label.
+- **UI-16.** **The mix in words** (P-019). Text in English built from fixed sentences filled with the project's values,
+  in parts that always come in the same order (a part with no content does not appear): in brief; structure (groups,
+  returns, tracks going straight to the bus); who is in front (ANA-20; until the measurement exists the part says so);
+  left to right (pan); space (sends per return); who reacts to whom (sidechain); what changes through the song (clips
+  present per section, automation); reasons (the assistant's `summary` and notes, **quoted**). With an element selected
+  the text is its card: where it goes, where it sits, the lit chain blocks in signal order with a sentence on what each
+  does, the assistant's reason if there is one. With a section: what plays, what is different, the loudness compared
+  with the others. Names are chips with the element's color and select it in the map; technical terms have a
+  one-sentence explanation from a fixed glossary. The text describes and does not judge: no advice. `Copy as text`
+  copies the plain text.
+- **UI-17.** **Tour: start and repeat** (P-020, screen 18). The app remembers in its data folder (not in the project)
+  whether the tour has already been shown. If it never has, on first launch the tour **starts by itself** as soon as
+  the interface is ready, even if recent projects exist; the "shown" mark is written when the first step appears, so an
+  interrupted tour or an app closed midway does not make it start again by itself. On request it starts from the
+  **Help › Take the Tour** entry of the **app menu** (UI-20) and from a link in the Welcome screen. With a project open
+  the tour first asks what closing the project asks (save, discard, cancel), then closes it. The menu entry is disabled
+  while the assistant is working or a bounce or an export is in progress. The tour never starts by itself in the app's
+  self-test or on the fake backend unless explicitly requested: the existing tests do not change.
+- **UI-18.** **Tour: the steps** (P-020). Every step has a **spotlight** on the area it talks about (the rest is
+  dimmed) and a **bubble** next to it: title, one or two sentences in English, counter (`3 of 15`), `Back`, `Next`
+  (`Done` on the last), `Skip tour`. The first and last steps are cards in the center, without a spotlight.
+  - **The tour drives the interface.** Every step declares the state it needs (phase, open panels, view, selection,
+    proposal under review or applied) and establishes it by itself, going forward as well as back: a step can be
+    reached from any other and always shows the same thing. If the user changed something in the lit area, the step that
+    depends on it restores it.
+  - **The lit area stays usable**: you can press Play, move a fader, open a block. Outside the spotlight clicks do
+    nothing. To advance, `Next` is enough: no step waits for an action.
+  - **Keyboard**: `→` or `Enter` forward, `←` back, `Esc` skips the tour; the space bar stays with the transport. The
+    app's other shortcuts are suspended while the tour is active. The app menu's project commands (New, Open, Close),
+    reachable when the top bar is lit, close the tour first; Save and Save as do nothing (PRJ-9).
+  - **Steps, in this order** (the final texts are in the boards): 1 opening card (what Stemwise is, what will be seen,
+    about three minutes, `Start` and `Skip tour`); 2 transport and top bar (Play plays the demo song); 3 timeline,
+    clips and sections (every imported file is a track, nothing is destructive); 4 track header (role, mute, solo,
+    lock, chain marks); 5 mixer (strips, faders, sends, groups, returns, Overview view); 6 inspector and block chain
+    of the selected track; 7 assistant (brief, Auto mix and revision in words, **the model never receives audio**, cost
+    estimate before sending); 8 proposal under review (summary, diff and reasons per track, A/B, apply all or the
+    chosen tracks or discard); 9 history (the applied proposal is a single undo step; snapshots); 10 Explain; 11 phase
+    selector and mixdown (mix and master are two phases); 12 Master: chain and target; 13 Master: meters and A/B; 14
+    export (formats and metadata); 15 closing card (where to start: New project, connecting the assistant; the tour can be
+    redone from Help).
+  - **Accessibility** (UI-7): the bubble is a labeled dialog, focus stays between the bubble and the lit area, the step
+    change is announced to screen readers, AA contrast, no animation with "reduce motion". At the minimum window size
+    (UI-4) the bubble always stays inside the window and the lit area is brought into view.
+- **UI-19.** **Tour: exit** (P-020). `Done`, `Skip tour`, `Esc` and closing the app end the tour the same way:
+  playback stops, the demo project is closed and deleted (PRJ-9), the interface returns to the Welcome screen and the
+  user's preferences (appearance, panels, widths) are what they were before the tour. Whoever skips gets a notification
+  saying where to find it again. On first launch, once the tour is over, the Welcome screen shows as usual the invitation
+  to set up the assistant (screen 1b). Without an audio device the tour goes on without sound, with the state of UI-6.
+  If the demo project cannot be prepared, the tour says so, ends and the app stays usable.
+- **UI-20.** **A single app menu** (2026-11-15, decided by the author with P-020). All of Stemwise's commands are in the
+  menu that opens from the project name in the top bar, in Mix and in Master: `New project…` (⌘N), `Open…` (⌘O);
+  `Project settings…`, `Save` (⌘S), `Save as…` (⇧⌘S), `Close project`; `Settings…` (⌘,); the `Help` submenu with
+  `Take the Tour`. The macOS menu bar keeps only what macOS provides: the Stemwise menu with About, Services, Hide,
+  Hide Others, Show All and Quit; Edit, which text fields need; Window. On Windows and Linux the window has no menu bar
+  (A-104). The shortcuts stay the same and are handled by the interface (UI-3); outside macOS they are read with Ctrl,
+  Alt and Shift. On the Welcome screen, where there is no project, the same commands are its buttons and links.
+- **SET-1.** Settings: audio device and buffer; AI (key, model, effort, fake decider); appearance; shortcuts
+  (consultation only in v1).
 
-### 3.12 Requisiti non funzionali (NFR)
+### 3.12 Non-functional requirements (NFR)
 
-- **NFR-1.** 32 tracce stereo a 48 kHz con catena completa, buffer da 512: il callback audio usa al più il 30%
-  del periodo del buffer su Apple Silicon (benchmark automatico in release).
-- **NFR-2.** Nessuna allocazione nel callback audio (verificato da un test con allocatore che la rifiuta).
-- **NFR-3.** Interfaccia a 60 fps durante la riproduzione con 32 tracce visibili; avvio a freddo sotto 2 s;
-  import di 16 stem di 4 minuti sotto 15 s.
-- **NFR-4.** Render offline di 16 tracce almeno 20 volte più veloce del tempo reale.
-- **NFR-5.** Memoria: l'audio non viene caricato per intero in RAM; un progetto di 32 stem di 5 minuti resta
-  sotto 1,5 GB.
-- **NFR-6.** Solo licenze permissive (MIT, Apache-2.0, BSD, ISC, Zlib, MPL-2.0, Unicode), verificate in
-  automatico a ogni `make check`. Font e icone con licenza che ne consente l'inclusione (OFL, MIT, ISC).
-- **NFR-7.** Nessuna chiamata di rete oltre a OpenRouter, e solo su azione dell'utente. Nessuna telemetria. Il
-  collegamento del conto (AI-24) aggiunge un **ascolto locale temporaneo**: solo sulle interfacce di loopback, solo
-  mentre l'utente sta collegando, per una sola risposta e al più dieci minuti. L'app apre nel browser solo pagine di
-  OpenRouter, da un elenco fisso.
-- **NFR-8.** Il codice non contiene nulla di specifico di un sistema operativo fuori da moduli isolati dietro
-  un'interfaccia uguale su tutti i sistemi (A-104).
-- **NFR-9.** Durante lo sviluppo il repository, artefatti di build compresi, resta sotto **20 GB** (§9, regole
-  18–20).
+- **NFR-1.** 32 stereo tracks at 48 kHz with the full chain, 512 buffer: the audio callback uses at most 30% of the
+  buffer period on Apple Silicon (automatic benchmark in release).
+- **NFR-2.** No allocation in the audio callback (verified by a test with an allocator that rejects it).
+- **NFR-3.** Interface at 60 fps during playback with 32 visible tracks; cold start under 2 s; import of 16 stems of 4
+  minutes under 15 s.
+- **NFR-4.** Offline render of 16 tracks at least 20 times faster than real time.
+- **NFR-5.** Memory: audio is not loaded entirely into RAM; a project of 32 stems of 5 minutes stays under 1.5 GB.
+- **NFR-6.** Permissive licenses only (MIT, Apache-2.0, BSD, ISC, Zlib, MPL-2.0, Unicode), verified automatically on
+  every `make check`. Fonts and icons with a license that allows including them (OFL, MIT, ISC).
+- **NFR-7.** No network calls beyond OpenRouter, and only on user action. No telemetry. Connecting the account (AI-24)
+  adds a **temporary local listener**: only on loopback interfaces, only while the user is connecting, for a single
+  response and for at most ten minutes. The app opens only OpenRouter pages in the browser, from a fixed list.
+- **NFR-8.** The code contains nothing specific to an operating system outside modules isolated behind an interface
+  that is the same on all systems (A-104).
+- **NFR-9.** During development the repository, build artifacts included, stays under **20 GB** (§9, rules 18–20).
 
-## 4. Stack tecnologico
+## 4. Technology stack
 
-### 4.1 Scelta
+### 4.1 Choice
 
-| Ambito | Scelta | Note |
+| Area | Choice | Notes |
 | --- | --- | --- |
-| Shell desktop | **Tauri 2** | Webview di sistema (WKWebView su macOS, WebView2 su Windows, WebKitGTK su Linux), pacchetto piccolo, backend Rust nello stesso processo |
-| Motore, DSP, analisi, AI, modello dati | **Rust** (workspace Cargo) | Tempo reale nativo; compilatore e `cargo test` come verifica stretta per gli agenti |
-| Uscita audio | `cpal` | CoreAudio / WASAPI / ALSA con lo stesso codice |
-| Decodifica | `symphonia` (MPL-2.0) | WAV, FLAC, AIFF; MP3/AAC per i riferimenti |
-| Scrittura WAV | `hound` | |
-| Scrittura FLAC | `flacenc` (o equivalente in Rust puro) | |
-| Scrittura AAC | Encoder di sistema (AudioToolbox su macOS, Media Foundation su Windows) dietro un'interfaccia | Modulo specifico di piattaforma, con la firma (A-072) e la barra dei menu (A-104) |
-| Metadata | `lofty` (o equivalente) | Tag di WAV, FLAC, M4A |
-| Ricampionamento | `rubato` | Import, riferimenti, uscita, export |
+| Desktop shell | **Tauri 2** | System webview (WKWebView on macOS, WebView2 on Windows, WebKitGTK on Linux), small package, Rust backend in the same process |
+| Engine, DSP, analysis, AI, data model | **Rust** (Cargo workspace) | Native real time; compiler and `cargo test` as strict verification for the agents |
+| Audio output | `cpal` | CoreAudio / WASAPI / ALSA with the same code |
+| Decoding | `symphonia` (MPL-2.0) | WAV, FLAC, AIFF; MP3/AAC for references |
+| WAV writing | `hound` | |
+| FLAC writing | `flacenc` (or a pure-Rust equivalent) | |
+| AAC writing | System encoder (AudioToolbox on macOS, Media Foundation on Windows) behind an interface | Platform-specific module, with signing (A-072) and the menu bar (A-104) |
+| Metadata | `lofty` (or equivalent) | WAV, FLAC, M4A tags |
+| Resampling | `rubato` | Import, references, output, export |
 | FFT | `realfft` / `rustfft` | |
-| Code senza lock | `rtrb` (o equivalente) | Parametri e meter tra thread audio e resto |
-| HTTP | `reqwest` con `rustls` | Solo OpenRouter |
-| Portachiavi | `keyring`; `security-framework` per sapere se la build è firmata | Keychain / Credential Manager / Secret Service; file privato dove il portachiavi chiederebbe la password (AI-11) |
-| Contratti | `serde` + `schemars`; tipi TypeScript generati (`tauri-specta` o `ts-rs`) | Una sola definizione dei tipi, in Rust |
-| Interfaccia | **React + TypeScript + Vite** | |
-| Stato UI | `zustand` | Specchio dello stato del core, mai sorgente di verità |
-| Stile | CSS con token del design come variabili (Tailwind 4 ammesso) | |
-| Primitive accessibili | Radix UI | Menu, dialoghi, popover, tooltip |
-| Grafica densa | Canvas 2D; WebGL solo se serve ai 60 fps | Timeline, forme d'onda, meter, spettro, curve |
-| Test | `cargo test`, `proptest`, `criterion`; `vitest`; Playwright | |
-| Gate licenze | `cargo-deny`, controllo licenze npm | |
+| Lock-free queues | `rtrb` (or equivalent) | Parameters and meters between the audio thread and the rest |
+| HTTP | `reqwest` with `rustls` | OpenRouter only |
+| Keychain | `keyring`; `security-framework` to know whether the build is signed | Keychain / Credential Manager / Secret Service; private file where the keychain would ask for the password (AI-11) |
+| Contracts | `serde` + `schemars`; generated TypeScript types (`tauri-specta` or `ts-rs`) | A single definition of the types, in Rust |
+| Interface | **React + TypeScript + Vite** | |
+| UI state | `zustand` | Mirror of the core's state, never a source of truth |
+| Style | CSS with the design tokens as variables (Tailwind 4 allowed) | |
+| Accessible primitives | Radix UI | Menus, dialogs, popovers, tooltips |
+| Dense graphics | Canvas 2D; WebGL only if needed for 60 fps | Timeline, waveforms, meters, spectrum, curves |
+| Tests | `cargo test`, `proptest`, `criterion`; `vitest`; Playwright | |
+| License gate | `cargo-deny`, npm license check | |
 
-Le versioni si fissano all'avvio dell'implementazione (ultima stabile di ciascuna), con lockfile committati.
+Versions are pinned at the start of implementation (latest stable of each), with lockfiles committed.
 
-### 4.2 Perché questo stack
+### 4.2 Why this stack
 
-Il criterio era doppio: massima efficacia dello sviluppo agentico, nessun compromesso evidente su prestazioni,
-interfaccia e hardware.
+The criterion was twofold: maximum effectiveness of agentic development, no evident compromise on performance,
+interface and hardware.
 
-| Alternativa | Motore audio | UI e design | Sviluppo agentico | Portabilità | Esito |
+| Alternative | Audio engine | UI and design | Agentic development | Portability | Outcome |
 | --- | --- | --- | --- | --- | --- |
-| **Tauri 2 + Rust + React** | Nativo, sicuro per costruzione | Il design in canvas è già HTML/CSS: si traduce quasi uno a uno | Molto alto: compilatore severo, test veloci, UI verificabile nel browser | Stesso codice sui tre sistemi | **Scelta** |
-| JUCE (C++) | Standard del settore, hosting plugin pronto | UI imperativa, lenta da iterare, lontana dal design web | Medio: build lente, errori di memoria a runtime, UI non verificabile in automatico | Buona | Scartata: il suo vantaggio principale (plugin) è fuori scope; licenza commerciale |
-| Swift + AVAudioEngine | Ottimo su Apple | SwiftUI fatica con timeline dense; design da ritradurre | Medio: verifica dell'UI difficile per un agente | Nessuna | Scartata: chiude Windows/Linux (P-002) |
-| Electron + sidecar Python (PoC) | Python non regge il tempo reale; GPL | Come Tauri | Alto sull'UI, basso sul motore | Buona | Scartata: P-001 e P6 |
-| Electron + addon nativo | Nativo | Come Tauri | Alto | Buona | Scartata: stesso disegno di Tauri con pacchetto più pesante e un ponte in più |
+| **Tauri 2 + Rust + React** | Native, safe by construction | The canvas design is already HTML/CSS: it translates almost one to one | Very high: strict compiler, fast tests, UI verifiable in the browser | Same code on the three systems | **Chosen** |
+| JUCE (C++) | Industry standard, plugin hosting ready | Imperative UI, slow to iterate, far from the web design | Medium: slow builds, runtime memory errors, UI not automatically verifiable | Good | Discarded: its main advantage (plugins) is out of scope; commercial license |
+| Swift + AVAudioEngine | Excellent on Apple | SwiftUI struggles with dense timelines; design to be retranslated | Medium: UI verification is hard for an agent | None | Discarded: shuts out Windows/Linux (P-002) |
+| Electron + Python sidecar (PoC) | Python cannot sustain real time; GPL | Same as Tauri | High on the UI, low on the engine | Good | Discarded: P-001 and P6 |
+| Electron + native addon | Native | Same as Tauri | High | Good | Discarded: same design as Tauri with a heavier package and one more bridge |
 
-Punti che rendono lo sviluppo agentico efficace con lo stack scelto:
+Points that make agentic development effective with the chosen stack:
 
-- **Verifica senza orecchie.** Il motore è una libreria pura: il render offline è lo stesso codice della
-  riproduzione, quindi i test su segnali sintetici coprono ciò che si sentirà.
-- **Oracolo numerico.** Le misure della PoC producono valori attesi con cui confrontare il port in Rust (§5.7).
-- **UI verificabile nel browser.** L'interfaccia parla al backend attraverso un'interfaccia `Backend` con due
-  implementazioni: Tauri e un **backend finto in memoria**. Con il secondo l'intera UI gira in un browser:
-  Playwright la collauda e l'agente la confronta a vista con il design.
-- **Un solo linguaggio per i contratti.** I tipi nascono in Rust e si generano per TypeScript: un disallineamento
-  è un errore di compilazione, non un bug a runtime.
+- **Verification without ears.** The engine is a pure library: the offline render is the same code as playback, so
+  tests on synthetic signals cover what will be heard.
+- **Numeric oracle.** The PoC's measurements produce expected values to compare the Rust port against (§5.7).
+- **UI verifiable in the browser.** The interface talks to the backend through a `Backend` interface with two
+  implementations: Tauri and an **in-memory fake backend**. With the second the whole UI runs in a browser: Playwright
+  tests it and the agent compares it visually with the design.
+- **A single language for contracts.** Types are born in Rust and generated for TypeScript: a mismatch is a compile
+  error, not a runtime bug.
 
-Limiti noti e contromisure:
+Known limits and countermeasures:
 
-- **La webview non è un toolkit nativo.** Il tempo reale non la attraversa mai: l'audio vive in Rust, l'UI riceve
-  solo meter e posizione a 30–60 Hz su un canale binario e disegna su canvas. Le forme d'onda arrivano come
-  piramidi di picchi già calcolate, non come audio.
-- **Linux usa WebKitGTK**, più debole: è un rischio del lavoro futuro, non della v1.
-- **Compressore e riverbero propri** non suoneranno come quelli della PoC: il port si convalida con le misure e
-  con l'ascolto finale dell'autore (§8.5), come previsto da PRD §7.1.
+- **The webview is not a native toolkit.** Real time never crosses it: audio lives in Rust, the UI receives only meters
+  and position at 30–60 Hz over a binary channel and draws on canvas. Waveforms arrive as precomputed peak pyramids, not
+  as audio.
+- **Linux uses WebKitGTK**, which is weaker: a risk of future work, not of v1.
+- **Own compressor and reverb** will not sound like the PoC's: the port is validated with measurements and with the
+  author's final listening (§8.5), as foreseen by PRD §7.1.
 
-## 5. Architettura
+## 5. Architecture
 
-### 5.1 Struttura del repository
+### 5.1 Repository structure
 
-La PoC è **congelata** e confinata in `poc/` (A-068). Il prodotto vive in `app/`. Il sito di prodotto, quando
-ci sarà, avrà la sua cartella `web/`.
+The PoC is **frozen** and confined to `poc/` (A-068). The product lives in `app/`. The product website, when there is
+one, will have its own `web/` folder.
 
 ```text
 stemwise/
-  CLAUDE.md                 # regole per gli agenti
+  CLAUDE.md                 # rules for the agents
   docs/
-    FOUNDATION.md           # questo documento
+    FOUNDATION.md           # this document
     app/                    # PROGRESS, DECISIONS, REQS-JUSTIFIED, VALIDATION, dsp.md
-  design/                   # consegna della sessione di design (§7)
-  poc/                      # PoC Python: sola lettura, archivio e oracolo
+  design/                   # hand-off of the design session (§7)
+  poc/                      # Python PoC: read-only, archive and oracle
     src/, tests/, schemas/, scripts/, pyproject.toml, Makefile
     docs/                   # PRD.md, analysis.md, DECISIONS.md, PROGRESS.md, milestones/
-    POC-RULES.md            # regole di lavoro della PoC, archiviate
+    POC-RULES.md            # working rules of the PoC, archived
   app/
     Makefile                # setup, check, test, bench, reqs, oracle, dev, build
     Cargo.toml              # workspace
     crates/
-      stemwise-core/        # documento di progetto, comandi, undo/redo, persistenza, schemi
-      stemwise-dsp/         # biquad, compressore, saturazione, riverbero, delay, limiter, pan, meter
-      stemwise-analysis/    # misure, mascheramento, profilo target, valutazione
-      stemwise-engine/      # grafo, trasporto, streaming, automazione, render offline, uscita cpal
-      stemwise-ai/          # Decider, prompt, OpenRouter, decisore finto, validazione, ciclo
-      stemwise-cli/         # comandi senza interfaccia
-    src-tauri/              # comandi e canali Tauri: involucro sottile sopra i crate
+      stemwise-core/        # project document, commands, undo/redo, persistence, schemas
+      stemwise-dsp/         # biquad, compressor, saturation, reverb, delay, limiter, pan, meter
+      stemwise-analysis/    # measurements, masking, target profile, evaluation
+      stemwise-engine/      # graph, transport, streaming, automation, offline render, cpal output
+      stemwise-ai/          # Decider, prompt, OpenRouter, fake decider, validation, loop
+      stemwise-cli/         # commands without an interface
+    src-tauri/              # Tauri commands and channels: thin shell over the crates
     ui/                     # React + TypeScript
-      src/backend/          # interfaccia Backend: tauri.ts, mock.ts
-    schemas/                # JSON Schema esportati dai tipi Rust
-    fixtures/oracle/        # valori attesi generati dalla PoC (JSON, mai audio)
-    scripts/                # reqs, oracle, licenze
+      src/backend/          # Backend interface: tauri.ts, mock.ts
+    schemas/                # JSON Schemas exported from the Rust types
+    fixtures/oracle/        # expected values generated by the PoC (JSON, never audio)
+    scripts/                # reqs, oracle, licenses
 ```
 
-Dipendenze tra crate: `dsp` e `core` non dipendono da nessun altro; `analysis` → `dsp`; `engine` → `core`,
-`dsp`; `ai` → `core`, `analysis`, `engine` (render offline del ciclo); `cli` e `src-tauri` → tutti. Nessun crate
-sotto `src-tauri` conosce Tauri.
+Crate dependencies: `dsp` and `core` depend on no other crate; `analysis` → `dsp`; `engine` → `core`, `dsp`; `ai` →
+`core`, `analysis`, `engine` (offline render of the loop); `cli` and `src-tauri` → all. No crate below `src-tauri`
+knows Tauri.
 
-### 5.2 Pacchetto di progetto
+### 5.2 Project package
 
 ```text
 MySong.stemwise/
-  project.json          # documento: versione di schema, tracce, clip, catene, automazioni, sezioni, brief, master
-  audio/                # file importati (immutabili), nome = hash del contenuto
+  project.json          # document: schema version, tracks, clips, chains, automation, sections, brief, master
+  audio/                # imported files (immutable), name = content hash
   references/
-  cache/                # picchi, analisi (rigenerabile, eliminabile)
-  ai/                   # una cartella per chiamata: request.json, response.json, plan.json, evaluation.json
+  cache/                # peaks, analysis (regenerable, deletable)
+  ai/                   # one folder per call: request.json, response.json, plan.json, evaluation.json
   snapshots/
-  mixdowns/             # mixdown-<n>.wav + mixdown-<n>.json (hash dello stato di mix, trim, misure)
-  masters/              # file esportati + rapporto
+  mixdowns/             # mixdown-<n>.wav + mixdown-<n>.json (hash of the mix state, trim, measurements)
+  masters/              # exported files + report
   autosave/
 ```
 
-`project.json` contiene solo percorsi relativi al pacchetto. Il salvataggio è atomico (scrittura su file
-temporaneo e rinomina).
+`project.json` contains only paths relative to the package. Saving is atomic (write to a temporary file and rename).
 
-### 5.3 Stato, comandi e cronologia
+### 5.3 State, commands and history
 
-- Il **documento di progetto** vive nel core Rust ed è l'unica sorgente di verità. L'UI ne tiene una copia in
-  sola lettura, aggiornata da eventi.
-- Ogni mutazione è un `Command` (dati, non closure) con `apply` e `invert`. Una `Transaction` raggruppa più
-  comandi in un passo di cronologia. I gesti continui aprono una transazione al press e la chiudono al release;
-  durante il gesto il motore riceve i valori in anteprima senza toccare la cronologia.
-- Lo stato di vista (zoom, selezione, mute/solo, pannelli aperti) sta nell'UI e, dove serve, in una sezione
-  separata del progetto che non genera cronologia.
-- Il motore audio riceve un'istantanea immutabile del grafo a ogni modifica strutturale (scambio atomico di
-  puntatore, rilascio della vecchia fuori dal thread audio) e i cambi di parametro su una coda senza lock.
+- The **project document** lives in the Rust core and is the only source of truth. The UI keeps a read-only copy,
+  updated by events.
+- Every mutation is a `Command` (data, not a closure) with `apply` and `invert`. A `Transaction` groups several
+  commands into one history step. Continuous gestures open a transaction on press and close it on release; during the
+  gesture the engine receives the values as a preview without touching the history.
+- View state (zoom, selection, mute/solo, open panels) lives in the UI and, where needed, in a separate section of the
+  project that generates no history.
+- The audio engine receives an immutable snapshot of the graph at every structural change (atomic pointer swap, the
+  old one released off the audio thread) and parameter changes on a lock-free queue.
 
-### 5.4 Motore audio
+### 5.4 Audio engine
 
 ```text
-thread di lettura ──buffer circolari──▶ thread audio (cpal) ──▶ dispositivo
+reader thread ──ring buffers──▶ audio thread (cpal) ──▶ device
                                            │   ▲
-                                 meter/pos │   │ parametri, istantanee del grafo
+                                 meter/pos │   │ parameters, graph snapshots
                                            ▼   │
-                                        thread di controllo ◀──▶ UI (canali Tauri)
+                                        control thread ◀──▶ UI (Tauri channels)
 ```
 
-- Grafo aciclico **strutturato**: clip → traccia (catena) → gruppi annidati (catena) → bus di mix; mandate
-  post-fader verso i ritorni; ritorni → gruppo o bus di mix; ingressi sidechain dei compressori. A ogni modifica
-  strutturale il core ricalcola l'ordine topologico e rifiuta i cicli; il thread audio riceve l'ordine già
-  calcolato.
-- Il **render offline** chiama la stessa funzione `process` del callback, con lettura sincrona dei file.
-- Il determinismo vale per stessa build e stessa architettura; l'identità bit a bit tra sistemi diversi non è
-  garantita né richiesta.
-- La fase di master usa un secondo grafo, più semplice (mixdown → catena di master), con lo stesso trasporto.
+- **Structured** acyclic graph: clip → track (chain) → nested groups (chain) → mix bus; post-fader sends to the
+  returns; returns → group or mix bus; compressor sidechain inputs. At every structural change the core recomputes the
+  topological order and rejects cycles; the audio thread receives the order already computed.
+- The **offline render** calls the same `process` function as the callback, with synchronous file reading.
+- Determinism holds for the same build and the same architecture; bit-for-bit identity across different systems is
+  neither guaranteed nor required.
+- The master phase uses a second, simpler graph (mixdown → master chain), with the same transport.
 
-### 5.5 Contratti dell'AI
+### 5.5 AI contracts
 
-I contratti sono tipi Rust esportati in `app/schemas/`. Nessun nome di libreria nei JSON. Gli esempi sono
-illustrativi; i limiti sono normativi.
+The contracts are Rust types exported to `app/schemas/`. No library names in the JSON. The examples are illustrative;
+the limits are normative.
 
-**`mix_plan` (versione 3)** — estende quello della PoC (PRD §6.3); la versione 3 aggiunge `structure`, gli
-algoritmi di riverbero e il `mix` del compressore (P-011):
+**`mix_plan` (version 3)** — extends the PoC's (PRD §6.3); version 3 adds `structure`, the reverb algorithms and the
+compressor's `mix` (P-011):
 
 ```json
 {
   "version": 3,
   "iteration": 1,
-  "summary": "Voce avanti nel suo plate, chitarre doppie aperte ai lati, batteria più compatta, chorus più pieno.",
+  "summary": "Vocal forward in its own plate, double-tracked guitars wide on the sides, tighter drums, fuller chorus.",
   "structure": {
     "returns": {
-      "n1": { "type": "reverb", "name": "Vocal plate", "rationale": "Uno spazio corto e brillante solo per la voce." },
-      "n2": { "type": "delay", "name": "Slap", "rationale": "Slapback per dare corpo alla voce senza coda." }
+      "n1": { "type": "reverb", "name": "Vocal plate", "rationale": "A short, bright space for the vocal only." },
+      "n2": { "type": "delay", "name": "Slap", "rationale": "Slapback to give the vocal body without a tail." }
     },
     "groups": {
-      "n4": { "name": "Drums", "members": ["t1", "t3"], "rationale": "Un bus per comprimere la batteria in parallelo." }
+      "n4": { "name": "Drums", "members": ["t1", "t3"], "rationale": "A bus to compress the drums in parallel." }
     }
   },
   "returns": {
@@ -927,81 +910,80 @@ algoritmi di riverbero e il `mix` del compressore (P-011):
       "saturation": null,
       "sends_db": { "n1": -14.0, "n2": -18.0, "r2": -24.0 },
       "sections": { "s3": { "gain_offset_db": 1.5, "send_offsets_db": { "r2": 6.0 }, "eq_gain_offsets_db": [1.0] } },
-      "rationale": "Taglio a 300 Hz per togliere la sovrapposizione con le chitarre; +1,5 dB e un throw di delay nel chorus."
+      "rationale": "Cut at 300 Hz to remove the overlap with the guitars; +1.5 dB and a delay throw in the chorus."
     },
     "t2": {
       "gain_db": 0.0, "pan": 0.0, "hpf_hz": 40, "lpf_hz": null, "eq": [],
       "compressor": { "threshold_db": -24.0, "ratio": 4.0, "attack_ms": 5.0, "release_ms": 90.0, "knee_db": 3.0, "makeup_db": 0.0, "mix": 1.0, "sidechain": "t1" },
       "saturation": null, "sends_db": {}, "sections": {},
-      "rationale": "Il basso si abbassa di poco a ogni colpo di cassa (sidechain da t1) per liberare le basse."
+      "rationale": "The bass dips slightly on every kick hit (sidechain from t1) to clear the low end."
     }
   },
   "groups": {
-    "g1": { "gain_db": -1.0, "eq": [], "compressor": null, "saturation": null, "sends_db": {}, "rationale": "Chitarre 1 dB sotto per far spazio alla voce." },
+    "g1": { "gain_db": -1.0, "eq": [], "compressor": null, "saturation": null, "sends_db": {}, "rationale": "Guitars 1 dB down to make room for the vocal." },
     "n4": {
       "gain_db": 0.0, "eq": [],
       "compressor": { "threshold_db": -30.0, "ratio": 6.0, "attack_ms": 3.0, "release_ms": 80.0, "knee_db": 3.0, "makeup_db": 8.0, "mix": 0.35, "sidechain": null },
       "saturation": null, "sends_db": {},
-      "rationale": "Compressione parallela: il 35% molto compresso sotto la batteria naturale la rende più densa."
+      "rationale": "Parallel compression: 35% heavily compressed under the natural drums makes them denser."
     }
   }
 }
 ```
 
-**Struttura** (AI-17 → AI-20). `structure` elenca ciò che il piano crea: ritorni (`type`, `name`, `rationale`) e
-gruppi (`name`, `members`, `rationale`). Gli elementi nuovi hanno id segnaposto già elencati nello schema del
-progetto (`n1` … `n3` per i ritorni, `n4` … `n6` per i gruppi; `null` dove non servono), e si usano nel resto del piano come quelli esistenti: `returns.<n>` e `groups.<n>` per i
-parametri, `sends_db.<n>` per le mandate. All'applicazione il core assegna gli id veri. `name` è in inglese
-(lingua dell'interfaccia), al più 24 caratteri. Il modello non crea, duplica o elimina tracce audio, non elimina
-ritorni o gruppi e non cambia l'uscita di una traccia se non mettendola in un gruppo nuovo. `structure` manca
-dallo schema quando le modifiche strutturali sono disattivate (AI-18) e nelle iterazioni successive alla prima
-(AI-19), che ricevono la struttura già decisa come contesto.
+**Structure** (AI-17 → AI-20). `structure` lists what the plan creates: returns (`type`, `name`, `rationale`) and
+groups (`name`, `members`, `rationale`). The new elements have placeholder ids already listed in the project's schema
+(`n1` … `n3` for returns, `n4` … `n6` for groups; `null` where they are not needed), and are used in the rest of the plan like
+the existing ones: `returns.<n>` and `groups.<n>` for the parameters, `sends_db.<n>` for the sends. On application the
+core assigns the real ids. `name` is in English (the interface language), at most 24 characters. The model does not
+create, duplicate or delete audio tracks, does not delete returns or groups, and does not change a track's output
+except by putting it in a new group. `structure` is missing from the schema when structural changes are disabled
+(AI-18) and in the iterations after the first (AI-19), which receive the already-decided structure as context.
 
-L'auto mix garantisce che esistano almeno un ritorno riverbero e uno delay (creati, se mancano, come parte della
-proposta). `sidechain` è l'id di una traccia o di un gruppo, oppure `null`; la validazione rifiuta le sorgenti
-che creerebbero un ciclo.
+Auto mix guarantees that at least one reverb return and one delay return exist (created, if missing, as part of the
+proposal). `sidechain` is the id of a track or a group, or `null`; validation rejects sources that would create a
+cycle.
 
-Limiti: quelli della tabella di PRD §6.3 per i parametri già presenti (tranne `room_size` del riverbero, che non
-esiste più), più:
+Limits: those of the table in PRD §6.3 for the parameters already present (except the reverb's `room_size`, which no
+longer exists), plus:
 
-| Parametro | Minimo | Massimo |
+| Parameter | Minimum | Maximum |
 | --- | --- | --- |
-| Compressore `mix` | 0,1 | 1 |
-| Riverbero `algorithm` | `plate`, `room`, `hall` | |
-| Riverbero `decay_s` | 0,3 | 6 |
-| Riverbero `size` | 0 | 1 |
-| Riverbero `damping` | 0 | 1 |
-| Riverbero `modulation` | 0 | 1 |
-| Riverbero `return_lpf_hz` | 2.000 | 20.000 |
-| Ritorni nuovi per proposta | 0 | 3 |
-| Gruppi nuovi per proposta | 0 | 3 |
-| Membri di un gruppo nuovo | 2 | — |
-| Compressore `knee_db` | 0 | 12 |
-| Saturazione `drive_db` | 0 | 18 |
-| Saturazione `mix` | 0 | 1 |
-| `sends_db.<ritorno>` | −60 | −6 |
-| Riverbero `predelay_ms` | 0 | 100 |
-| Delay `time_ms` | 20 | 1.000 |
-| Delay `feedback` | 0 | 0,7 |
+| Compressor `mix` | 0.1 | 1 |
+| Reverb `algorithm` | `plate`, `room`, `hall` | |
+| Reverb `decay_s` | 0.3 | 6 |
+| Reverb `size` | 0 | 1 |
+| Reverb `damping` | 0 | 1 |
+| Reverb `modulation` | 0 | 1 |
+| Reverb `return_lpf_hz` | 2,000 | 20,000 |
+| New returns per proposal | 0 | 3 |
+| New groups per proposal | 0 | 3 |
+| Members of a new group | 2 | — |
+| Compressor `knee_db` | 0 | 12 |
+| Saturation `drive_db` | 0 | 18 |
+| Saturation `mix` | 0 | 1 |
+| `sends_db.<return>` | −60 | −6 |
+| Reverb `predelay_ms` | 0 | 100 |
+| Delay `time_ms` | 20 | 1,000 |
+| Delay `feedback` | 0 | 0.7 |
 | Delay `feedback_hpf_hz` | 20 | 800 |
-| Delay `feedback_lpf_hz` | 1.000 | 20.000 |
+| Delay `feedback_lpf_hz` | 1,000 | 20,000 |
 | Delay `return_gain_db` | −24 | 0 |
-| Sezione `gain_offset_db` | −6 | +6 |
-| Sezione `send_offsets_db.<ritorno>` | −12 | +12 |
-| Sezione `eq_gain_offsets_db[]` (per posizione di banda) | −4 | +4 |
+| Section `gain_offset_db` | −6 | +6 |
+| Section `send_offsets_db.<return>` | −12 | +12 |
+| Section `eq_gain_offsets_db[]` (per band position) | −4 | +4 |
 
-Il trim (AI-7) non è nel piano: lo calcola l'engine dalla misura di loudness e lo aggiunge alla proposta. Le
-tracce bloccate compaiono nel messaggio come contesto, con `"locked": true`, e non nel piano restituito.
+The trim (AI-7) is not in the plan: the engine computes it from the loudness measurement and adds it to the proposal.
+Locked tracks appear in the message as context, with `"locked": true`, and not in the returned plan.
 
-**`mix_plan` (versione 4)** (P-018) — la versione 3 più i blocchi, le idee e gli scostamenti nuovi. Si mostrano solo
-le aggiunte:
+**`mix_plan` (version 4)** (P-018) — version 3 plus the new blocks, ideas and offsets. Only the additions are shown:
 
 ```json
 {
   "version": 4,
   "ideas": {
-    "i1": { "name": "Wide chorus on the keys", "sections": ["s3", "s5"], "rationale": "Le tastiere si aprono nei ritornelli e lasciano il centro alla voce." },
-    "i2": { "name": "Filter build into the last chorus", "sections": ["s4"], "rationale": "Il pad parte chiuso e si apre fino al ritornello finale." }
+    "i1": { "name": "Wide chorus on the keys", "sections": ["s3", "s5"], "rationale": "The keys open up in the choruses and leave the center to the vocal." },
+    "i2": { "name": "Filter build into the last chorus", "sections": ["s4"], "rationale": "The pad starts closed and opens up until the last chorus." }
   },
   "tracks": {
     "t4": {
@@ -1009,14 +991,14 @@ le aggiunte:
       "blocks": [
         { "id": "k1", "type": "deesser", "position": "after_compressor", "freq_hz": 6500, "threshold_db": -28.0, "max_reduction_db": 5.0, "mode": "split" }
       ],
-      "rationale": "Sibilanza alta (+7 dB a 7 kHz): de-esser dopo il compressore."
+      "rationale": "High sibilance (+7 dB at 7 kHz): de-esser after the compressor."
     },
     "t5": {
       "blocks": [
         { "id": "k2", "type": "dynamic_eq", "position": "before_compressor", "bands": [
           { "type": "peak", "freq_hz": 3000, "q": 1.2, "threshold_db": -30.0, "range_db": -3.0, "attack_ms": 10.0, "release_ms": 120.0, "sidechain": "t4" }] }
       ],
-      "rationale": "Le chitarre scendono a 3 kHz solo mentre canta la voce, invece di un taglio fisso."
+      "rationale": "The guitars dip at 3 kHz only while the vocal sings, instead of a fixed cut."
     },
     "t7": {
       "blocks": [
@@ -1039,63 +1021,63 @@ le aggiunte:
 }
 ```
 
-**Blocchi.** `blocks` elenca solo i blocchi che il piano **aggiunge o cambia**: un blocco che non c'è resta com'è
-(al contrario del master, perché le tracce sono molte e la risposta deve restare corta, A-062). `id` è l'id di un
-blocco esistente (l'analisi li elenca, ANA-19) oppure una parola nuova per un blocco nuovo; un blocco nuovo ha la sua
-`position` (AI-25); `"bypass": true` spegne un blocco esistente. I blocchi classici restano nei campi della
-versione 3 (`hpf_hz`, `eq`, `compressor`, `saturation`), a cui si aggiungono `hpf_resonance`, `lpf_resonance` e
-`saturation.character`. Lo schema per progetto ha un `anyOf` sui tipi di blocco, come `master_plan` v2. Nei ritorni
-`blocks` è ammesso solo se le modifiche strutturali sono permesse (un ritorno è condiviso, AI-25); il riverbero ha
-anche `shimmer_semitones` e `shimmer_amount`, il delay `mode`, `character`, `wow` e `drive_db`.
+**Blocks.** `blocks` lists only the blocks the plan **adds or changes**: a block that is not there stays as it is
+(unlike the master, because tracks are many and the response must stay short, A-062). `id` is the id of an existing
+block (the analysis lists them, ANA-19) or a new word for a new block; a new block has its own `position` (AI-25);
+`"bypass": true` turns off an existing block. The classic blocks stay in the version 3 fields (`hpf_hz`, `eq`,
+`compressor`, `saturation`), to which `hpf_resonance`, `lpf_resonance` and `saturation.character` are added. The
+per-project schema has an `anyOf` on the block types, like `master_plan` v2. In returns, `blocks` is allowed only if
+structural changes are permitted (a return is shared, AI-25); the reverb also has `shimmer_semitones` and
+`shimmer_amount`, the delay `mode`, `character`, `wow` and `drive_db`.
 
-**Idee.** `ideas` manca dallo schema quando le idee sono disattivate (AI-27) e nelle iterazioni dopo la prima, che
-ricevono le idee già decise come contesto. Un elemento appartiene a un'idea con `"idea": "<id>"`: un blocco, una
-sezione di una traccia (tutti i suoi scostamenti), una voce di `structure`. Una mandata di un'idea si scrive in
-`idea_sends_db.<idea>.<ritorno>` della traccia, separata da `sends_db`.
+**Ideas.** `ideas` is missing from the schema when ideas are disabled (AI-27) and in the iterations after the first,
+which receive the already-decided ideas as context. An element belongs to an idea with `"idea": "<id>"`: a block, a
+track section (all its offsets), an entry of `structure`. An idea's send is written in the track's
+`idea_sends_db.<idea>.<return>`, separate from `sends_db`.
 
-Limiti aggiunti dalla versione 4:
+Limits added by version 4:
 
-| Parametro | Minimo | Massimo |
+| Parameter | Minimum | Maximum |
 | --- | --- | --- |
-| Idee per proposta | 0 | 3 |
-| Blocchi nuovi per catena in una proposta | 0 | 3 |
-| `hpf_resonance`, `lpf_resonance` | 0,5 | 4 |
-| Sezione `hpf_offset_oct`, `lpf_offset_oct` | −3 | +3 |
+| Ideas per proposal | 0 | 3 |
+| New blocks per chain in a proposal | 0 | 3 |
+| `hpf_resonance`, `lpf_resonance` | 0.5 | 4 |
+| Section `hpf_offset_oct`, `lpf_offset_oct` | −3 | +3 |
 | Gate `threshold_db` / `range_db` / `ratio` | −70 / 0 / 1 | −10 / 40 / 20 |
-| Gate `attack_ms` / `hold_ms` / `release_ms` | 0,1 / 0 / 10 | 20 / 200 / 1.000 |
-| De-esser `freq_hz` / `max_reduction_db` | 3.000 / 0 | 12.000 / 10 |
-| EQ dinamico: bande / `range_db` / `q` | 1 / −9 / 0,3 | 2 / +4 / 6 |
+| Gate `attack_ms` / `hold_ms` / `release_ms` | 0.1 / 0 / 10 | 20 / 200 / 1,000 |
+| De-esser `freq_hz` / `max_reduction_db` | 3,000 / 0 | 12,000 / 10 |
+| Dynamic EQ: bands / `range_db` / `q` | 1 / −9 / 0.3 | 2 / +4 / 6 |
 | Transient `attack_db` / `sustain_db` | −9 | +9 |
-| Clipper di traccia `threshold_db` | −18 | 0 |
-| Multibanda di traccia: bande / guadagno di banda | 2 / −6 | 4 / +6 |
-| Exciter `freq_hz` / `amount` | 1.500 / 0 | 12.000 / 0,6 |
-| Bass enhancer `freq_hz` / `harmonics` | 40 / 0 | 160 / 0,8 |
-| Width `width` / `mono_below_hz` | 0 / 0 | 1,6 / 250 |
-| Modulazione `rate_hz` / `depth` / `feedback` / `mix` | 0,02 / 0 / −0,8 / 0 | 8 / 1 / 0,8 / 0,6 |
-| Tremolo `rate_hz` / `depth` | 0,1 / 0 | 12 / 0,8 |
-| Harmonizer: voci / intervallo / mix | 1 / −12 / 0 | 2 / +12 / 0,5 |
-| Doubler `detune_cents` / `delay_ms` / `mix` | 0 / 5 / 0 | 25 / 40 / 0,6 |
-| Riverbero `shimmer_amount` | 0 | 0,6 |
+| Track clipper `threshold_db` | −18 | 0 |
+| Track multiband: bands / band gain | 2 / −6 | 4 / +6 |
+| Exciter `freq_hz` / `amount` | 1,500 / 0 | 12,000 / 0.6 |
+| Bass enhancer `freq_hz` / `harmonics` | 40 / 0 | 160 / 0.8 |
+| Width `width` / `mono_below_hz` | 0 / 0 | 1.6 / 250 |
+| Modulation `rate_hz` / `depth` / `feedback` / `mix` | 0.02 / 0 / −0.8 / 0 | 8 / 1 / 0.8 / 0.6 |
+| Tremolo `rate_hz` / `depth` | 0.1 / 0 | 12 / 0.8 |
+| Harmonizer: voices / interval / mix | 1 / −12 / 0 | 2 / +12 / 0.5 |
+| Doubler `detune_cents` / `delay_ms` / `mix` | 0 / 5 / 0 | 25 / 40 / 0.6 |
+| Reverb `shimmer_amount` | 0 | 0.6 |
 | Delay `wow` / `drive_db` | 0 / 0 | 1 / 9 |
 
-I valori musicali (`rate`, `time` del delay) sono ammessi solo se il progetto ha un tempo. Gli altri parametri dei
-blocchi nuovi hanno nel piano gli stessi limiti dell'interfaccia (FX-13 → FX-23). I piani della versione 3 conservati
-nei progetti si leggono ancora (AI-23).
+Musical values (`rate`, the delay's `time`) are allowed only if the project has a tempo. The other parameters of the new
+blocks have in the plan the same limits as the interface (FX-13 → FX-23). Version 3 plans kept in projects can still be
+read (AI-23).
 
-**`analysis` (versione 3)** — quello della PoC (PRD §6.2) più: `sections` (id, nome, inizio, fine),
-`tracks.<id>.section_lufs`, `tracks.<id>.section_active_pct`, `mix.section_bands_db`, `families` (ANA-16), `returns` (id, tipo e,
-per i riverberi, algoritmo), `doubles` (ANA-18: coppie di tracce, punteggio, `identical`) e,
-per ogni traccia, `name`, `group`, `locked`. Gli id inviati sono neutri (`t1`, `g1`, `s1`). La **versione 4**
-(P-018) aggiunge le misure di ANA-19 (`sibilance_db` e `sibilance_hz` per le voci, `crest_db`, `transient_db`,
-`floor_db` per la batteria, `stereo` per le tracce stereo), `tempo` e `meter` del progetto se noti, e `blocks` per
-ogni traccia, gruppo e ritorno (id neutro `k…`, tipo, bypass, posizione dei blocchi non classici).
+**`analysis` (version 3)** — the PoC's (PRD §6.2) plus: `sections` (id, name, start, end), `tracks.<id>.section_lufs`,
+`tracks.<id>.section_active_pct`, `mix.section_bands_db`, `families` (ANA-16), `returns` (id, type and, for reverbs,
+algorithm), `doubles` (ANA-18: pairs of tracks, score, `identical`) and, for each track, `name`, `group`, `locked`. The
+ids sent are neutral (`t1`, `g1`, `s1`). **Version 4** (P-018) adds the measurements of ANA-19 (`sibilance_db` and
+`sibilance_hz` for vocals, `crest_db`, `transient_db`, `floor_db` for drums, `stereo` for stereo tracks), the project's
+`tempo` and `meter` if known, and `blocks` for every track, group and return (neutral id `k…`, type, bypass, position
+of the non-classic blocks).
 
-**`master_plan` (versione 2)** (P-017):
+**`master_plan` (version 2)** (P-017):
 
 ```json
 {
   "version": 2,
-  "summary": "Stessa loudness con un terzo del lavoro del limiter: i picchi scendono prima.",
+  "summary": "Same loudness with a third of the limiter work: the peaks come down earlier.",
   "target": { "lufs": -9.6, "true_peak_db": -1.0 },
   "input_gain_db": 0.0,
   "chain": [
@@ -1114,442 +1096,433 @@ ogni traccia, gruppo e ritorno (id neutro `k…`, tipo, bypass, posizione dei bl
 }
 ```
 
-`chain` elenca solo i blocchi che lavorano, nell'ordine in cui lavorano: un blocco del master che il piano non
-elenca viene spento e resta in coda con le sue impostazioni. `id` è l'id di un blocco che il master ha già (l'analisi
-li elenca in `current_chain`) oppure una parola qualunque per un blocco nuovo. Tipi: `eq`, `match_eq`, `compressor`,
-`multiband`, `width`, `saturation`, `clipper`. Ogni blocco porta la sua motivazione in `why`; `rationale` ha solo
-`order`, `limiter` e `sections`. La proposta si applica intera o **voce per voce** (ogni blocco, l'ordine, il
-limiter, le sezioni, l'ingresso, la destinazione). I piani della versione 1 conservati nei progetti si leggono
-ancora (AI-23).
+`chain` lists only the blocks that work, in the order they work: a master block that the plan does not list is turned
+off and stays at the end with its settings. `id` is the id of a block the master already has (the analysis lists them
+in `current_chain`) or any word for a new block. Types: `eq`, `match_eq`, `compressor`, `multiband`, `width`,
+`saturation`, `clipper`. Every block carries its reasoning in `why`; `rationale` has only `order`, `limiter` and
+`sections`. The proposal is applied whole or **item by item** (each block, the order, the limiter, the sections, the
+input, the target). Version 1 plans kept in projects can still be read (AI-23).
 
-**Analisi del master (versione 3)** — ciò che il modello legge prima di decidere un master (MAS-6):
-`mixdown` (`lufs`, `true_peak_db`, `peak_to_loudness_db`, `short_crest_db`: cresta mediana su finestre di 400 ms,
-`peak_share_pct`: quota dei campioni entro 3, 6 e 9 dB dal picco, `loudness_range_lu`, `bands_db`, `stereo`,
-`low_corr`), `target` (profilo medio dei riferimenti), `references` (loudness e distanza picco-loudness di ciascuno,
-senza nomi), `band_delta_db`, `destination` (con `peak_to_loudness_db` e `peak_reduction_needed_db`: di quanto i
-picchi devono scendere in tutto) e `current_master`, la **valutazione** del master corrente. Una valutazione ha
-`lufs`, `on_target`, `loudness_gain_db`, `peak_to_loudness_db`, `short_crest_db`, `short_crest_lost_db`,
-`peak_share_pct`, `blocks` (per ogni compressore, multibanda e clipper acceso, col suo id) e `limiter` (`max_db`,
-`mean_db`, percentuale del tempo con una riduzione qualunque e oltre 1, 3 e 6 dB), `spectral_distance_db`,
-`band_delta_db`. Dalla versione 3 l'analisi porta anche `sections` (id neutro, nome, inizio, fine e loudness del
-mixdown in ciascuna) e `current_chain` (i blocchi del master con id, tipo e stato). La stessa valutazione accompagna ogni piano nella storia delle
-iterazioni.
+**Master analysis (version 3)** — what the model reads before deciding a master (MAS-6): `mixdown` (`lufs`,
+`true_peak_db`, `peak_to_loudness_db`, `short_crest_db`: median crest over 400 ms windows, `peak_share_pct`: share of
+samples within 3, 6 and 9 dB of the peak, `loudness_range_lu`, `bands_db`, `stereo`, `low_corr`), `target` (average
+profile of the references), `references` (loudness and peak-to-loudness distance of each, without names),
+`band_delta_db`, `destination` (with `peak_to_loudness_db` and `peak_reduction_needed_db`: by how much the peaks must
+come down overall) and `current_master`, the **evaluation** of the current master. An evaluation has `lufs`,
+`on_target`, `loudness_gain_db`, `peak_to_loudness_db`, `short_crest_db`, `short_crest_lost_db`, `peak_share_pct`,
+`blocks` (for every compressor, multiband and clipper that is on, with its id) and `limiter` (`max_db`, `mean_db`,
+percentage of time with any reduction and over 1, 3 and 6 dB), `spectral_distance_db`, `band_delta_db`. From version 3
+the analysis also carries `sections` (neutral id, name, start, end and the mixdown's loudness in each) and
+`current_chain` (the master's blocks with id, type and state). The same evaluation accompanies every plan in the
+iteration history.
 
-Limiti del master: al più 9 blocchi, due per tipo (uno per `match_eq` e `width`); EQ fino a 6 bande, gain ±6 dB;
-`match_eq.amount` 0–1; ratio 1–4; `compressor.mix` 0,2–1; `compressor.listen_above_hz` 0–300; multibanda con 2–6
-bande, crossover 40–12 000 Hz ad almeno un terzo d'ottava, guadagno di banda ±6 dB; `side_gain_db` ±6;
-`mono_below_hz` 0–250; `clipper.take_off_db` 0–6; `target.lufs` −24…−6; `target.true_peak_db` −3…−0,1;
-`limiter.release_ms` 20–500; scostamenti di sezione: livello ±2 dB, lati ±3 dB, rilascio ±100 ms, EQ ±2 dB.
+Master limits: at most 9 blocks, two per type (one for `match_eq` and `width`); EQ up to 6 bands, gain ±6 dB;
+`match_eq.amount` 0–1; ratio 1–4; `compressor.mix` 0.2–1; `compressor.listen_above_hz` 0–300; multiband with 2–6 bands,
+crossover 40–12,000 Hz at least a third of an octave apart, band gain ±6 dB; `side_gain_db` ±6; `mono_below_hz` 0–250;
+`clipper.take_off_db` 0–6; `target.lufs` −24…−6; `target.true_peak_db` −3…−0.1; `limiter.release_ms` 20–500; section
+offsets: level ±2 dB, sides ±3 dB, release ±100 ms, EQ ±2 dB.
 
-Il prompt di sistema parte da quello della PoC (`poc/src/stemwise/decision/prompt.py`), con la tabella dei limiti
-**generata dallo schema**, mai copiata a mano.
+The system prompt starts from the PoC's (`poc/src/stemwise/decision/prompt.py`), with the limits table **generated from
+the schema**, never copied by hand.
 
-### 5.6 Interfaccia tra UI e core
+### 5.6 Interface between UI and core
 
-- Comandi (richiesta/risposta) per mutazioni e interrogazioni; eventi per i cambi di stato (patch del
-  documento); canale binario per meter, posizione e spettri; protocollo dedicato per le piramidi di picchi.
-- L'UI non contiene logica di dominio: niente calcoli di dB, tempi o validazioni duplicati rispetto al core, se
-  non per il disegno.
-- `ui/src/backend/mock.ts` implementa la stessa interfaccia con un progetto dimostrativo in memoria (tracce,
-  forme d'onda sintetiche, meter simulati, una proposta AI di esempio): è ciò che usano Playwright e la verifica
-  a vista.
+- Commands (request/response) for mutations and queries; events for state changes (document patches); binary channel
+  for meters, position and spectra; dedicated protocol for the peak pyramids.
+- The UI contains no domain logic: no dB, timing or validation calculations duplicated from the core, except for
+  drawing.
+- `ui/src/backend/mock.ts` implements the same interface with an in-memory demo project (tracks, synthetic waveforms,
+  simulated meters, a sample AI proposal): it is what Playwright and visual verification use.
 
-### 5.7 La PoC come oracolo
+### 5.7 The PoC as oracle
 
-`poc/src/stemwise/` non si modifica. `make oracle` (in `app/`) esegue uno script che genera segnali sintetici con seme
-fisso, li misura con le funzioni della PoC e scrive in `app/fixtures/oracle/` **solo JSON** (parametri del
-segnale e valori attesi). I test Rust rigenerano gli stessi segnali e confrontano:
+`poc/src/stemwise/` is not modified. `make oracle` (in `app/`) runs a script that generates synthetic signals with a
+fixed seed, measures them with the PoC's functions and writes to `app/fixtures/oracle/` **only JSON** (signal
+parameters and expected values). The Rust tests regenerate the same signals and compare:
 
-| Ambito | Tolleranza rispetto all'oracolo |
+| Area | Tolerance against the oracle |
 | --- | --- |
-| Loudness integrato, LRA | ±0,1 LU |
-| True peak, picco, RMS, crest | ±0,1 dB |
-| Energia per banda, quote, centroide | ±0,2 dB · ±1 punto percentuale · ±2% |
-| Mascheramento, correlazioni | ±0,02 |
-| Biquad (risposta in frequenza), pan, gain | ±0,01 dB |
+| Integrated loudness, LRA | ±0.1 LU |
+| True peak, peak, RMS, crest | ±0.1 dB |
+| Energy per band, shares, centroid | ±0.2 dB · ±1 percentage point · ±2% |
+| Masking, correlations | ±0.02 |
+| Biquad (frequency response), pan, gain | ±0.01 dB |
 
-Compressore, saturazione, riverbero, delay e limiter non hanno oracolo: si verificano con proprietà (guadagno
-statico, costanti di tempo, tetto rispettato, stabilità, assenza di NaN e di denormali) documentate in
-`docs/app/dsp.md`. I generatori di segnali devono essere definiti in modo identico nei due linguaggi (formule
-chiuse o campioni scritti nel JSON per i segnali brevi), mai con generatori casuali delle librerie.
+Compressor, saturation, reverb, delay and limiter have no oracle: they are verified by properties (static gain, time
+constants, ceiling respected, stability, absence of NaN and denormals) documented in `docs/app/dsp.md`. The signal
+generators must be defined identically in the two languages (closed formulas or samples written in the JSON for short
+signals), never with the libraries' random generators.
 
-## 6. Inventario dell'interfaccia
+## 6. Interface inventory
 
-Elenco vincolante per il design e per l'implementazione. Dimensione di riferimento 1440×900; minima 1280×720.
+Binding list for design and implementation. Reference size 1440×900; minimum 1280×720.
 
-**Schermate**
+**Screens**
 
-1. **Welcome** — progetti recenti, nuovo progetto, apri; primo avvio con invito a configurare l'AI (saltabile).
-2. **New project / Import** — area di trascinamento, elenco dei file con formato, canali, durata, ruolo
-   proposto e modificabile; avviso di frequenza diversa; brief (genere, mood, note); riferimenti.
-3. **Mix workspace** — la schermata principale:
-   - barra superiore: nome del progetto, selettore di fase **Mix | Master**, trasporto, posizione, loop,
-     undo/redo, meter del bus (true peak, LUFS), carico del motore;
-   - timeline: righello, corsia delle sezioni, intestazioni di traccia (nome, ruolo, colore, mute/solo, lock,
-     mini fader), clip con forme d'onda, corsie di automazione espandibili, cursore, regione di loop;
-   - mixer (pannello inferiore o vista alternativa): strip con meter, fader, pan, mandate, riduzione di guadagno;
-     gruppi, ritorni, bus di mix; con P-013: segni della catena su ogni intestazione e strip (UI-8), una mandata
-     per ritorno con la colonna delle etichette (UI-9), vista **Overview** a griglia (UI-11), anche su un
-     progetto grande con corsie basse;
-   - inspector della traccia selezionata: catena con bypass, editor EQ, compressore, saturazione, mandate,
-     **motivazione dell'AI** per quella traccia;
-   - pannello AI: brief, riferimenti, Auto mix, barra della revisione a parole, interruttori "Allow structural
-     changes" (AI-18) e "Allow creative ideas" (AI-27), stima del costo prima dell'invio, costo del progetto finora con accesso ad "AI usage";
-   - pannello cronologia: passi di undo, snapshot, confronto A/B.
-4. **Mix workspace, proposta in revisione** — sintesi, elenco delle tracce con diff e motivazione, **ritorni e
-   gruppi nuovi come righe proprie** (marcati come nuovi, con nome, motivazione, parametri e, per i gruppi, i
-   membri; AI-20), valutazione prima/dopo, A/B all'ascolto, applica tutto / applica selezionate / scarta; con
-   "applica selezionate" si vede quali elementi nuovi verranno creati; con P-018 i blocchi nuovi nel diff e la
-   sotto-sezione **Creative ideas** (una scheda per idea, spunta spenta per default, ascolto della sola idea).
-5. **Mix workspace, AI al lavoro** — avanzamento per fase e per iterazione, annulla.
-6. **Editing** — strumenti (selezione, taglio, automazione), stati di trascinamento, fade, snap, selezione
-   multipla, menu contestuali di clip e traccia.
-7. **Returns & routing** — pannelli dei ritorni (riverbero con selettore dell'algoritmo e i parametri di FX-5,
-   delay), creazione ed eliminazione di un ritorno, selettore dell'uscita di una traccia, gruppi annidati nel
-   mixer e nella timeline, selettore della sorgente sidechain e controllo **mix** nel compressore (FX-3), scelta
-   del parametro da automatizzare in una corsia; con P-013: i collegamenti della selezione (chi manda a un
-   ritorno, dove va una traccia, chi la ascolta in sidechain; UI-10) e l'elenco di chi manda nella corsia del
-   ritorno.
-8. **Bounce to Master** — conferma, avanzamento, esito con le misure del mixdown.
-9. **Master workspace** — forma d'onda del mixdown, catena di master a moduli, meter di loudness e spettro con
-   profilo del riferimento, destinazione, pannello AI del master, A/B a pari loudness (master / mixdown /
-   riferimento), avviso di mixdown non aggiornato.
-10. **Export** — formati (WAV, FLAC, AAC, anche insieme), frequenza, bit, dither, metadata (con ISRC e
-    copertina), cartella; avanzamento; rapporto finale.
+1. **Welcome** — recent projects, new project, open; first launch with an invitation to set up the AI (skippable).
+2. **New project / Import** — drop area, file list with format, channels, duration, proposed and editable role;
+   warning for a different sample rate; brief (genre, mood, notes); references.
+3. **Mix workspace** — the main screen:
+   - top bar: project name, **Mix | Master** phase selector, transport, position, loop, undo/redo, bus meters (true
+     peak, LUFS), engine load;
+   - timeline: ruler, section lane, track headers (name, role, color, mute/solo, lock, mini fader), clips with
+     waveforms, expandable automation lanes, cursor, loop region;
+   - mixer (bottom panel or alternate view): strips with meter, fader, pan, sends, gain reduction; groups, returns,
+     mix buses; with P-013: chain marks on every header and strip (UI-8), one send per return with the label column
+     (UI-9), grid **Overview** view (UI-11), also on a large project with short lanes;
+   - inspector of the selected track: chain with bypass, EQ editor, compressor, saturation, sends, the **AI
+     rationale** for that track;
+   - AI panel: brief, references, Auto mix, revision bar in words, "Allow structural changes" (AI-18) and "Allow
+     creative ideas" (AI-27) switches, cost estimate before sending, project cost so far with access to "AI usage";
+   - history panel: undo steps, snapshots, A/B comparison.
+4. **Mix workspace, proposal under review** — summary, track list with diff and rationale, **new returns and groups
+   as rows of their own** (marked as new, with name, rationale, parameters and, for groups, the members; AI-20),
+   before/after evaluation, A/B by ear, apply all / apply selected / discard; with "apply selected" you see which
+   new elements will be created; with P-018 the new blocks in the diff and the **Creative ideas** subsection (one
+   card per idea, check off by default, listening to the idea alone).
+5. **Mix workspace, AI at work** — progress per phase and per iteration, cancel.
+6. **Editing** — tools (select, cut, automation), drag states, fade, snap, multiple selection, clip and track
+   context menus.
+7. **Returns & routing** — return panels (reverb with algorithm selector and the parameters of FX-5, delay),
+   creating and deleting a return, a track's output selector, nested groups in the mixer and in the timeline,
+   sidechain source selector and **mix** control in the compressor (FX-3), choice of the parameter to automate in a
+   lane; with P-013: the selection's connections (who sends to a return, where a track goes, who listens to it in
+   sidechain; UI-10) and the list of who sends in the return's lane.
+8. **Bounce to Master** — confirmation, progress, outcome with the mixdown measurements.
+9. **Master workspace** — mixdown waveform, modular master chain, loudness meters and spectrum with reference
+   profile, target, master AI panel, loudness-matched A/B (master / mixdown / reference), outdated mixdown warning.
+10. **Export** — formats (WAV, FLAC, AAC, also together), sample rate, bits, dither, metadata (with ISRC and cover
+    art), folder; progress; final report.
 11. **Settings** — Audio, AI, Appearance, Shortcuts.
-12. **AI usage** — riepilogo (chiamate, token, costo, per tipo e per modello), storia delle chiamate con
-    filtri, dettaglio leggibile di una chiamata (richiesta e risposta, con il JSON grezzo a richiesta), export,
-    stato vuoto; conferma di superamento del tetto di spesa.
-13. **Stati trasversali** — vuoti, caricamento, errori di §3.11 UI-6, conferme distruttive, notifiche.
-14. **Assistant setup** (P-015) — collegamento del conto OpenRouter dal browser, attesa, pagina mostrata nel
-    browser, credito, pronto, esiti negativi, chiave incollata a mano, e gli stati di credito esaurito, limite della
-    chiave e chiave non più valida nella colonna dell'assistente.
-15. **Master chain** (P-017) — catena a dieci moduli con ordine libero al centro, clipper,
-    compressore con mix e filtro sul detector, multibanda, scostamenti per sezione, proposta misurata, destinazione
-    troppo alta per il mix.
-16. **Track chain** (P-018) — la catena a blocchi nell'inspector di traccia, gruppo e ritorno (UI-12): menu per
-    famiglia, ordine, stati di trascinamento, un editor per ciascun blocco nuovo di FX-12 → FX-23, segni e Overview
-    con le catene lunghe, il delay e il riverbero coi modi nuovi.
+12. **AI usage** — summary (calls, tokens, cost, by type and by model), call history with filters, readable detail
+    of a call (request and response, with the raw JSON on request), export, empty state; confirmation of exceeding
+    the spending cap.
+13. **Cross-cutting states** — empty, loading, errors of §3.11 UI-6, destructive confirmations, notifications.
+14. **Assistant setup** (P-015) — connecting the OpenRouter account from the browser, waiting, page shown in the
+    browser, credit, ready, negative outcomes, key pasted by hand, and the states of exhausted credit, key limit and
+    key no longer valid in the assistant column.
+15. **Master chain** (P-017) — ten-module chain with free order in the middle, clipper, compressor with mix and
+    detector filter, multiband, per-section offsets, measured proposal, target too high for the mix.
+16. **Track chain** (P-018) — the block-based chain in the track, group and return inspector (UI-12): menu per
+    family, order, drag states, one editor for each new block of FX-12 → FX-23, marks and Overview with long
+    chains, delay and reverb with the new modes.
 
-17. **Explain this mix** (P-019) — la vista che spiega il mix (UI-14 → UI-16): tutto il mix, una traccia, un
-    ritorno, una sidechain con un termine spiegato, una sezione, un progetto grande coi gruppi ripiegati, un mix mai
-    toccato, la finestra minima, il testo intero.
+17. **Explain this mix** (P-019) — the view that explains the mix (UI-14 → UI-16): the whole mix, a track, a return,
+    a sidechain with a term explained, a section, a large project with collapsed groups, a mix never touched, the
+    minimum window, the full text.
 
-18. **Guided tour** (P-020) — il tour (UI-17 → UI-19): scheda di apertura sulla Welcome, un passo col riflettore
-    per ciascuna area (barra in alto, timeline, intestazione, mixer, inspector, assistente, proposta, cronologia,
-    Explain, selettore di fase, Master, export), scheda di chiusura, un passo che aspetta la proposta o il mixdown,
-    la finestra minima, il collegamento nella Welcome e la voce Help del menu dell'app (UI-20), la notifica dopo `Skip tour`.
+18. **Guided tour** (P-020) — the tour (UI-17 → UI-19): opening card on the Welcome, one step with the spotlight
+    for each area (top bar, timeline, header, mixer, inspector, assistant, proposal, history, Explain, phase
+    selector, Master, export), closing card, a step that waits for the proposal or the mixdown, the minimum window,
+    the link in the Welcome and the Help item of the app menu (UI-20), the notification after `Skip tour`.
 
-**Componenti** (ciascuno con gli stati: normale, hover, attivo, focus, disabilitato, automatizzato, bloccato
-dove ha senso): fader, knob, pan, meter (picco/RMS, riduzione di guadagno, LUFS), pulsanti e toggle (mute, solo,
-lock, bypass), campo numerico, menu, tooltip, dialogo, toast, tab, clip, maniglie di fade, punto di automazione,
-sezione, strip di canale, modulo di catena, curva EQ, curva di trasferimento, righello, cursore di riproduzione,
-barra di avanzamento, scheda di proposta, riga di diff, riga di chiamata AI, tabella di misure, selettore di
-routing, indicatore di sidechain; con P-018: blocco di catena di traccia, menu dei blocchi, scheda di un'idea; con P-013: segni della catena, punti delle mandate, segno di automazione, cella
-dell'Overview, colonna delle etichette del mixer; con P-020: riflettore e fumetto del tour.
+**Components** (each with its states: normal, hover, active, focus, disabled, automated, locked where it makes
+sense): fader, knob, pan, meter (peak/RMS, gain reduction, LUFS), buttons and toggles (mute, solo, lock, bypass),
+numeric field, menu, tooltip, dialog, toast, tab, clip, fade handles, automation point, section, channel strip,
+chain module, EQ curve, transfer curve, ruler, playback cursor, progress bar, proposal card, diff row, AI call row,
+measurements table, routing selector, sidechain indicator; with P-018: track chain block, block menu, idea card;
+with P-013: chain marks, send dots, automation mark, Overview cell, mixer label column; with P-020: tour spotlight
+and callout.
 
-## 7. Passaggio dal design all'implementazione
+## 7. From design to implementation
 
-La sessione di design consegna, nella cartella `design/` del repository:
+The design session delivers, in the repository's `design/` folder:
 
-- `design/README.md` — indice: direzione scelta, principi, elenco delle schermate e dei file, note per chi
-  implementa (comportamenti non deducibili dalle tavole: resize, densità, animazioni, stati).
-- `design/tokens.css` — tutti i token come variabili CSS (colori, tipografia, spaziatura, raggi, ombre, durate,
-  colori di traccia, colori delle due fasi).
-- `design/screens/` — una tavola per schermata e stato di §6 (HTML/CSS autosufficiente, oppure immagine più
-  specifica misurata).
-- `design/components/` — il foglio dei componenti con tutti gli stati.
+- `design/README.md` — index: chosen direction, principles, list of screens and files, notes for implementers
+  (behaviors that cannot be deduced from the boards: resize, density, animations, states).
+- `design/tokens.css` — all tokens as CSS variables (colors, typography, spacing, radii, shadows, durations, track
+  colors, colors of the two phases).
+- `design/screens/` — one board per screen and state of §6 (self-contained HTML/CSS, or a more specific measured
+  image).
+- `design/components/` — the component sheet with all states.
 
-Se la sessione di design non può scrivere nel repository, l'autore esporta le tavole e le copia in `design/`
-prima di avviare l'implementazione. L'implementazione non parte senza `design/README.md` e `design/tokens.css`.
+If the design session cannot write to the repository, the author exports the boards and copies them into `design/`
+before starting the implementation. The implementation does not start without `design/README.md` and
+`design/tokens.css`.
 
-Durante l'implementazione il design è normativo per aspetto e disposizione; questo documento lo è per
-comportamento. Dove il design manca di uno stato, l'agente lo deriva dai token e dai componenti esistenti e lo
-annota in `docs/app/DECISIONS.md`.
+During implementation the design is normative for look and layout; this document is normative for behavior. Where
+the design lacks a state, the agent derives it from the existing tokens and components and records it in
+`docs/app/DECISIONS.md`.
 
-## 8. Piano di implementazione
+## 8. Implementation plan
 
-### 8.1 Fasi
+### 8.1 Phases
 
-Si eseguono in ordine, **senza pause tra una e l'altra**. Ogni fase si chiude quando il suo gate è verde; lo
-stato si aggiorna in `docs/app/PROGRESS.md`.
+They run in order, **with no pauses between one and the next**. Each phase closes when its gate is green; status is
+updated in `docs/app/PROGRESS.md`.
 
-| Fase | Contenuto | Gate (oltre a `make check` verde) |
+| Phase | Content | Gate (besides `make check` green) |
 | --- | --- | --- |
-| **F0 Fondamenta** | Workspace Cargo, app Tauri che si avvia, UI con backend finto, token del design importati, `Makefile`, gate licenze, script dei requisiti, `make oracle`, `make disk` e `make clean-stale` con i profili di build di regola 18 | L'app si apre con `make dev`; l'UI gira nel browser col backend finto; `make oracle` scrive i fixture; `make disk` riporta l'occupazione per cartella |
-| **F1 Core** | Documento di progetto, schemi, comandi e undo/redo, pacchetto, autosave, import e copia dei file, piramidi di picchi | PRJ, HIS coperti; routing senza cicli (TRK-3); test di proprietà: ogni sequenza casuale di comandi seguita dagli undo riporta al documento iniziale |
-| **F2 DSP** | Tutti i processori di FX e MAS, meter, loudness, true peak | Parità con l'oracolo (§5.7); proprietà dei processori; nessuna allocazione in `process` |
-| **F3 Motore** | Grafo strutturato (gruppi annidati, ritorni multipli, sidechain), clip, automazione di tutti i parametri, render offline, streaming, uscita `cpal`, trasporto; **fetta verticale**: apri un progetto, play, muovi un fader dall'UI | ENG coperti; hash del render stabile; invarianza dalla dimensione del blocco; benchmark NFR-1 e NFR-4 |
-| **F4 Analisi** | Port delle misure, misure per sezione, famiglie, valutazione | ANA coperti; parità con l'oracolo; ANA-17 |
-| **F5 AI** | Contratti, prompt, decisore finto, OpenRouter, validazione e ritentativi, ciclo, revisione, lock, log e registro dei costi, master AI | Flusso completo offline da `stemwise-cli` col decisore finto; client HTTP provato contro un server locale finto |
-| **F6 UI del mix** | Timeline, mixer, inspector, editing delle clip, automazione, sezioni, ritorni, cronologia | UI-2 per le schermate 1–3, 6, 7; Playwright sui flussi principali; confronto a vista col design |
-| **F7 UI dell'AI** | Brief, riferimenti, auto mix, proposta in revisione con A/B, revisione a parole, pannello AI usage, snapshot | Schermate 4, 5, 12; AI-14 → AI-16; flusso completo nell'app col decisore finto |
-| **F8 Master** | Mixdown, grafo di master, meter, destinazioni, master AI, A/B a pari loudness, export nei tre formati con metadata | MDN, MAS coperti; true peak dell'export entro il tetto su segnali di prova; schermate 8–10 |
-| **F9 Rifinitura** | Impostazioni, errori e stati vuoti, scorciatoie, accessibilità, prestazioni dell'UI | UI-3 → UI-7, SET-1, NFR-3, NFR-5; schermate 11, 13 |
-| **F10 Consegna** | Pacchetto `.app`/`.dmg`, revisione indipendente finale, README, guida di validazione | `make build` produce il pacchetto; `make reqs` senza buchi; `docs/app/VALIDATION.md` completo |
-| **F11 Riverbero e compressione parallela** (P-011) | Tre algoritmi di riverbero al posto di quello a pettini, parametri nuovi nel documento con migrazione di schema, `mix` del compressore, motore e automazione, tavole di design aggiornate (schermata 7, pannello del compressore) e loro implementazione, `docs/app/dsp.md` | FX-3, FX-5, FX-9 coperti; hash del render stabile e invarianza dal blocco con i riverberi nuovi; `make bench` (NFR-1 con 4 riverberi); confronto a vista col design |
-| **F12 Mix AI strutturale** (P-011) | Misura dei doppi, contratti `mix_plan` e `analysis` versione 3, validazione e applicazione della struttura, ciclo con struttura stabile, prompt e decisore finto con le tecniche, tavole di design aggiornate (schermate 3 e 4) e loro implementazione, pacchetto ricostruito, VALIDATION aggiornato | ANA-18, AI-17 → AI-21 coperti; flusso completo da `stemwise-cli` e nell'app col decisore finto, con ritorni e gruppi creati e annullati in un passo; client provato contro il server finto con lo schema v3; revisione indipendente; `make reqs` senza buchi |
-| **F13 Stato del mix a colpo d'occhio** (P-013) | Tavole di design (3e–3g, 7f–7h, C7, e le tavole esistenti rigenerate con i segni), poi, **dopo l'approvazione delle tavole da parte dell'autore**: segni su intestazioni e strip, mandate per ritorno con la colonna delle etichette, collegamenti della selezione, vista Overview; nessuna modifica a core, motore e contratti | UI-8 → UI-11 coperti; nessun ridisegno della timeline legato alla testina (A-064, A-065) e 60 fps con 32 tracce (NFR-3); confronto a vista col design; `make reqs` senza buchi |
-| **F14 Catena di master libera** (P-017) | Catena come lista di blocchi ripetibili con ordine libero, clipper, multibanda da due a sei bande, mix e filtro sul detector del compressore, scostamenti per sezione, schema di progetto 3 con migrazione, `master_plan` v2 con valutazione per blocco, rack e editor (tavole 15a–15j), proposta misurata applicabile voce per voce, avviso sulla destinazione troppo alta | MAS-11 → MAS-15 coperti; render uguale a ogni blocco di calcolo; progetti dello schema 2 aperti con lo stesso suono; flusso col decisore finto; `make reqs` senza buchi |
-| **F15 Catena delle tracce a blocchi** (P-018) | Tavole di design per **tutte** le fasi di P-018 (schermata 16, aggiornamenti di 3, 4 e 7, componenti), poi, **dopo l'approvazione dell'autore**: catena di tracce e gruppi come lista, catena dei ritorni, filtri risonanti, dissolvenza dei bypass, latenza costante, schema di progetto 4 con migrazione, inspector a rack, segni e Overview sulla lista | FX-10 → FX-12, UI-12 coperti; progetti dello schema 3 aperti con lo stesso hash; render uguale a ogni blocco di calcolo; nessuno scatto cambiando struttura; confronto a vista col design |
-| **F16 Effetti nuovi** (P-018) | I processori e gli editor di FX-13 → FX-23 (gate, de-esser, EQ dinamico, transient shaper, clipper e multibanda di traccia, caratteri della saturazione, exciter, bass enhancer, ampiezza, modulazione, tremolo, harmonizer, doubler, shimmer, ping-pong e tape), automazione dei loro parametri, `docs/app/dsp.md` | FX-13 → FX-24 coperti; `make bench` con il caso di FX-24; confronto a vista col design |
-| **F17 Idee creative** (P-018) | Misure di ANA-19, `analysis` v4 e `mix_plan` v4, blocchi e scostamenti nuovi nel piano, idee con validazione e applicazione, ciclo con idee ferme, prompt e decisore finto con le tecniche nuove, proposta con Creative ideas e interruttore, pacchetto ricostruito, VALIDATION aggiornato | ANA-19, AI-25 → AI-27, UI-13 coperti; flusso completo da `stemwise-cli` e nell'app col decisore finto, con idee applicate e annullate in un passo; client provato contro il server finto con lo schema v4; revisione indipendente; `make reqs` senza buchi |
-| **F18 Explain this mix** (P-019) | Tavole della schermata 17, poi, **dopo l'approvazione dell'autore**: misura dei livelli in background (ANA-20), vista Explain con mappa e testo a regole, glossario, copia del testo, scorciatoia ⌘E | ANA-20, UI-14 → UI-16 coperti; flusso Playwright sul backend finto; confronto a vista con le tavole 17a–17j |
-| **F19 Tour guidato** (P-020) | Tavole della schermata 18 (e componente del fumetto), poi, **dopo l'approvazione dell'autore**: progetto dimostrativo costruito e sintetizzato dal core, sessione effimera, comandi del tour tra UI e core con i tipi generati, segno "mostrato" nei dati dell'app, tour con riflettore e fumetto e i quindici passi, menu dell'app unico con Help (UI-20) e collegamento nella Welcome, backend finto, self-test, VALIDATION | PRJ-9, UI-17 → UI-20 coperti; stesso hash a ogni costruzione del progetto dimostrativo e nessun file rimasto dopo la chiusura; nessuna chiamata di rete e nessun costo registrato; Playwright sul backend finto (primo avvio, tutti i passi avanti e indietro, salto, ripetizione, finestra minima, axe); self-test del tour nell'app vera; tempi di PRJ-9 e avvio a freddo misurati; confronto a vista con le tavole; `make reqs` senza buchi |
+| **F0 Foundations** | Cargo workspace, Tauri app that starts, UI with fake backend, design tokens imported, `Makefile`, license gate, requirements script, `make oracle`, `make disk` and `make clean-stale` with the build profiles of rule 18 | The app opens with `make dev`; the UI runs in the browser with the fake backend; `make oracle` writes the fixtures; `make disk` reports usage per folder |
+| **F1 Core** | Project document, schemas, commands and undo/redo, package, autosave, file import and copy, peak pyramids | PRJ, HIS covered; routing without cycles (TRK-3); property tests: every random sequence of commands followed by the undos returns to the initial document |
+| **F2 DSP** | All FX and MAS processors, meters, loudness, true peak | Parity with the oracle (§5.7); processor properties; no allocation in `process` |
+| **F3 Engine** | Structured graph (nested groups, multiple returns, sidechain), clips, automation of all parameters, offline render, streaming, `cpal` output, transport; **vertical slice**: open a project, play, move a fader from the UI | ENG covered; stable render hash; block-size invariance; NFR-1 and NFR-4 benchmarks |
+| **F4 Analysis** | Port of the measurements, per-section measurements, families, evaluation | ANA covered; parity with the oracle; ANA-17 |
+| **F5 AI** | Contracts, prompts, fake decider, OpenRouter, validation and retries, loop, revision, lock, log and cost registry, master AI | Full offline flow from `stemwise-cli` with the fake decider; HTTP client tested against a fake local server |
+| **F6 Mix UI** | Timeline, mixer, inspector, clip editing, automation, sections, returns, history | UI-2 for screens 1–3, 6, 7; Playwright on the main flows; visual comparison with the design |
+| **F7 AI UI** | Brief, references, auto mix, proposal under review with A/B, revision in words, AI usage panel, snapshots | Screens 4, 5, 12; AI-14 → AI-16; full flow in the app with the fake decider |
+| **F8 Master** | Mixdown, master graph, meters, targets, master AI, loudness-matched A/B, export in the three formats with metadata | MDN, MAS covered; export true peak within the ceiling on test signals; screens 8–10 |
+| **F9 Polish** | Settings, errors and empty states, shortcuts, accessibility, UI performance | UI-3 → UI-7, SET-1, NFR-3, NFR-5; screens 11, 13 |
+| **F10 Delivery** | `.app`/`.dmg` package, final independent review, README, validation guide | `make build` produces the package; `make reqs` with no gaps; `docs/app/VALIDATION.md` complete |
+| **F11 Reverb and parallel compression** (P-011) | Three reverb algorithms in place of the comb one, new parameters in the document with schema migration, compressor `mix`, engine and automation, updated design boards (screen 7, compressor panel) and their implementation, `docs/app/dsp.md` | FX-3, FX-5, FX-9 covered; stable render hash and block invariance with the new reverbs; `make bench` (NFR-1 with 4 reverbs); visual comparison with the design |
+| **F12 Structural AI mix** (P-011) | Measurement of doubles, `mix_plan` and `analysis` contracts version 3, validation and application of the structure, loop with stable structure, prompt and fake decider with the techniques, updated design boards (screens 3 and 4) and their implementation, package rebuilt, VALIDATION updated | ANA-18, AI-17 → AI-21 covered; full flow from `stemwise-cli` and in the app with the fake decider, with returns and groups created and undone in one step; client tested against the fake server with the v3 schema; independent review; `make reqs` with no gaps |
+| **F13 Mix state at a glance** (P-013) | Design boards (3e–3g, 7f–7h, C7, and the existing boards regenerated with the marks), then, **after the author approves the boards**: marks on headers and strips, sends per return with the label column, selection connections, Overview view; no change to core, engine and contracts | UI-8 → UI-11 covered; no timeline redraw tied to the playhead (A-064, A-065) and 60 fps with 32 tracks (NFR-3); visual comparison with the design; `make reqs` with no gaps |
+| **F14 Free master chain** (P-017) | Chain as a list of repeatable blocks with free order, clipper, multiband from two to six bands, mix and filter on the compressor detector, per-section offsets, project schema 3 with migration, `master_plan` v2 with per-block evaluation, rack and editor (boards 15a–15j), measured proposal applicable item by item, warning on a target that is too high | MAS-11 → MAS-15 covered; render identical at every processing block size; schema 2 projects opened with the same sound; flow with the fake decider; `make reqs` with no gaps |
+| **F15 Block-based track chain** (P-018) | Design boards for **all** the phases of P-018 (screen 16, updates to 3, 4 and 7, components), then, **after the author's approval**: track and group chain as a list, return chain, resonant filters, bypass fade, constant latency, project schema 4 with migration, rack inspector, marks and Overview on the list | FX-10 → FX-12, UI-12 covered; schema 3 projects opened with the same hash; render identical at every processing block size; no glitch when changing structure; visual comparison with the design |
+| **F16 New effects** (P-018) | The processors and editors of FX-13 → FX-23 (gate, de-esser, dynamic EQ, transient shaper, track clipper and multiband, saturation characters, exciter, bass enhancer, width, modulation, tremolo, harmonizer, doubler, shimmer, ping-pong and tape), automation of their parameters, `docs/app/dsp.md` | FX-13 → FX-24 covered; `make bench` with the FX-24 case; visual comparison with the design |
+| **F17 Creative ideas** (P-018) | ANA-19 measurements, `analysis` v4 and `mix_plan` v4, new blocks and offsets in the plan, ideas with validation and application, loop with ideas held fixed, prompt and fake decider with the new techniques, proposal with Creative ideas and switch, package rebuilt, VALIDATION updated | ANA-19, AI-25 → AI-27, UI-13 covered; full flow from `stemwise-cli` and in the app with the fake decider, with ideas applied and undone in one step; client tested against the fake server with the v4 schema; independent review; `make reqs` with no gaps |
+| **F18 Explain this mix** (P-019) | Boards of screen 17, then, **after the author's approval**: background measurement of levels (ANA-20), Explain view with map and rule-based text, glossary, text copy, ⌘E shortcut | ANA-20, UI-14 → UI-16 covered; Playwright flow on the fake backend; visual comparison with boards 17a–17j |
+| **F19 Guided tour** (P-020) | Boards of screen 18 (and the callout component), then, **after the author's approval**: demo project built and synthesized by the core, ephemeral session, tour commands between UI and core with the generated types, "shown" mark in the app data, tour with spotlight and callout and the fifteen steps, single app menu with Help (UI-20) and link in the Welcome, fake backend, self-test, VALIDATION | PRJ-9, UI-17 → UI-20 covered; same hash at every build of the demo project and no file left after closing; no network call and no cost recorded; Playwright on the fake backend (first launch, all steps forward and back, skip, repeat, minimum window, axe); tour self-test in the real app; PRJ-9 timings and cold start measured; visual comparison with the boards; `make reqs` with no gaps |
 
-F11 e F12 si eseguono dopo F10, in ordine, con le stesse regole di §9 (anche dove §9 e §11 parlano di "F10"
-come ultima fase). Le tavole di `design/` si aggiornano all'inizio di ciascuna fase, prima dell'interfaccia.
-F13 (P-013) e F15 (P-018) sono le fasi che **si fermano a metà**: consegnate le tavole, l'implementazione aspetta
-che l'autore le approvi. Le tavole di F15 coprono anche F16 e F17; approvate, F15 → F17 si eseguono di seguito.
-Anche F18 (P-019) e F19 (P-020) si fermano a metà per l'approvazione delle tavole.
+F11 and F12 run after F10, in order, with the same rules of §9 (even where §9 and §11 speak of "F10" as the last
+phase). The boards in `design/` are updated at the start of each phase, before the interface. F13 (P-013) and F15
+(P-018) are the phases that **stop halfway**: once the boards are delivered, the implementation waits for the author
+to approve them. The boards of F15 also cover F16 and F17; once approved, F15 → F17 run in sequence. F18 (P-019) and
+F19 (P-020) also stop halfway for the approval of the boards.
 
-### 8.2 Gate comune: `make check` (in `app/`)
+### 8.2 Common gate: `make check` (in `app/`)
 
-`cargo fmt --check` · `cargo clippy --all-targets -- -D warnings` · `cargo test --workspace` · gate licenze ·
-controllo dei tipi TypeScript · lint · `vitest` · Playwright sul backend finto · `make reqs` per le fasi chiuse · controllo del tetto di spazio (NFR-9).
-Nessun commit con il gate rosso. I benchmark girano con `make bench` al gate delle fasi che li citano.
+`cargo fmt --check` · `cargo clippy --all-targets -- -D warnings` · `cargo test --workspace` · license gate ·
+TypeScript type check · lint · `vitest` · Playwright on the fake backend · `make reqs` for closed phases · space
+cap check (NFR-9). No commit with the gate red. Benchmarks run with `make bench` at the gate of the phases that cite
+them.
 
-### 8.3 Tracciabilità dei requisiti
+### 8.3 Requirements traceability
 
-Ogni test cita gli id che verifica: in Rust con un commento di documentazione `/// req: ENG-4, AUT-4` sopra il
-test, in TypeScript con `// req: UI-5` sopra il caso. `make reqs` elenca gli id di §3 senza test; ogni id
-scoperto deve comparire in `docs/app/REQS-JUSTIFIED.md` con il motivo (per esempio: verificabile solo
-all'ascolto).
+Every test cites the ids it verifies: in Rust with a documentation comment `/// req: ENG-4, AUT-4` above the test,
+in TypeScript with `// req: UI-5` above the case. `make reqs` lists the ids of §3 without tests; every uncovered id
+must appear in `docs/app/REQS-JUSTIFIED.md` with the reason (for example: verifiable only by ear).
 
-### 8.4 Regole dei test
+### 8.4 Test rules
 
-- Nessun test usa la rete: il client OpenRouter si prova contro un server HTTP locale finto.
-- Nessun file audio nel repository: segnali sintetici con seme fisso, progetti di prova in cartelle temporanee.
-- Nessun test apre il dispositivo audio reale, tranne un test di fumo marcato `#[ignore]`, eseguito a mano al
-  gate di F3.
-- Tolleranze sempre esplicite e motivate.
+- No test uses the network: the OpenRouter client is tested against a fake local HTTP server.
+- No audio file in the repository: synthetic signals with a fixed seed, test projects in temporary folders.
+- No test opens the real audio device, except a smoke test marked `#[ignore]`, run by hand at the F3 gate.
+- Tolerances always explicit and motivated.
 
-### 8.5 Cosa resta all'autore dopo l'implementazione
+### 8.5 What is left to the author after the implementation
 
-L'agente non può ascoltare né usare una chiave reale. `docs/app/VALIDATION.md` elenca, con passi eseguibili:
-ascolto di un brano reale (click, glitch, qualità di compressore, riverbero, delay, saturazione, limiter);
-auto mix e revisione con il modello reale e lettura dei costi; master contro un riferimento; firma e
-notarizzazione; controprova su un brano diverso da "Confidence" (limite della PoC, M7). Con P-011 si aggiungono:
-ascolto dei tre algoritmi di riverbero su voce e batteria (code metalliche, modulazione udibile); ascolto in A/B
-di una proposta con struttura (ritorni dedicati, gruppo con compressione parallela, doppi aperti) contro la
-stessa senza; taratura delle soglie dei doppi su un brano con chitarre doppiate davvero. Con P-018: ascolto di
-ogni blocco nuovo su materiale vero (de-esser e gate soprattutto, harmonizer, doubler e shimmer per gli artefatti
-d'intonazione), e idee creative proposte dal modello vero su brani di generi diversi.
+The agent cannot listen or use a real key. `docs/app/VALIDATION.md` lists, with executable steps: listening to a
+real song (clicks, glitches, quality of compressor, reverb, delay, saturation, limiter); auto mix and revision with
+the real model and reading the costs; master against a reference; signing and notarization; a counter-test on a
+song other than "Confidence" (PoC limitation, M7). With P-011 are added: listening to the three reverb algorithms
+on voice and drums (metallic tails, audible modulation); A/B listening of a proposal with structure (dedicated
+returns, group with parallel compression, open doubles) against the same without; tuning of the doubles thresholds
+on a song with really doubled guitars. With P-018: listening to every new block on real material (de-esser and gate
+above all, harmonizer, doubler and shimmer for pitch artifacts), and creative ideas proposed by the real model on
+songs of different genres.
 
-## 9. Regole per gli agenti
+## 9. Rules for agents
 
-Valgono per la sessione di implementazione e sono riportate in `CLAUDE.md`.
+They apply to the implementation session and are reproduced in `CLAUDE.md`.
 
-**Autonomia**
+**Autonomy**
 
-1. Dopo il controllo preliminare (§11), l'agente **non si ferma e non fa domande** fino al completamento di F10.
-2. Un'ambiguità si risolve scegliendo l'opzione più coerente con questo documento, nell'ordine: principi (§1),
-   requisiti (§3), architettura (§5), design. La scelta si registra in `docs/app/DECISIONS.md` (id `A-nnn`,
-   contesto, alternative, scelta, motivo) e si prosegue.
-3. Un ostacolo tecnico (una libreria che non fa ciò che serve, un test che non si riesce a rendere verde) si
-   affronta con al più tre approcci diversi; poi si sceglie il ripiego che conserva il requisito, oppure si
-   degrada il requisito al minimo utile, lo si registra tra le "Riserve" in `docs/app/PROGRESS.md` e si prosegue.
-   Non si aggira mai un gate indebolendo un test.
-4. Le uniche ragioni per fermarsi: un'azione distruttiva o irreversibile fuori dal repository, la necessità di un
-   segreto, oppure un conflitto con i principi P1–P6 che nessuna alternativa risolve.
+1. After the preliminary check (§11), the agent **does not stop and does not ask questions** until F10 is complete.
+2. An ambiguity is resolved by choosing the option most consistent with this document, in this order: principles
+   (§1), requirements (§3), architecture (§5), design. The choice is recorded in `docs/app/DECISIONS.md` (id
+   `A-nnn`, context, alternatives, choice, reason) and work continues.
+3. A technical obstacle (a library that does not do what is needed, a test that cannot be made green) is tackled
+   with at most three different approaches; then either the fallback that preserves the requirement is chosen, or
+   the requirement is degraded to the useful minimum, recorded among the "Caveats" in `docs/app/PROGRESS.md`, and
+   work continues. A gate is never bypassed by weakening a test.
+4. The only reasons to stop: a destructive or irreversible action outside the repository, the need for a secret, or
+   a conflict with principles P1–P6 that no alternative resolves.
 
-**Confini**
+**Boundaries**
 
-5. Niente fuori scope (§2, colonna destra).
-6. La PoC è in sola lettura: ciò che sta sotto `poc/` non si modifica. La si esegue solo per generare l'oracolo.
-7. Nuove dipendenze ammesse senza chiedere, se la licenza è tra quelle di NFR-6 e la libreria è mantenuta;
-   ciascuna si annota in `docs/app/DECISIONS.md`. Nessuna dipendenza GPL/LGPL/AGPL, nemmeno di sviluppo se
-   finisce nel pacchetto.
-8. Segreti: l'agente non legge `.env`, non chiede né usa chiavi, non fa chiamate a modelli reali.
-9. Git: lavoro sul ramo `product/v1`; commit piccoli col prefisso di fase (`F3: add automation ramps (AUT-4)`);
-   un tag locale per fase chiusa (`f3`). Mai `push`, `merge` su `main`, `reset --hard`, `rebase`.
-10. Lingua: codice, commenti, messaggi e interfaccia in inglese; documenti in `docs/` in italiano.
+5. Nothing out of scope (§2, right column).
+6. The PoC is read-only: what lies under `poc/` is not modified. It is run only to generate the oracle.
+7. New dependencies are allowed without asking, if the license is among those of NFR-6 and the library is
+   maintained; each one is noted in `docs/app/DECISIONS.md`. No GPL/LGPL/AGPL dependency, not even a development one
+   if it ends up in the package.
+8. Secrets: the agent does not read `.env`, does not ask for or use keys, does not make calls to real models.
+9. Git: work on the `product/v1` branch; small commits with the phase prefix (`F3: add automation ramps (AUT-4)`);
+   one local tag per closed phase (`f3`). Never `push`, `merge` into `main`, `reset --hard`, `rebase`.
+10. Language: everything in the repository is in English — code, comments, messages, interface, documents in `docs/`,
+    `design/` and `poc/`, decisions, progress, commits, issues and pull requests (A-105). Only `rationale` and
+    `summary` follow the language of the brief (AI-13).
 
-**Coordinamento e subagenti**
+**Coordination and subagents**
 
-11. L'agente principale è l'orchestratore: possiede architettura, contratti tra moduli, integrazione, gate e
-    decisioni. Organizza il lavoro come ritiene meglio.
-12. **Si delega per ridurre i costi, non per principio.** Conviene delegare a un subagente su un modello più
-    economico (`app-implementer`) quando il compito è insieme: delimitato (un modulo o pochi file), specificato
-    da un contratto già scritto (firma, requisiti, test o fixture attesi) e verificabile da un comando. Esempi:
-    il port di una misura con il suo fixture dell'oracolo; un processore DSP con le sue proprietà; un componente
-    dell'interfaccia a partire dalla sua tavola; una serie di test da una tabella di casi.
-13. **Non si delega** quando: il brief costerebbe quanto il lavoro; servono decisioni di architettura o un
-    contesto ampio; il compito tocca file che altri stanno modificando; l'integrazione tra moduli; meno di una
-    manciata di chiamate a strumenti. Per le ricerche ampie nel codice si usa il subagente di sola lettura più
-    economico.
-14. Lavori in parallelo solo su insiemi di file disgiunti; due agenti non scrivono mai gli stessi file. Ogni
-    brief nomina file, contratto, comando di verifica e ciò che non va toccato.
-15. Il risultato di un subagente non è una prova: l'orchestratore riesegue il comando di verifica e legge il
-    diff prima di integrare. Un subagente che fallisce due volte lo stesso compito non si rilancia: il lavoro
-    torna all'orchestratore.
-16. Una **revisione indipendente** (`app-reviewer`, contesto nuovo, sola lettura) si fa alla chiusura di F3, F5,
-    F8 e F10, non a ogni fase: serve alla qualità, e il suo costo si giustifica solo su ciò che è rischioso
-    (tempo reale, contratti AI, master, consegna). I rilievi fondati si correggono prima di chiudere la fase.
-17. A ogni chiusura di fase l'orchestratore aggiorna `docs/app/PROGRESS.md` (stato, gate, riserve) in modo che
-    il lavoro sia riprendibile da una sessione nuova senza altra memoria.
+11. The main agent is the orchestrator: it owns architecture, contracts between modules, integration, gates and
+    decisions. It organizes the work as it sees fit.
+12. **Delegate to reduce costs, not on principle.** It pays to delegate to a subagent on a cheaper model
+    (`app-implementer`) when the task is all of: bounded (one module or a few files), specified by an already
+    written contract (signature, requirements, expected tests or fixtures) and verifiable by a command. Examples:
+    the port of a measurement with its oracle fixture; a DSP processor with its properties; an interface component
+    from its board; a series of tests from a table of cases.
+13. **Do not delegate** when: the brief would cost as much as the work; architecture decisions or broad context are
+    needed; the task touches files that others are modifying; module integration; fewer than a handful of tool
+    calls. For broad searches in the code, use the cheaper read-only subagent.
+14. Work in parallel only on disjoint sets of files; two agents never write the same files. Every brief names
+    files, contract, verification command and what must not be touched.
+15. A subagent's result is not proof: the orchestrator reruns the verification command and reads the diff before
+    integrating. A subagent that fails the same task twice is not relaunched: the work returns to the orchestrator.
+16. An **independent review** (`app-reviewer`, fresh context, read-only) is done at the close of F3, F5, F8 and F10,
+    not at every phase: it serves quality, and its cost is justified only on what is risky (real time, AI
+    contracts, master, delivery). Well-founded findings are fixed before closing the phase.
+17. At every phase close the orchestrator updates `docs/app/PROGRESS.md` (status, gate, caveats) so that the work
+    can be resumed from a new session without any other memory.
 
-**Spazio su disco**
+**Disk space**
 
-18. **Prevenzione, impostata in F0.** Una sola cartella di build per tutto il workspace (`app/target`), usata
-    anche dai subagenti e dalla build di Tauri: nessun `CARGO_TARGET_DIR` alternativo, nessuna copia del
-    repository o worktree con una propria `target`. Profili di sviluppo e di test con informazioni di debug
-    ridotte (`debug = "line-tables-only"`) e senza compilazione incrementale per le dipendenze; un solo
-    `node_modules` (store di pnpm fuori dal repository); i test scrivono solo in cartelle temporanee che
-    eliminano alla fine, anche quando falliscono; nessun file audio renderizzato resta su disco dopo un test.
-19. **Misura.** `make disk` riporta l'occupazione del repository e delle sue cartelle principali (`app/target`
-    per profilo, `node_modules`, pacchetti prodotti, rapporti dei test, cartelle temporanee dei test). Si esegue
-    a ogni chiusura di fase, dopo ogni `make build` o `make bench`, e comunque almeno ogni due ore di lavoro; il
-    valore si annota in `docs/app/PROGRESS.md`.
-20. **Pulizia.** Soglia di attenzione **10 GB**: `make clean-stale` elimina ciò che non serve più (cache
-    incrementali, artefatti di profili non in uso, build di versioni superate delle dipendenze, pacchetti
-    `.app`/`.dmg` precedenti, rapporti e tracce di Playwright, cartelle temporanee rimaste, worktree e rami
-    locali dei subagenti già integrati). Tetto **20 GB** (NFR-9): `cargo clean` completo e ricostruzione del
-    solo profilo in uso; `make check` fallisce sopra il tetto. La pulizia tocca **solo file ignorati da git
-    dentro il repository** e le cartelle temporanee create dai test: mai file tracciati, mai `local/`, mai
-    nulla fuori dal repository. Queste eliminazioni sono pre-autorizzate e non richiedono conferma.
+18. **Prevention, set up in F0.** A single build folder for the whole workspace (`app/target`), used also by
+    subagents and by the Tauri build: no alternative `CARGO_TARGET_DIR`, no copy of the repository or worktree with
+    its own `target`. Development and test profiles with reduced debug information
+    (`debug = "line-tables-only"`) and without incremental compilation for dependencies; a single `node_modules`
+    (pnpm store outside the repository); tests write only to temporary folders that they delete at the end, even
+    when they fail; no rendered audio file remains on disk after a test.
+19. **Measurement.** `make disk` reports the usage of the repository and its main folders (`app/target` per
+    profile, `node_modules`, produced packages, test reports, test temporary folders). It is run at every phase
+    close, after every `make build` or `make bench`, and in any case at least every two hours of work; the value is
+    noted in `docs/app/PROGRESS.md`.
+20. **Cleanup.** Attention threshold **10 GB**: `make clean-stale` deletes what is no longer needed (incremental
+    caches, artifacts of unused profiles, builds of superseded dependency versions, previous `.app`/`.dmg`
+    packages, Playwright reports and traces, leftover temporary folders, worktrees and local branches of subagents
+    already integrated). Cap **20 GB** (NFR-9): full `cargo clean` and rebuild of only the profile in use;
+    `make check` fails above the cap. Cleanup touches **only git-ignored files inside the repository** and the
+    temporary folders created by tests: never tracked files, never `local/`, never anything outside the repository.
+    These deletions are pre-authorized and need no confirmation.
 
 ---
 
-## 10. Prompt della sessione di design
+## 10. Design session prompt
 
-Da incollare in una nuova sessione di Claude Desktop (canvas), **allegando questo file** (`FOUNDATION.md`).
-
-````text
-Sei il designer di prodotto di Stemwise, una DAW desktop per mixare e masterizzare brani già registrati con
-l'assistenza di un modello AI. Il documento allegato (FOUNDATION.md) è la specifica: leggi per intero le sezioni
-1, 2, 3 e 6 prima di disegnare. La sezione 6 è l'inventario vincolante di schermate, stati e componenti; la
-sezione 7 descrive cosa devi consegnare.
-
-Il lavoro ha due tempi e una sola pausa.
-
-TEMPO 1 — Quattro direzioni visive
-Proponi 4 direzioni visive e creative nettamente diverse tra loro (non quattro varianti di colore della stessa
-idea). Per ciascuna mostra sul canvas:
-- un nome e tre righe sul concetto e su quale utente fa sentire a casa;
-- la schermata "Mix workspace" completa a 1440×900 con contenuto realistico (12 tracce con ruoli veri, forme
-  d'onda, sezioni del brano, una corsia di automazione aperta, mixer, inspector con EQ, pannello AI con una
-  motivazione);
-- un estratto del "Master workspace" che mostri come la direzione distingue le due fasi;
-- palette, tipografia e i componenti chiave (fader, knob, meter, clip, pulsante primario).
-Poi fermati e chiedimi quale direzione scelgo. È l'unica domanda che puoi farmi in tutta la sessione.
-
-TEMPO 2 — Tutto il resto, senza interruzioni
-Dopo la mia scelta, disegna tutte le schermate, gli stati e i componenti della sezione 6, nell'ordine in cui
-sono elencati, senza fermarti e senza chiedermi altro. Se un punto è ambiguo, decidi tu nel modo più coerente
-con la direzione scelta e con la specifica, e annota la decisione nell'indice finale. Non considerare finito il
-lavoro finché ogni voce della sezione 6 non ha la sua tavola: alla fine verifica l'elenco voce per voce.
-
-Vincoli di prodotto
-- Mix e Master sono due fasi distinte: devono riconoscersi a colpo d'occhio (colore d'accento, disposizione,
-  densità), con un selettore di fase sempre visibile. Il passaggio dal mix al master è un momento esplicito.
-- L'AI è un assistente, non un pilota automatico: le sue proposte si leggono, si ascoltano in A/B, si accettano
-  in tutto o in parte, e ogni scelta ha una motivazione visibile. Niente estetica da chatbot generico: le
-  richieste a parole vivono dentro lo strumento.
-- Chi usa l'app non è un fonico: la densità deve restare leggibile, i controlli avanzati non devono intimidire.
-  Ma deve sembrare uno strumento audio serio, non un giocattolo.
-- Si lavora per ore, spesso in ambienti poco illuminati: il contrasto dev'essere riposante, i meter e lo stato
-  di riproduzione leggibili con la coda dell'occhio. Testo e stati con contrasto almeno AA.
-- Ogni controllo ha gli stati: normale, hover, attivo, focus da tastiera, disabilitato e, dove ha senso,
-  automatizzato e bloccato dall'utente (lock per l'AI).
-- I colori delle tracce sono una palette di almeno 12 tinte distinguibili che funziona su clip, strip e
-  intestazioni.
-- Interfaccia in inglese. Nessuna imitazione dell'aspetto di DAW esistenti: l'identità dev'essere propria.
-
-Vincoli di implementazione (l'interfaccia sarà React + CSS dentro una webview; timeline, forme d'onda, meter e
-curve saranno disegnati su canvas)
-- Finestra minima 1280×720, riferimento 1440×900, fluida fino a 4K: indica cosa si ridimensiona, cosa si
-  richiude e in che ordine.
-- Solo font con licenza che ne consente l'inclusione in un'app distribuita (OFL o equivalente), al massimo due
-  famiglie, con cifre tabulari per i valori numerici. Icone da un set con licenza MIT/ISC oppure disegnate da te
-  come SVG.
-- Effetti realizzabili in CSS senza costi di rendering continui: niente sfocature animate o ombre pesanti su
-  elementi che si muovono a 60 fps.
-- Tutte le misure derivano da token: nessun valore isolato nelle tavole.
-
-Consegna (sezione 7 del documento)
-- tokens.css: tutti i token come variabili CSS (colori, tipografia, spaziatura, raggi, ombre, durate e curve di
-  animazione, palette delle tracce, accenti delle due fasi).
-- Una tavola per ogni schermata e stato della sezione 6, in HTML/CSS autosufficiente che usa quei token.
-- Il foglio dei componenti con tutti gli stati.
-- README.md: direzione scelta, principi, indice delle tavole con il nome di ogni file, comportamenti non
-  deducibili dalle tavole (resize, animazioni, trascinamenti, densità), decisioni prese in autonomia.
-Organizza i file come design/README.md, design/tokens.css, design/screens/, design/components/. Se hai accesso
-alla cartella del progetto, scrivili lì; altrimenti rendili scaricabili con quei nomi.
-````
-
-## 11. Prompt della sessione di implementazione
-
-Da incollare in una nuova sessione di Claude Code aperta su questo repository, **dopo** che `design/` è stata
-popolata. `.claude/settings.json` autorizza già i comandi di sviluppo (`make`, `cargo`, `pnpm`, `node`, `uv run`,
-i comandi git di lavoro); per i casi non coperti conviene avviarla con una modalità di permessi che non chieda
-conferme a ogni comando.
+To paste into a new Claude Desktop session (canvas), **attaching this file** (`FOUNDATION.md`).
 
 ````text
-Devi implementare Stemwise dall'inizio alla fine, in autonomia, seguendo docs/FOUNDATION.md, che è la fonte di
-verità del prodotto. Leggilo per intero prima di qualunque altra cosa, poi leggi CLAUDE.md, docs/app/PROGRESS.md
-e docs/app/DECISIONS.md, e design/README.md con design/tokens.css.
+You are the product designer of Stemwise, a desktop DAW for mixing and mastering already-recorded songs with the
+assistance of an AI model. The attached document (FOUNDATION.md) is the specification: read sections 1, 2, 3 and 6
+in full before designing. Section 6 is the binding inventory of screens, states and components; section 7
+describes what you must deliver.
 
-CONTROLLO PRELIMINARE — l'unico momento in cui puoi farmi domande
-Prima di scrivere codice verifica e riferiscimi in un solo messaggio:
-1. che design/README.md e design/tokens.css esistano e che ogni schermata della sezione 6 di FOUNDATION.md abbia
-   la sua tavola (elenca quelle mancanti);
-2. che gli strumenti necessari siano installati (rustc, cargo, node, pnpm, Xcode command line tools, uv per
-   l'oracolo della PoC) e ciò che eventualmente manca;
-3. le contraddizioni o i vuoti che hai trovato tra FOUNDATION.md e il design e che non puoi risolvere con le
-   regole della sezione 9: per ciascuno proponi la tua scelta.
-Se non c'è nulla che blocchi, dichiaralo e parti subito senza aspettare risposta. Se qualcosa blocca davvero
-(design assente, strumento mancante che non puoi installare), fermati qui e chiedi: è l'unica pausa ammessa.
+The work has two phases and a single pause.
 
-ESECUZIONE — senza interruzioni fino al termine di F10
-- Lavora sul ramo product/v1. Esegui le fasi F0 → F10 della sezione 8.1 nell'ordine, una dopo l'altra, senza
-  chiedermi conferme, approvazioni o chiarimenti tra una fase e l'altra. Una fase è chiusa solo quando il suo
-  gate è verde.
-- Applica le regole della sezione 9. In particolare: le ambiguità le risolvi tu e le registri in
-  docs/app/DECISIONS.md; gli ostacoli li affronti con approcci alternativi e, se serve, con un ripiego
-  registrato tra le riserve; non indebolisci mai un test per far passare un gate.
-- Coordina il lavoro come ritieni meglio. Delega ai subagenti solo quando riduce i costi (regole 11–17): compiti
-  delimitati, con contratto e verifica già scritti, al subagente app-implementer; ricerche ampie al subagente di
-  sola lettura; revisione indipendente con app-reviewer alla chiusura di F3, F5, F8 e F10. Verifica sempre tu il
-  risultato di un subagente prima di integrarlo.
-- A ogni fase chiusa: aggiorna docs/app/PROGRESS.md, fai il commit, metti il tag locale della fase, e prosegui
-  con la successiva nello stesso turno. Lo stato deve stare nei file, non nella conversazione: se il contesto
-  viene compattato, rileggi FOUNDATION.md, PROGRESS.md e DECISIONS.md e riprendi dal primo passo non concluso.
-- Tieni sotto controllo lo spazio su disco (regole 18–20): una sola cartella di build, make disk a ogni fase e
-  dopo ogni build o benchmark, make clean-stale sopra i 10 GB, mai oltre i 20 GB.
-- Non usare la rete se non per scaricare dipendenze. Non leggere .env, non usare chiavi, non chiamare modelli
-  reali: l'AI si sviluppa e si prova con il decisore finto e con un server HTTP locale finto.
-- Non fare push, non fare merge su main, non modificare la PoC.
+PHASE 1 — Four visual directions
+Propose 4 visual and creative directions that are clearly different from one another (not four color variants of
+the same idea). For each one show on the canvas:
+- a name and three lines on the concept and on which user it makes feel at home;
+- the complete "Mix workspace" screen at 1440×900 with realistic content (12 tracks with real roles, waveforms,
+  song sections, one open automation lane, mixer, inspector with EQ, AI panel with a rationale);
+- an excerpt of the "Master workspace" showing how the direction distinguishes the two phases;
+- palette, typography and the key components (fader, knob, meter, clip, primary button).
+Then stop and ask me which direction I choose. It is the only question you may ask me in the whole session.
 
-VERIFICA DI CIÒ CHE COSTRUISCI
-- Motore, DSP, analisi e AI: test automatici su segnali sintetici, parità con l'oracolo della PoC, flussi
-  completi da stemwise-cli.
-- Interfaccia: test Playwright sul backend finto e confronto a vista di ogni schermata con la sua tavola in
-  design/screens (apri l'UI nel browser, guarda il risultato, correggi le differenze). Avvia anche l'app Tauri
-  vera e verifica che i flussi principali funzionino con il motore reale.
-- Non dichiarare finita una cosa che non hai eseguito. Ciò che non puoi verificare (l'ascolto, il modello reale,
-  la firma) va elencato in docs/app/VALIDATION.md con i passi che dovrò eseguire io.
+PHASE 2 — Everything else, without interruptions
+After my choice, design all the screens, states and components of section 6, in the order in which they are listed,
+without stopping and without asking me anything else. If a point is ambiguous, decide yourself in the way most
+consistent with the chosen direction and with the specification, and note the decision in the final index. Do not
+consider the work finished until every item in section 6 has its board: at the end check the list item by item.
 
-TERMINE
-Hai finito quando F10 è chiusa: make check verde, make reqs senza buchi non giustificati, pacchetto .app/.dmg
-prodotto, revisione finale fatta e rilievi corretti, PROGRESS.md e VALIDATION.md completi. Solo allora scrivimi
-un rapporto finale: cosa funziona e come l'hai verificato, le riserve, le decisioni prese in autonomia più
-rilevanti, cosa devo validare io e in che ordine.
+Product constraints
+- Mix and Master are two distinct phases: they must be recognizable at a glance (accent color, layout, density),
+  with a phase selector always visible. The passage from mix to master is an explicit moment.
+- The AI is an assistant, not an autopilot: its proposals are read, listened to in A/B, accepted in whole or in
+  part, and every choice has a visible rationale. No generic chatbot aesthetic: requests in words live inside the
+  instrument.
+- The person using the app is not a sound engineer: density must stay readable, advanced controls must not
+  intimidate. But it must look like a serious audio instrument, not a toy.
+- People work for hours, often in dimly lit environments: contrast must be restful, meters and playback state
+  readable out of the corner of the eye. Text and states with at least AA contrast.
+- Every control has its states: normal, hover, active, keyboard focus, disabled and, where it makes sense,
+  automated and locked by the user (lock for the AI).
+- Track colors are a palette of at least 12 distinguishable hues that works on clips, strips and headers.
+- Interface in English. No imitation of the look of existing DAWs: the identity must be its own.
+
+Implementation constraints (the interface will be React + CSS inside a webview; timeline, waveforms, meters and
+curves will be drawn on canvas)
+- Minimum window 1280×720, reference 1440×900, fluid up to 4K: state what resizes, what collapses and in which
+  order.
+- Only fonts whose license allows inclusion in a distributed app (OFL or equivalent), at most two families, with
+  tabular figures for numeric values. Icons from a set with an MIT/ISC license or drawn by you as SVG.
+- Effects achievable in CSS without continuous rendering costs: no animated blurs or heavy shadows on elements that
+  move at 60 fps.
+- All measurements derive from tokens: no isolated values in the boards.
+
+Delivery (section 7 of the document)
+- tokens.css: all tokens as CSS variables (colors, typography, spacing, radii, shadows, durations and animation
+  curves, track palette, accents of the two phases).
+- One board for every screen and state of section 6, in self-contained HTML/CSS that uses those tokens.
+- The component sheet with all states.
+- README.md: chosen direction, principles, index of the boards with the name of every file, behaviors that cannot be
+  deduced from the boards (resize, animations, drags, density), decisions taken autonomously.
+Organize the files as design/README.md, design/tokens.css, design/screens/, design/components/. If you have access
+to the project folder, write them there; otherwise make them downloadable with those names.
 ````
 
-## 12. Rischi
+## 11. Implementation session prompt
 
-| Rischio | Effetto | Contromisura |
+To paste into a new Claude Code session opened on this repository, **after** `design/` has been populated.
+`.claude/settings.json` already authorizes the development commands (`make`, `cargo`, `pnpm`, `node`, `uv run`, the
+working git commands); for cases not covered it is advisable to start it with a permissions mode that does not ask
+for confirmation on every command.
+
+````text
+You must implement Stemwise from start to finish, autonomously, following docs/FOUNDATION.md, which is the source of
+truth of the product. Read it in full before anything else, then read CLAUDE.md, docs/app/PROGRESS.md and
+docs/app/DECISIONS.md, and design/README.md with design/tokens.css.
+
+PRELIMINARY CHECK — the only moment in which you may ask me questions
+Before writing code verify and report to me in a single message:
+1. that design/README.md and design/tokens.css exist and that every screen of section 6 of FOUNDATION.md has its
+   board (list the missing ones);
+2. that the necessary tools are installed (rustc, cargo, node, pnpm, Xcode command line tools, uv for the PoC
+   oracle) and what, if anything, is missing;
+3. the contradictions or gaps you found between FOUNDATION.md and the design that you cannot resolve with the rules
+   of section 9: for each one propose your choice.
+If nothing blocks, say so and start right away without waiting for an answer. If something really blocks (design
+missing, a missing tool you cannot install), stop here and ask: it is the only pause allowed.
+
+EXECUTION — without interruptions until the end of F10
+- Work on the product/v1 branch. Execute phases F0 → F10 of section 8.1 in order, one after the other, without
+  asking me for confirmations, approvals or clarifications between one phase and the next. A phase is closed only
+  when its gate is green.
+- Apply the rules of section 9. In particular: you resolve ambiguities yourself and record them in
+  docs/app/DECISIONS.md; you tackle obstacles with alternative approaches and, if needed, with a fallback recorded
+  among the caveats; you never weaken a test to pass a gate.
+- Coordinate the work as you see fit. Delegate to subagents only when it reduces costs (rules 11–17): bounded
+  tasks, with contract and verification already written, to the app-implementer subagent; broad searches to the
+  read-only subagent; independent review with app-reviewer at the close of F3, F5, F8 and F10. Always verify a
+  subagent's result yourself before integrating it.
+- At every closed phase: update docs/app/PROGRESS.md, commit, put the local tag of the phase, and proceed with the
+  next one in the same turn. State must live in the files, not in the conversation: if the context is compacted,
+  reread FOUNDATION.md, PROGRESS.md and DECISIONS.md and resume from the first unfinished step.
+- Keep disk space under control (rules 18–20): a single build folder, make disk at every phase and after every
+  build or benchmark, make clean-stale above 10 GB, never beyond 20 GB.
+- Do not use the network except to download dependencies. Do not read .env, do not use keys, do not call real
+  models: the AI is developed and tested with the fake decider and with a fake local HTTP server.
+- Do not push, do not merge into main, do not modify the PoC.
+
+VERIFICATION OF WHAT YOU BUILD
+- Engine, DSP, analysis and AI: automated tests on synthetic signals, parity with the PoC oracle, full flows from
+  stemwise-cli.
+- Interface: Playwright tests on the fake backend and visual comparison of every screen with its board in
+  design/screens (open the UI in the browser, look at the result, fix the differences). Also start the real Tauri
+  app and verify that the main flows work with the real engine.
+- Do not declare finished something you have not executed. What you cannot verify (listening, the real model,
+  signing) must be listed in docs/app/VALIDATION.md with the steps I will have to perform.
+
+END
+You are done when F10 is closed: make check green, make reqs with no unjustified gaps, .app/.dmg package produced,
+final review done and findings fixed, PROGRESS.md and VALIDATION.md complete. Only then write me a final report:
+what works and how you verified it, the caveats, the most relevant decisions taken autonomously, what I must
+validate and in which order.
+````
+
+## 12. Risks
+
+| Risk | Effect | Countermeasure |
 | --- | --- | --- |
-| DSP proprio di qualità inferiore alla PoC (compressore, riverbero, limiter) | Mix e master meno rifiniti | Proprietà verificate dai test, algoritmi noti e documentati in `docs/app/dsp.md`, ascolto finale dell'autore come primo punto di `VALIDATION.md` |
-| Sessione autonoma molto lunga: deriva o perdita di contesto | Lavoro incoerente o ripetuto | Stato nei file (regola 17), gate per fase, tag per fase, revisione indipendente nei punti rischiosi |
-| Glitch audio non rilevabili dai test | Click o dropout all'ascolto | Stesso codice per riproduzione e render, test di allocazione, benchmark, fetta verticale già in F3 |
-| Fedeltà al design non verificabile al pixel | Interfaccia approssimativa | Token condivisi, backend finto nel browser, confronto a vista schermata per schermata |
-| Il prompt con sezioni e famiglie supera il budget di token o confonde il modello | Costo o piani peggiori | Tetto ANA-13 verificato da un test; misura dei costi reali nella validazione dell'autore |
-| La PoC è stata convalidata su un solo brano | Generalità non dimostrata | Controprova su un brano diverso nella validazione dell'autore (§8.5) |
-| Gli artefatti di build e di test fanno crescere il repository senza limite | Disco saturo, sessione bloccata | Regole 18–20, `make disk` e `make clean-stale` da F0, tetto verificato da `make check` |
-| Il routing strutturato e l'automazione estesa allargano il motore | F3 più lunga e più fragile | Grafo aciclico calcolato fuori dal thread audio, test di proprietà sul routing, revisione indipendente a F3 |
-| Prestazioni della webview con molte tracce | Scatti durante la riproduzione | Canvas, piramidi di picchi, canale binario; NFR-3 misurato in F9, WebGL come ripiego |
-| Il riverbero nuovo rispetta le proprietà ma non convince all'ascolto | Più ritorni senza un guadagno reale | Algoritmi pubblicati e noti (Dattorro, FDN), proprietà di FX-9, ascolto dell'autore prima di chiudere il giudizio su F12 |
-| Il modello abusa della struttura (ritorni e gruppi inutili) o il ciclo non sa giudicarla: la distanza spettrale non la vede | Mix più complicati, non migliori | Tetti per proposta, struttura decisa una volta sola (AI-19), elementi inutili scartati dalla validazione, interruttore AI-18, righe proprie nella proposta con A/B |
-| Falsi doppi: due parti diverse con lo stesso ruolo scambiate per una coppia | Pan sbagliati | Più misure insieme in ANA-18, soglie prudenti e tarate dall'autore; resta una proposta, visibile e scartabile per traccia |
+| Own DSP of lower quality than the PoC (compressor, reverb, limiter) | Less polished mix and master | Properties verified by tests, known algorithms documented in `docs/app/dsp.md`, the author's final listening as the first item of `VALIDATION.md` |
+| Very long autonomous session: drift or loss of context | Inconsistent or repeated work | State in files (rule 17), a gate per phase, a tag per phase, independent review at the risky points |
+| Audio glitches not detectable by tests | Clicks or dropouts when listening | Same code for playback and render, allocation test, benchmarks, vertical slice already in F3 |
+| Fidelity to the design not verifiable to the pixel | Approximate interface | Shared tokens, fake backend in the browser, visual comparison screen by screen |
+| The prompt with sections and families exceeds the token budget or confuses the model | Cost or worse plans | ANA-13 ceiling verified by a test; measurement of real costs in the author's validation |
+| The PoC was validated on a single song | Generality not demonstrated | Counter-test on a different song in the author's validation (§8.5) |
+| Build and test artifacts make the repository grow without limit | Disk full, session blocked | Rules 18–20, `make disk` and `make clean-stale` from F0, cap verified by `make check` |
+| Structured routing and extended automation widen the engine | F3 longer and more fragile | Acyclic graph computed off the audio thread, property tests on routing, independent review at F3 |
+| WebView performance with many tracks | Stutter during playback | Canvas, peak pyramids, binary channel; NFR-3 measured in F9, WebGL as a fallback |
+| The new reverb meets the properties but does not convince by ear | More returns without a real gain | Published and known algorithms (Dattorro, FDN), FX-9 properties, the author's listening before closing the judgment on F12 |
+| The model abuses structure (useless returns and groups) or the loop cannot judge it: spectral distance does not see it | More complicated, not better, mixes | Caps per proposal, structure decided only once (AI-19), useless elements discarded by validation, AI-18 switch, rows of their own in the proposal with A/B |
+| False doubles: two different parts with the same role mistaken for a pair | Wrong pans | Several measurements together in ANA-18, cautious thresholds tuned by the author; it remains a proposal, visible and discardable per track |

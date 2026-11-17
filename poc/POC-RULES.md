@@ -1,105 +1,105 @@
 # CLAUDE.md — stemwise
 
-PoC di un engine Python, guidato da CLI, che fa decidere a un modello linguistico i parametri di mix
-partendo **solo da misure numeriche** degli stem. La specifica completa è in [docs/PRD.md](docs/PRD.md):
-è la fonte di verità su requisiti, contratti dati, milestone e criteri di accettazione. In caso di
-conflitto tra questo file e il PRD, vince il PRD; segnala il conflitto all'autore.
+PoC of a Python engine, driven from the CLI, in which a language model decides the mix parameters starting **only from
+numeric measurements** of the stems. The complete specification is in [docs/PRD.md](docs/PRD.md): it is the source of truth
+for requirements, data contracts, milestones and acceptance criteria. In case of conflict between this file and the PRD,
+the PRD wins; report the conflict to the author.
 
-Nome del pacchetto e del comando: **`stemwise`** (D-006). Dove il PRD scrive `mixpoc` (nome provvisorio)
-si intende `stemwise`: modulo `src/stemwise/`, comando `stemwise <analyze|mix|revise|master|report|ab>`.
+Package and command name: **`stemwise`** (D-006). Where the PRD writes `mixpoc` (provisional name), read `stemwise`: module
+`src/stemwise/`, command `stemwise <analyze|mix|revise|master|report|ab>`.
 
-Stato corrente delle milestone (leggilo sempre a inizio sessione):
+Current milestone status (always read it at the start of a session):
 
 @docs/PROGRESS.md
 
-## Principi non negoziabili (PRD §1, §7)
+## Non-negotiable principles (PRD §1, §7)
 
-- **Il modello non riceve mai audio.** Al modello vanno solo misure, id e ruoli degli stem, brief.
-- **Il piano di mix è l'unica sorgente di verità.** Stesso piano + stessi stem ⇒ stesso file (stesso hash).
-- **Ogni scelta è spiegata** (`rationale` per stem, `summary` per il piano).
-- **Funzioni pure**: analisi, render e valutazione senza stato globale, testabili con array numpy in memoria.
-- **Engine senza terminale**: niente `input()` né prompt interattivi; la CLI (`typer`) è un involucro sottile
-  sopra funzioni che accettano percorsi e restituiscono dati.
-- **Contratti neutri**: i JSON di scambio non contengono nomi di librerie né oggetti serializzati. Gli schemi
-  nascono come modelli Pydantic e vengono esportati in `schemas/` a ogni modifica.
-- **Formule esplicite**: ogni misura di analisi è documentata in `docs/analysis.md` (formula, finestra,
-  STFT size/hop, limiti di banda, soglie, versione dell'algoritmo).
-- **Determinismo**: nessuna casualità non seminata, nessuna dipendenza dall'ora nel contenuto dei file audio.
-- **Vincoli tecnici sempre validi**: mix ≤ −3 dBTP senza limiter; render deterministico.
-- **Lingua**: codice, commenti, docstring e messaggi CLI in **inglese**. Il campo `rationale` nella lingua del
-  brief. Documentazione di processo (`docs/`, report di milestone) e comunicazione con l'autore in **italiano**.
-- **Segreti**: la chiave è in `OPENROUTER_API_KEY` (env / `.env`, mai committato, mai letto dall'agente).
-- Un run non modifica mai `stems/` e `references/` e non sovrascrive run precedenti.
+- **The model never receives audio.** Only measurements, stem ids and roles, and the brief go to the model.
+- **The mix plan is the only source of truth.** Same plan + same stems ⇒ same file (same hash).
+- **Every choice is explained** (`rationale` per stem, `summary` for the plan).
+- **Pure functions**: analysis, render and evaluation without global state, testable with numpy arrays in memory.
+- **Engine without a terminal**: no `input()` and no interactive prompts; the CLI (`typer`) is a thin wrapper over functions
+  that accept paths and return data.
+- **Neutral contracts**: the exchange JSON contains no library names and no serialized objects. The schemas originate as
+  Pydantic models and are exported to `schemas/` on every change.
+- **Explicit formulas**: every analysis measure is documented in `docs/analysis.md` (formula, window, STFT size/hop, band
+  limits, thresholds, algorithm version).
+- **Determinism**: no unseeded randomness, no dependence on the clock in the content of audio files.
+- **Technical constraints always valid**: mix ≤ −3 dBTP without a limiter; deterministic render.
+- **Language**: code, comments, docstrings and CLI messages in **English**. The `rationale` field in the language of the brief.
+  Process documentation (`docs/`, milestone reports) and communication with the author in **Italian** (the documents
+  were translated to English after the repository became public, A-105).
+- **Secrets**: the key is in `OPENROUTER_API_KEY` (env / `.env`, never committed, never read by the agent).
+- A run never modifies `stems/` and `references/` and never overwrites previous runs.
 
-## Regole di lavoro (PRD §9)
+## Working rules (PRD §9)
 
-1. **Una milestone alla volta**, nell'ordine di `docs/PROGRESS.md`. Non iniziare la successiva senza
-   l'approvazione esplicita dell'autore.
-2. **Niente fuori scope** (colonna destra di PRD §3), nemmeno "già che ci siamo". Se serve, annotalo nel report
-   di milestone alla voce "Fuori scope segnalato" e prosegui senza implementarlo.
-3. **Ambiguità ⇒ fermati e chiedi.** Se un requisito è ambiguo o una libreria non fa ciò che serve, non
-   aggirare il problema: registra la domanda in `docs/DECISIONS.md` (sezione "Domande aperte") e chiedi.
-4. **Nessun test chiama la rete.** `tests/conftest.py` blocca i socket; i test col modello reale hanno
-   `@pytest.mark.llm` e non girano di default.
-5. **Nessun file audio nel repository.** I test generano segnali sintetici (seni, rumore rosa, impulsi,
-   silenzio). Il materiale reale dell'autore sta in `local/` (ignorata da git) o fuori dal repo.
-6. **Dipendenze**: solo lo stack di PRD §7. Una libreria nuova richiede l'ok dell'autore (`uv add` non è
-   pre-autorizzato).
+1. **One milestone at a time**, in the order of `docs/PROGRESS.md`. Do not start the next one without the author's explicit
+   approval.
+2. **No out-of-scope work** (right column of PRD §3), not even "while we're at it". If needed, note it in the milestone
+   report under "Flagged out of scope" and proceed without implementing it.
+3. **Ambiguity ⇒ stop and ask.** If a requirement is ambiguous or a library does not do what is needed, do not work around
+   the problem: record the question in `docs/DECISIONS.md` (section "Open questions") and ask.
+4. **No test calls the network.** `tests/conftest.py` blocks sockets; tests with the real model have `@pytest.mark.llm` and
+   do not run by default.
+5. **No audio file in the repository.** Tests generate synthetic signals (sines, pink noise, impulses, silence). The author's
+   real material stays in `local/` (ignored by git) or outside the repo.
+6. **Dependencies**: only the stack of PRD §7. A new library requires the author's OK (`uv add` is not pre-authorized).
 
-## Flusso di una milestone
+## Milestone flow
 
-Il dettaglio operativo è nei comandi `/milestone-start` e `/milestone-close` (`.claude/commands/`).
+The operational detail is in the commands `/milestone-start` and `/milestone-close` (`.claude/commands/`).
 
-1. **Avvio** — `/milestone-start Mx`: branch `milestone/mx-<slug>`, lettura delle sezioni PRD pertinenti,
-   piano in `docs/milestones/Mx.md` (requisiti → test previsti, passi, ambiguità). **Checkpoint**: presenta il
-   piano e attendi l'ok dell'autore (o le risposte alle domande aperte) prima di scrivere codice.
-2. **Sviluppo a passi piccoli** — per ogni passo: test prima (valori attesi noti + tolleranze esplicite),
-   implementazione, `make check` verde, commit. Mai commit con test rossi.
-3. **Chiusura** — `/milestone-close`: `make check`, `make reqs M=Mx`, revisione indipendente con il subagent
-   `milestone-reviewer`, report di chiusura in `docs/milestones/Mx.md` (fatto, deciso, dubbi, fuori scope,
-   **istruzioni di validazione manuale**), aggiornamento di `docs/PROGRESS.md`. Commit. **Stop**.
-4. **Revisione dell'autore** — l'autore esegue la validazione manuale e annota l'esito nel report. Solo dopo
-   un'approvazione esplicita in chat: `git merge --no-ff` su `main` e tag `mx`.
+1. **Start**: `/milestone-start Mx`: branch `milestone/mx-<slug>`, reading of the relevant PRD sections, plan in
+   `docs/milestones/Mx.md` (requirements → planned tests, steps, ambiguities). **Checkpoint**: present the plan and wait for
+   the author's OK (or the answers to the open questions) before writing code.
+2. **Development in small steps**: for each step, tests first (known expected values + explicit tolerances), implementation,
+   `make check` green, commit. Never commit with red tests.
+3. **Close**: `/milestone-close`: `make check`, `make reqs M=Mx`, independent review with the subagent `milestone-reviewer`,
+   closing report in `docs/milestones/Mx.md` (done, decided, doubts, out of scope, **manual validation instructions**),
+   update of `docs/PROGRESS.md`. Commit. **Stop**.
+4. **Author review**: the author runs the manual validation and records the outcome in the report. Only after an explicit
+   approval in chat: `git merge --no-ff` into `main` and tag `mx`.
 
-### Definition of Done di una milestone
+### Definition of Done of a milestone
 
-- Tutti i requisiti della milestone implementati, ciascuno con almeno un test marcato `@pytest.mark.req("ID")`
-  (o una giustificazione scritta nel report, es. verificabile solo con il modello reale).
-- Ogni criterio di accettazione del PRD coperto da un test `@pytest.mark.acceptance("Mx")`.
-- `make check` verde (format, lint, test). `make reqs M=Mx` senza buchi non giustificati.
-- `schemas/` e `docs/analysis.md` aggiornati se toccati contratti o misure.
-- Report di milestone completo, con istruzioni di validazione manuale eseguibili copiando i comandi.
+- All requirements of the milestone implemented, each with at least one test marked `@pytest.mark.req("ID")` (or a
+  justification written in the report, e.g. verifiable only with the real model).
+- Each acceptance criterion of the PRD covered by a test `@pytest.mark.acceptance("Mx")`.
+- `make check` green (format, lint, tests). `make reqs M=Mx` without unjustified gaps.
+- `schemas/` and `docs/analysis.md` updated if contracts or measures were touched.
+- Complete milestone report, with manual validation instructions executable by copying the commands.
 
-## Comandi
+## Commands
 
 ```bash
-make setup            # uv sync (crea .venv con le dipendenze dev)
-make fmt              # ruff format + fix automatici
-make check            # format check + lint + test (gate obbligatorio prima di ogni commit)
-make test             # solo pytest (esclude i test marcati llm)
-make test-llm         # test col modello reale: richiede OPENROUTER_API_KEY, usa la rete, costa
-make reqs M=M1        # copertura dei requisiti PRD della milestone nei test
-uv run pytest tests/test_x.py -k nome   # singolo test
+make setup            # uv sync (creates .venv with the dev dependencies)
+make fmt              # ruff format + automatic fixes
+make check            # format check + lint + test (mandatory gate before each commit)
+make test             # pytest only (excludes the llm-marked tests)
+make test-llm         # tests with the real model: requires OPENROUTER_API_KEY, uses the network, costs money
+make reqs M=M1        # coverage of the PRD requirements of the milestone in the tests
+uv run pytest tests/test_x.py -k nome   # single test
 ```
 
-## Convenzioni di test
+## Test conventions
 
-- Un file di test per modulo (`tests/analysis/test_stem.py` ↔ `src/stemwise/analysis/stem.py`).
-- Marker obbligatori: `@pytest.mark.req("ANA-3")` collega il test al requisito (anche più id);
-  `@pytest.mark.acceptance("M1")` per i criteri di accettazione della milestone.
-- Tolleranze sempre esplicite e motivate (`np.testing.assert_allclose(..., atol=0.1)  # ±0.1 LU da PRD M2`).
-- Segnali sintetici e progetti di prova generati in `tmp_path`, con seed fissi. Helper condivisi in
-  `tests/helpers/` (generatori di segnali, progetto sintetico).
-- Il decisore finto (`decision/mock.py`) è l'unico decisore usato nei test del flusso completo.
+- One test file per module (`tests/analysis/test_stem.py` ↔ `src/stemwise/analysis/stem.py`).
+- Mandatory markers: `@pytest.mark.req("ANA-3")` links the test to the requirement (also several ids);
+  `@pytest.mark.acceptance("M1")` for the acceptance criteria of the milestone.
+- Tolerances always explicit and justified (`np.testing.assert_allclose(..., atol=0.1)  # ±0.1 LU from PRD M2`).
+- Synthetic signals and test projects generated in `tmp_path`, with fixed seeds. Shared helpers in `tests/helpers/`
+  (signal generators, synthetic project).
+- The fake decider (`decision/mock.py`) is the only decider used in the full-flow tests.
 
-## Architettura (PRD §4, §8)
+## Architecture (PRD §4, §8)
 
-Ciclo: **analisi → decisione → render → valutazione** (fino a 3 iterazioni), poi master dal piano migliore.
-Struttura dei moduli in `src/stemwise/` come da PRD §8; ogni modulo legge/scrive JSON ed è eseguibile da solo.
-Il codice dipende dall'interfaccia `Decider` (implementazioni: LLM via OpenRouter, mock deterministico).
+Loop: **analysis → decision → render → evaluation** (up to 3 iterations), then the master from the best plan. Module structure
+in `src/stemwise/` as in PRD §8; each module reads/writes JSON and can be run on its own. The code depends on the `Decider`
+interface (implementations: LLM via OpenRouter, deterministic mock).
 
 ## Git
 
-- `main` contiene solo milestone approvate. Lavoro su `milestone/mx-<slug>`.
-- Commit piccoli, messaggio in inglese, prefisso con la milestone: `M1: add band energy measure (ANA-3)`.
-- Mai `push`, `merge`, `reset --hard`, `rebase` senza richiesta esplicita dell'autore.
+- `main` contains only approved milestones. Work happens on `milestone/mx-<slug>`.
+- Small commits, message in English, prefixed with the milestone: `M1: add band energy measure (ANA-3)`.
+- Never `push`, `merge`, `reset --hard`, or `rebase` without an explicit request from the author.

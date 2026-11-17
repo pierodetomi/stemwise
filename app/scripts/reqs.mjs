@@ -11,7 +11,7 @@ const repo = join(app, "..");
 const foundation = readFileSync(join(repo, "docs/FOUNDATION.md"), "utf8");
 
 // 1. Requirement ids of §3 (ranges such as "ANA-1 → ANA-12" are expanded).
-const section3 = foundation.slice(foundation.indexOf("## 3. Requisiti funzionali"), foundation.indexOf("## 4. Stack"));
+const section3 = foundation.slice(foundation.indexOf("## 3. Functional requirements"), foundation.indexOf("## 4. Technology stack"));
 const ids = new Set();
 for (const m of section3.matchAll(/\*\*([A-Z]{2,4})-(\d+)(?: → ([A-Z]{2,4})-(\d+))?\.\*\*/g)) {
   const [, p, a, , b] = m;

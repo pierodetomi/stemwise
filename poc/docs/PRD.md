@@ -1,162 +1,189 @@
-# PRD — PoC engine di mixing e mastering assistiti da AI
+# PRD — PoC engine for AI-assisted mixing and mastering
 
 Nov 9, 2026 · @Piero
 
-## 1. Contesto e obiettivo
+## 1. Context and goal
 
-La PoC deve rispondere a una sola domanda: un modello linguistico che riceve solo misure numeriche degli stem sa decidere parametri di mix che suonano meglio della somma grezza?
+The PoC must answer a single question: can a language model that receives only numeric measurements of the stems decide
+mix parameters that sound better than the raw sum?
 
-L'utente è uno solo, l'autore dei brani. Scrive e registra bene, ma non è forte in mixing e mastering. Vuole uno strumento personale, senza abbonamenti né software costosi.
+The user is one person, the author of the songs. The author writes and records well, but is not strong at mixing and
+mastering. The author wants a personal tool, without subscriptions or expensive software.
 
-Tre principi guidano tutto il progetto:
+Three principles guide the whole project:
 
-- **Il modello non riceve mai audio.** Riceve JSON con le misure e restituisce JSON con i parametri. Tutto il processing audio gira in locale con librerie gratuite.
-- **Il piano di mix è l'unica sorgente di verità.** Stesso piano e stessi stem producono lo stesso file audio.
-- **Ogni scelta è spiegata.** Il modello motiva ogni intervento, così l'autore capisce e può correggere.
+- **The model never receives audio.** It receives JSON with measurements and returns JSON with parameters. All audio
+  processing runs locally with free libraries.
+- **The mix plan is the only source of truth.** The same plan and the same stems produce the same audio file.
+- **Every choice is explained.** The model justifies each intervention, so the author understands it and can correct it.
 
-La PoC non ha interfaccia grafica: è un engine Python guidato da riga di comando. L'esito atteso è una decisione go/no-go sul costruire lo strumento completo.
+The PoC has no graphical interface: it is a Python engine driven from the command line. The expected outcome is a
+go/no-go decision on building the full tool.
 
-Questo documento è scritto per essere eseguito da Claude Code, una milestone alla volta (sezione 9).
+This document is written to be executed by Claude Code, one milestone at a time (section 9).
 
-## 2. Ipotesi e criteri di successo
+## 2. Hypotheses and success criteria
 
-La PoC è riuscita se conferma le cinque ipotesi qui sotto, ciascuna con una soglia verificabile.
+The PoC succeeds if it confirms the five hypotheses below, each with a verifiable threshold.
 
-| Ipotesi | Come si misura | Soglia |
+| Hypothesis | How it is measured | Threshold |
 | --- | --- | --- |
-| H1. Le misure bastano al modello per decidere | Piani validi rispetto allo schema, dopo al massimo 2 tentativi | 100% delle chiamate |
-| H2. Il ciclo di verifica converge | Distanza spettrale dal riferimento tra prima e migliore iterazione | In calo su almeno 2 brani su 3 |
-| H3. Il risultato suona meglio della somma grezza | Ascolto cieco a pari loudness (sezione 10) | Mix AI preferito in almeno 2 brani su 3 |
-| H4. Le richieste a parole producono il cambio chiesto | Richieste di revisione giudicate "andata nella direzione giusta" | Almeno 4 su 5 |
-| H5. Il costo è trascurabile | Costo delle chiamate al modello per brano, dai log | Sotto 0,20 USD per brano |
+| H1. Measurements are enough for the model to decide | Plans valid against the schema, after at most 2 attempts | 100% of calls |
+| H2. The verification loop converges | Spectral distance from the reference between the first and the best iteration | Decreasing on at least 2 tracks out of 3 |
+| H3. The result sounds better than the raw sum | Blind listening at loudness-matched levels (section 10) | AI mix preferred on at least 2 tracks out of 3 |
+| H4. Requests in words produce the requested change | Revision requests judged "moved in the right direction" | At least 4 out of 5 |
+| H5. The cost is negligible | Cost of model calls per track, from the logs | Below 0.20 USD per track |
 
-Due vincoli tecnici valgono sempre, a prescindere dalle ipotesi:
+Two technical constraints always apply, regardless of the hypotheses:
 
-- Il mix esce con true peak non oltre −3 dBTP, senza limiter.
-- Il render è deterministico: stesso piano e stessi stem danno un file con lo stesso hash.
+- The mix comes out with a true peak no higher than −3 dBTP, without a limiter.
+- Rendering is deterministic: the same plan and the same stems give a file with the same hash.
 
-Il confronto più onesto resta quello con un mix fatto a mano dall'autore, quando esiste. Non è una soglia di successo, ma va annotato.
+The most honest comparison remains the one with a mix made by hand by the author, when one exists. It is not a success
+threshold, but it must be noted.
 
 ## 3. Scope
 
-La PoC copre il percorso minimo dagli stem al master, con parametri statici per l'intero brano.
+The PoC covers the minimal path from stems to master, with static parameters for the whole track.
 
-| Dentro la PoC | Fuori dalla PoC |
+| Inside the PoC | Outside the PoC |
 | --- | --- |
-| Engine Python usato da riga di comando | Interfaccia grafica, plugin, tempo reale |
-| Stem WAV o FLAC già allineati, da 2 a 16 | Editing, intonazione, timing, pulizia del rumore |
-| Ruolo di ogni stem dichiarato nel file di progetto | Riconoscimento automatico degli strumenti |
-| Brief: genere, mood, note libere | Audio inviato al modello |
-| Da 0 a 3 tracce di riferimento, analizzate come mix stereo | Separazione in stem delle tracce di riferimento |
-| Per stem: gain, pan, filtri, EQ a 4 bande, compressore, mandata al riverbero | Automazioni nel tempo e differenze tra sezioni |
-| Un riverbero condiviso | Delay, saturazione, modulazioni, sidechain |
-| Ciclo automatico di verifica, fino a 3 iterazioni | Plugin VST di terze parti |
-| Revisione con richiesta in linguaggio naturale | Export di un progetto DAW |
-| Master per confronto con un riferimento | Master guidato da richieste a parole |
-| Log completo e report per ogni run | Distribuzione, installer, multiutente |
+| Python engine driven from the command line | Graphical interface, plugins, real time |
+| WAV or FLAC stems already aligned, from 2 to 16 | Editing, pitch correction, timing, noise cleanup |
+| Role of each stem declared in the project file | Automatic recognition of instruments |
+| Brief: genre, mood, free notes | Audio sent to the model |
+| From 0 to 3 reference tracks, analyzed as stereo mixes | Separation into stems of the reference tracks |
+| Per stem: gain, pan, filters, 4-band EQ, compressor, send to the reverb | Automation over time and differences between sections |
+| One shared reverb | Delay, saturation, modulation, sidechain |
+| Automatic verification loop, up to 3 iterations | Third-party VST plugins |
+| Revision with a request in natural language | Export of a DAW project |
+| Master for comparison with a reference | Master guided by requests in words |
+| Full log and report for each run | Distribution, installer, multi-user |
 
-Se durante lo sviluppo serve qualcosa della colonna di destra, va segnalato e non implementato.
+If during development something from the right-hand column is needed, it must be flagged and not implemented.
 
-## 4. Architettura
+## 4. Architecture
 
-L'engine è un ciclo di quattro passi attorno a una sola chiamata al modello: analisi, decisione, render, valutazione.
+The engine is a four-step loop around a single call to the model: analysis, decision, render, evaluation.
 
-&#91;embedded content: pipeline dell'engine · 6 passi, 1 ciclo\]
+&#91;embedded content: engine pipeline · 6 steps, 1 loop\]
 
-L'analisi misura stem, mix e riferimenti. Il modello riceve solo quei numeri e restituisce un piano. Il render lo applica, la valutazione misura il risultato e, se non basta, rimanda al modello. Il master parte dal mix del piano migliore.
+The analysis measures stems, mix and references. The model receives only those numbers and returns a plan. The render
+applies it, the evaluation measures the result and, if that is not enough, sends back to the model. The master starts
+from the mix of the best plan.
 
-## 5. Requisiti funzionali
+## 5. Functional requirements
 
-Ogni modulo legge e scrive file JSON, ed è eseguibile da solo dalla riga di comando.
+Each module reads and writes JSON files, and can be run on its own from the command line.
 
 ### 5.1 Ingest (ING)
 
-- **ING-1.** Carica e valida `project.yaml` (sezione 6). Errori chiari per campi mancanti o file inesistenti.
-- **ING-2.** Accetta stem WAV o FLAC, mono o stereo, a 16, 24 o 32 bit float.
-- **ING-3.** Tutti gli stem devono avere la stessa frequenza di campionamento. Se differiscono, errore: nessun resampling silenzioso.
-- **ING-4.** Se le durate differiscono, allunga con silenzio in coda e scrive un warning.
-- **ING-5.** Le tracce di riferimento vengono ricampionate alla frequenza del progetto solo per l'analisi.
-- **ING-6.** Elaborazione interna in float32. Export in WAV a 24 bit.
+- **ING-1.** Loads and validates `project.yaml` (section 6). Clear errors for missing fields or nonexistent files.
+- **ING-2.** Accepts WAV or FLAC stems, mono or stereo, at 16, 24 or 32-bit float.
+- **ING-3.** All stems must have the same sample rate. If they differ, error: no silent resampling.
+- **ING-4.** If the durations differ, pads with silence at the end and writes a warning.
+- **ING-5.** Reference tracks are resampled to the project sample rate only for analysis.
+- **ING-6.** Internal processing in float32. Export to 24-bit WAV.
 
-### 5.2 Analisi (ANA)
+### 5.2 Analysis (ANA)
 
-Per ogni stem, calcolate solo sulle parti attive (sopra −50 dBFS):
+For each stem, computed only on the active parts (above −50 dBFS):
 
-- **ANA-1.** Loudness integrato in LUFS (BS.1770), picco, true peak con oversampling 4x, RMS, crest factor.
-- **ANA-2.** Escursione dinamica: differenza tra 95° e 10° percentile del loudness short-term.
-- **ANA-3.** Energia in 8 bande fisse, in dB relativi al totale dello stem: 20–60, 60–120, 120–250, 250–500, 500–2k, 2k–4k, 4k–8k, 8k–20k Hz.
-- **ANA-4.** Centroide spettrale, densità dei transienti (onset al secondo), percentuale di tempo attivo.
-- **ANA-5.** Per stem stereo: correlazione L/R e rapporto side/mid.
-- **ANA-6.** Controlli di igiene: DC offset, campioni in clipping, stima del rumore di fondo.
+- **ANA-1.** Integrated loudness in LUFS (BS.1770), peak, true peak with 4x oversampling, RMS, crest factor.
+- **ANA-2.** Dynamic range: difference between the 95th and the 10th percentile of the short-term loudness.
+- **ANA-3.** Energy in 8 fixed bands, in dB relative to the total of the stem: 20–60, 60–120, 120–250, 250–500, 500–2k,
+  2k–4k, 4k–8k, 8k–20k Hz.
+- **ANA-4.** Spectral centroid, transient density (onsets per second), percentage of active time.
+- **ANA-5.** For stereo stems: L/R correlation and side/mid ratio.
+- **ANA-6.** Hygiene checks: DC offset, clipped samples, noise floor estimate.
 
-Sul mix e sulle interazioni tra stem:
+On the mix and on the interactions between stems:
 
-- **ANA-7.** Le stesse misure di ANA-1, ANA-2, ANA-3 e ANA-5 sulla somma.
-- **ANA-8.** Quota di ogni stem sull'energia del mix, per banda, in percentuale.
-- **ANA-9.** Mascheramento: per ogni coppia di stem e ogni banda, percentuale di frame in cui entrambi sono attivi in quella banda, pesata per l'energia minore dei due. Nel JSON vanno solo le 10 collisioni più forti.
-- **ANA-10.** Compatibilità mono delle basse: correlazione L/R sotto 120 Hz.
+- **ANA-7.** The same measures as ANA-1, ANA-2, ANA-3 and ANA-5, on the sum.
+- **ANA-8.** Share of each stem in the energy of the mix, per band, as a percentage.
+- **ANA-9.** Masking: for each pair of stems and each band, percentage of frames in which both are active in that band,
+  weighted by the lower energy of the two. The JSON contains only the 10 strongest collisions.
+- **ANA-10.** Mono compatibility of the low end: L/R correlation below 120 Hz.
 
-Sulle tracce di riferimento:
+On the reference tracks:
 
-- **ANA-11.** Le misure di ANA-7, calcolate dopo aver normalizzato il loudness, così il confronto spettrale non dipende dal volume.
-- **ANA-12.** Profilo target = media dei riferimenti. Senza riferimenti il profilo è assente e il valutatore usa solo i vincoli tecnici.
+- **ANA-11.** The measures of ANA-7, computed after normalizing the loudness, so the spectral comparison does not depend
+  on the volume.
+- **ANA-12.** Target profile = average of the references. Without references the profile is absent and the evaluator
+  uses only the technical constraints.
 
-Vincolo trasversale:
+Cross-cutting constraint:
 
-- **ANA-13.** `analysis.json` per 12 stem resta sotto 8.000 token stimati (caratteri diviso 4). Valori arrotondati a un decimale.
+- **ANA-13.** `analysis.json` for 12 stems stays under 8,000 estimated tokens (characters divided by 4). Values rounded
+  to one decimal.
 
-### 5.3 Decisione (DEC)
+### 5.3 Decision (DEC)
 
-- **DEC-1.** Il modello riceve: prompt di sistema con ruolo e limiti dei parametri, brief, analisi, profilo target, storia delle ultime 2 iterazioni con le loro valutazioni, eventuale richiesta dell'autore.
-- **DEC-2.** Il modello restituisce un `mix_plan.json` completo, mai un diff. Usare l'output strutturato con JSON Schema se il modello lo supporta, altrimenti modalità JSON più validazione.
-- **DEC-3.** Ogni stem ha un campo `rationale` di una o due frasi. Il piano ha un campo `summary`.
-- **DEC-4.** Validazione con schema e limiti (sezione 6). Se il piano è invalido, fino a 2 nuovi tentativi rimandando l'errore al modello. Poi il comando fallisce con un messaggio chiaro.
-- **DEC-5.** Limite di variazione tra un'iterazione e la successiva: gain ±4 dB, ogni banda di EQ ±3 dB. I valori fuori limite vengono riportati al limite, con warning.
-- **DEC-6.** Modello, temperatura (default 0,2) e URL base sono configurabili. Nessun modello cablato nel codice.
-- **DEC-7.** Esiste un decisore finto, deterministico e senza rete, con regole semplici. Serve ai test e allo sviluppo offline.
-- **DEC-8.** Ogni chiamata viene salvata per intero: richiesta, risposta, token, costo se la risposta lo riporta, durata.
+- **DEC-1.** The model receives: a system prompt with the role and the parameter limits, the brief, the analysis, the
+  target profile, the history of the last 2 iterations with their evaluations, and any request from the author.
+- **DEC-2.** The model returns a complete `mix_plan.json`, never a diff. Use structured output with JSON Schema if the
+  model supports it, otherwise JSON mode plus validation.
+- **DEC-3.** Each stem has a `rationale` field of one or two sentences. The plan has a `summary` field.
+- **DEC-4.** Validation with schema and limits (section 6). If the plan is invalid, up to 2 new attempts, sending the
+  error back to the model. Then the command fails with a clear message.
+- **DEC-5.** Limit on variation between one iteration and the next: gain ±4 dB, each EQ band ±3 dB. Values out of limit
+  are brought back to the limit, with a warning.
+- **DEC-6.** Model, temperature (default 0.2) and base URL are configurable. No model hard-wired in the code.
+- **DEC-7.** There is a fake decider, deterministic and without network, with simple rules. It serves the tests and
+  offline development.
+- **DEC-8.** Each call is saved in full: request, response, tokens, cost if the response reports it, duration.
 
 ### 5.4 Render (REN)
 
-- **REN-1.** Pre-gain: ogni stem viene normalizzato a −23 LUFS prima del piano, così i gain del piano sono confrontabili. Disattivabile da `project.yaml`.
-- **REN-2.** Catena per stem, in ordine fisso: pre-gain, passa-alto, passa-basso, EQ, compressore, makeup, gain, pan, mandata al riverbero.
-- **REN-3.** Pan a potenza costante (−3 dB al centro) per gli stem mono, bilanciamento per gli stereo. Implementato in numpy.
-- **REN-4.** Un solo riverbero condiviso, 100% wet, con parametri globali e passa-alto sul ritorno.
-- **REN-5.** Bus di mix: somma e trim automatico per restare entro −3 dBTP. Nessun altro processing.
-- **REN-6.** Scrive `mix.wav`. Con `--export-stems` scrive anche gli stem processati.
-- **REN-7.** Scrive sempre anche la somma grezza (`baseline.wav`): stem originali sommati, con il solo trim.
+- **REN-1.** Pre-gain: each stem is normalized to −23 LUFS before the plan, so the plan's gains are comparable.
+  Can be disabled from `project.yaml`.
+- **REN-2.** Chain per stem, in fixed order: pre-gain, high-pass, low-pass, EQ, compressor, makeup, gain, pan, send to
+  the reverb.
+- **REN-3.** Constant-power pan (−3 dB at the center) for mono stems, balance for stereo stems. Implemented in numpy.
+- **REN-4.** One shared reverb, 100% wet, with global parameters and a high-pass on the return.
+- **REN-5.** Mix bus: summing and automatic trim to stay within −3 dBTP. No other processing.
+- **REN-6.** Writes `mix.wav`. With `--export-stems` it also writes the processed stems.
+- **REN-7.** Always also writes the raw sum (`baseline.wav`): the original stems summed, with only the trim.
 
-### 5.5 Valutazione e ciclo (EVA)
+### 5.5 Evaluation and loop (EVA)
 
-- **EVA-1.** Rianalizza il mix renderizzato con le misure di ANA-7, ANA-9 e ANA-10. Fa lo stesso sulla somma grezza, come termine di confronto.
-- **EVA-2.** Distanza spettrale: errore medio assoluto in dB sulle 8 bande, dopo aver allineato il livello medio a quello del target.
-- **EVA-3.** Riporta anche differenza di ampiezza stereo, differenza di escursione dinamica e collisioni residue.
-- **EVA-4.** Vincoli tecnici: true peak, correlazione sotto 120 Hz maggiore di 0, DC offset trascurabile.
-- **EVA-5.** Il ciclo si ferma quando la distanza scende sotto 1,5 dB, oppure migliora meno di 0,2 dB, oppure si raggiunge il massimo di iterazioni (default 3).
-- **EVA-6.** Tiene traccia del piano migliore: distanza minima tra quelli che rispettano i vincoli. Se un'iterazione peggiora, il migliore resta il precedente.
+- **EVA-1.** Re-analyzes the rendered mix with the measures of ANA-7, ANA-9 and ANA-10. Does the same on the raw sum, as
+  a comparison term.
+- **EVA-2.** Spectral distance: mean absolute error in dB across the 8 bands, after aligning the average level to that
+  of the target.
+- **EVA-3.** Also reports the stereo width difference, the dynamic range difference and the residual collisions.
+- **EVA-4.** Technical constraints: true peak, correlation below 120 Hz greater than 0, negligible DC offset.
+- **EVA-5.** The loop stops when the distance falls below 1.5 dB, or improves by less than 0.2 dB, or the maximum number
+  of iterations is reached (default 3).
+- **EVA-6.** Keeps track of the best plan: the minimum distance among those that meet the constraints. If an iteration
+  gets worse, the best remains the previous one.
 
-### 5.6 Revisione a parole (REV)
+### 5.6 Revision in words (REV)
 
-- **REV-1.** `revise` esegue una sola iterazione partendo dal piano migliore, con la richiesta dell'autore come priorità.
-- **REV-2.** In revisione non c'è rollback automatico: l'autore ha chiesto il cambio e lo giudica all'ascolto.
-- **REV-3.** Il report mostra il diff dei parametri rispetto al piano di partenza.
+- **REV-1.** `revise` runs a single iteration starting from the best plan, with the author's request as the priority.
+- **REV-2.** In revision there is no automatic rollback: the author asked for the change and judges it by ear.
+- **REV-3.** The report shows the parameter diff against the starting plan.
 
 ### 5.7 Master (MAS)
 
-- **MAS-1.** Input: un `mix.wav` e una traccia di riferimento, obbligatoria nella PoC.
-- **MAS-2.** Usa Matchering per allineare il mix al riferimento. Output a 24 bit, opzionale a 16 bit.
-- **MAS-3.** Dopo il master misura LUFS integrato, true peak e distanza spettrale dal riferimento. Warning se il true peak supera −1 dBTP.
+- **MAS-1.** Input: a `mix.wav` and a reference track, mandatory in the PoC.
+- **MAS-2.** Uses Matchering to align the mix to the reference. Output at 24 bit, optionally 16 bit.
+- **MAS-3.** After the master, measures integrated LUFS, true peak and spectral distance from the reference. Warning if the
+  true peak exceeds −1 dBTP.
 
 ### 5.8 Report (REP)
 
-- **REP-1.** Ogni run produce un `report.md`: tabella delle iterazioni con distanza, LUFS e true peak, motivazioni per stem, collisioni principali, costo totale.
-- **REP-2.** `ab` prepara i file per l'ascolto cieco: stessa durata, stesso loudness, nomi casuali, chiave in un file separato.
+- **REP-1.** Each run produces a `report.md`: table of the iterations with distance, LUFS and true peak, reasons per
+  stem, main collisions, total cost.
+- **REP-2.** `ab` prepares the files for blind listening: same duration, same loudness, random names, key in a separate
+  file.
 
-## 6. Contratti dati
+## 6. Data contracts
 
-I quattro file qui sotto sono le interfacce tra i moduli. Gli schemi vanno definiti una sola volta, come modelli Pydantic, e da lì si genera il JSON Schema passato al modello. I valori negli esempi sono illustrativi.
+The four files below are the interfaces between the modules. The schemas are defined once, as Pydantic models, and the
+JSON Schema passed to the model is generated from them. The values in the examples are illustrative.
 
-### 6.1 `project.yaml`, scritto dall'autore
+### 6.1 `project.yaml`, written by the author
 
 ```yaml
 name: "Titolo del brano"
@@ -187,9 +214,10 @@ options:
   mix_true_peak_db: -3.0
 ```
 
-Ruoli ammessi: `kick`, `snare`, `toms`, `overheads`, `drums`, `percussion`, `bass`, `electric_guitar`, `acoustic_guitar`, `keys`, `synth`, `pad`, `lead_vocal`, `backing_vocal`, `fx`, `other`.
+Allowed roles: `kick`, `snare`, `toms`, `overheads`, `drums`, `percussion`, `bass`, `electric_guitar`, `acoustic_guitar`,
+`keys`, `synth`, `pad`, `lead_vocal`, `backing_vocal`, `fx`, `other`.
 
-### 6.2 `analysis.json`, prodotto dall'analisi
+### 6.2 `analysis.json`, produced by the analysis
 
 ```json
 {
@@ -232,7 +260,7 @@ Ruoli ammessi: `kick`, `snare`, `toms`, `overheads`, `drums`, `percussion`, `bas
 }
 ```
 
-### 6.3 `mix_plan.json`, deciso dal modello
+### 6.3 `mix_plan.json`, decided by the model
 
 ```json
 {
@@ -269,30 +297,30 @@ Ruoli ammessi: `kick`, `snare`, `toms`, `overheads`, `drums`, `percussion`, `bas
 }
 ```
 
-Limiti dei parametri, applicati dalla validazione. `null` spegne il blocco.
+Parameter limits, enforced by validation. `null` turns the block off.
 
-| Parametro | Minimo | Massimo |
+| Parameter | Minimum | Maximum |
 | --- | --- | --- |
 | `gain_db` | −24 | +12 |
-| `pan` | −1 (sinistra) | +1 (destra) |
+| `pan` | −1 (left) | +1 (right) |
 | `hpf_hz` | 20 | 400 |
-| `lpf_hz` | 2.000 | 20.000 |
-| EQ, numero di bande | 0 | 4 |
+| `lpf_hz` | 2,000 | 20,000 |
+| EQ, number of bands | 0 | 4 |
 | EQ `type` | `peak`, `low_shelf`, `high_shelf` |  |
-| EQ `freq_hz` | 20 | 20.000 |
+| EQ `freq_hz` | 20 | 20,000 |
 | EQ `gain_db` | −9 | +9 |
-| EQ `q` | 0,3 | 8 |
-| Compressore `threshold_db` | −40 | 0 |
-| Compressore `ratio` | 1 | 8 |
-| Compressore `attack_ms` | 0,1 | 100 |
-| Compressore `release_ms` | 20 | 1.000 |
-| Compressore `makeup_db` | 0 | 12 |
+| EQ `q` | 0.3 | 8 |
+| Compressor `threshold_db` | −40 | 0 |
+| Compressor `ratio` | 1 | 8 |
+| Compressor `attack_ms` | 0.1 | 100 |
+| Compressor `release_ms` | 20 | 1,000 |
+| Compressor `makeup_db` | 0 | 12 |
 | `reverb_send_db` | −60 | −6 |
-| Riverbero `room_size`, `damping` | 0 | 1 |
-| Riverbero `return_hpf_hz` | 20 | 800 |
-| Riverbero `return_gain_db` | −24 | 0 |
+| Reverb `room_size`, `damping` | 0 | 1 |
+| Reverb `return_hpf_hz` | 20 | 800 |
+| Reverb `return_gain_db` | −24 | 0 |
 
-### 6.4 `evaluation.json`, prodotto dal valutatore
+### 6.4 `evaluation.json`, produced by the evaluator
 
 ```json
 {
@@ -310,65 +338,79 @@ Limiti dei parametri, applicati dalla validazione. `null` spegne il blocco.
 }
 ```
 
-`band_delta_db` è target meno mix, dopo l'allineamento del livello medio: un valore positivo significa che al mix manca energia in quella banda.
+`band_delta_db` is target minus mix, after aligning the average level: a positive value means the mix lacks energy in that
+band.
 
-## 7. Stack e vincoli tecnici
+## 7. Stack and technical constraints
 
-Tutto gira in locale in Python; l'unica chiamata di rete è quella al modello tramite OpenRouter.
+Everything runs locally in Python; the only network call is the one to the model through OpenRouter.
 
-| Ambito | Scelta |
+| Scope | Choice |
 | --- | --- |
-| Linguaggio | Python 3.11 o superiore, progetto gestito con `uv` |
-| I/O audio | `soundfile` |
-| Analisi | `numpy`, `scipy`, `librosa`, `pyloudnorm` |
-| Processing | `pedalboard` per filtri, EQ, compressore, riverbero |
+| Language | Python 3.11 or later, project managed with `uv` |
+| Audio I/O | `soundfile` |
+| Analysis | `numpy`, `scipy`, `librosa`, `pyloudnorm` |
+| Processing | `pedalboard` for filters, EQ, compressor, reverb |
 | Master | `matchering` |
-| Schemi e validazione | `pydantic` |
-| Chiamate al modello | Client HTTP verso l'endpoint chat completions di OpenRouter, compatibile OpenAI |
+| Schemas and validation | `pydantic` |
+| Calls to the model | HTTP client for the OpenRouter chat completions endpoint, OpenAI-compatible |
 | CLI | `typer` |
-| Test | `pytest` |
+| Tests | `pytest` |
 
-Vincoli:
+Constraints:
 
-- **Segreti.** La chiave sta nella variabile d'ambiente `OPENROUTER_API_KEY`. Il file `.env` non entra nel repository.
-- **Privacy.** Nessun audio lascia la macchina. Al modello vanno solo misure, id e ruoli degli stem, brief.
-- **Niente GPU.** Deve girare su un portatile normale.
-- **Astrazione del decisore.** Il codice dipende da un'interfaccia `Decider` con due implementazioni: modello reale e decisore finto.
-- **Funzioni pure.** Analisi, render e valutazione sono funzioni senza stato globale, testabili con array in memoria.
-- **Lingua.** Codice, commenti e messaggi della CLI in inglese. Il campo `rationale` nella lingua del brief.
-- **Licenze.** `pedalboard` e `matchering` sono GPLv3. Per uso personale non comporta obblighi; conta solo in caso di distribuzione.
+- **Secrets.** The key is in the environment variable `OPENROUTER_API_KEY`. The `.env` file does not enter the repository.
+- **Privacy.** No audio leaves the machine. Only measurements, stem ids and roles, and the brief go to the model.
+- **No GPU.** It must run on an ordinary laptop.
+- **Decider abstraction.** The code depends on a `Decider` interface with two implementations: the real model and the fake
+  decider.
+- **Pure functions.** Analysis, render and evaluation are functions without global state, testable with arrays in memory.
+- **Language.** Code, comments and CLI messages in English. The `rationale` field in the language of the brief.
+- **Licenses.** `pedalboard` and `matchering` are GPLv3. For personal use they carry no obligations; this matters only in
+  case of distribution.
 
-Il modello di default non è fissato qui: va scelto tra quelli che supportano output strutturato, partendo da uno economico (sezione 11).
+The default model is not fixed here: it must be chosen among those that support structured output, starting from an
+inexpensive one (section 11).
 
-### 7.1 Portabilità
+### 7.1 Portability
 
-Python è la scelta per la PoC, non necessariamente per l'eventuale applicazione finale: lo stack di quella si decide solo dopo un go, senza condizionamenti presi ora. Ciò che deve sopravvivere a un cambio di linguaggio sono i contratti, le formule e i risultati, non il codice.
+Python is the choice for the PoC, not necessarily for the eventual application: the stack of that application will be
+decided only after a go, with no constraints taken now. What must survive a change of language are the contracts, the
+formulas and the results, not the code.
 
-- **Schemi come specifica neutra.** I JSON Schema generati dai modelli Pydantic vengono salvati nel repository in `schemas/` e aggiornati a ogni modifica. Sono la definizione dei contratti; il codice Python li implementa.
-- **Formule esplicite.** Ogni misura dell'analisi è documentata in `docs/analysis.md` con la sua formula e i parametri esatti (finestra, dimensione e hop della STFT, limiti delle bande, soglia di attività, versione dell'algoritmo di loudness). Filtri ed EQ sono definiti come biquad standard secondo le formule del cookbook RBJ, con i coefficienti derivabili dai soli parametri del piano.
-- **Engine senza terminale.** L'engine comunica solo tramite file e JSON e non legge mai dall'input interattivo. La CLI è un involucro sottile sopra funzioni che accettano percorsi e restituiscono dati. Così un altro processo, in qualunque linguaggio, può invocarlo come eseguibile o riscriverlo pezzo per pezzo.
-- **Nessun dettaglio di libreria nei contratti.** I file di scambio non contengono nomi di librerie, oggetti serializzati o valori che dipendono dall'implementazione.
+- **Schemas as a neutral specification.** The JSON Schemas generated from the Pydantic models are saved in the repository
+  in `schemas/` and updated on every change. They are the definition of the contracts; the Python code implements them.
+- **Explicit formulas.** Every analysis measure is documented in `docs/analysis.md` with its formula and exact parameters
+  (window, STFT size and hop, band limits, activity threshold, loudness algorithm version). Filters and EQ are defined as
+  standard biquads following the RBJ cookbook formulas, with coefficients derivable from the plan's parameters alone.
+- **Engine without a terminal.** The engine communicates only through files and JSON and never reads from interactive
+  input. The CLI is a thin wrapper over functions that accept paths and return data. This way another process, in any
+  language, can invoke it as an executable or rewrite it piece by piece.
+- **No library details in the contracts.** The exchange files contain no library names, serialized objects or values
+  that depend on the implementation.
 
-Un avviso per il futuro: una riscrittura della catena di render non produrrà campioni identici, perché compressore e riverbero sono implementazioni specifiche della libreria. Un port va rivalidato all'orecchio con il protocollo della sezione 10, non solo con i test. È un costo accettato e rimandato a dopo la decisione go/no-go.
+A warning for the future: a rewrite of the render chain will not produce identical samples, because the compressor and
+the reverb are implementations specific to the library. A port must be re-validated by ear with the protocol in section
+10, not only with tests. This is an accepted cost, deferred until after the go/no-go decision.
 
-## 8. CLI, repository e output
+## 8. CLI, repository and output
 
-Sei comandi coprono l'intero flusso. `mixpoc` è un nome provvisorio.
+Six commands cover the whole flow. `mixpoc` is a provisional name.
 
 ```bash
-mixpoc analyze <progetto>                      # scrive analysis.json
+mixpoc analyze <progetto>                      # writes analysis.json
 mixpoc mix <progetto> [--max-iter 3] [--decider llm|mock] [--export-stems] [--baseline-only]
 mixpoc revise <progetto> "voce più avanti, meno riverbero sulle chitarre"
 mixpoc master <progetto> [--mix <file>] [--reference <file>]
-mixpoc report <progetto>                       # rigenera report.md dell'ultimo run
-mixpoc ab <progetto>                           # prepara i file per l'ascolto cieco
+mixpoc report <progetto>                       # regenerates report.md of the last run
+mixpoc ab <progetto>                           # prepares the files for blind listening
 ```
 
-`<progetto>` è la cartella che contiene `project.yaml`. Ogni comando esce con codice diverso da zero in caso di errore.
+`<progetto>` is the folder that contains `project.yaml`. Every command exits with a non-zero code on error.
 
-`revise`, `master`, `report` e `ab` lavorano sull'ultimo run, salvo indicazione diversa con `--run <cartella>`.
+`revise`, `master`, `report` and `ab` work on the last run, unless otherwise indicated with `--run <cartella>`.
 
-Struttura del repository:
+Repository structure:
 
 ```text
 mixpoc/
@@ -376,7 +418,7 @@ mixpoc/
   README.md
   src/mixpoc/
     cli.py
-    project.py          # caricamento e validazione di project.yaml
+    project.py          # loading and validation of project.yaml
     audio_io.py
     analysis/
       stem.py
@@ -384,22 +426,22 @@ mixpoc/
       masking.py
       reference.py
     decision/
-      schema.py         # modelli Pydantic del piano
+      schema.py         # Pydantic models of the plan
       prompt.py
-      llm.py            # decisore reale via OpenRouter
-      mock.py           # decisore finto
+      llm.py            # real decider via OpenRouter
+      mock.py           # fake decider
       validate.py
     render/
-      chain.py          # catena per stem
+      chain.py          # chain per stem
       mixbus.py
     evaluate.py
-    loop.py             # ciclo decisione, render, valutazione
+    loop.py             # decision, render, evaluation loop
     master.py
     report.py
   tests/
 ```
 
-Cartella di un brano e output di un run:
+Folder of a track and output of a run:
 
 ```text
 mio_brano/
@@ -417,90 +459,100 @@ mio_brano/
         llm_request.json
         llm_response.json
       iter_01/
-      best.json           # indica l'iterazione migliore
+      best.json           # points to the best iteration
       master/
         master.wav
         master_report.json
       report.md
 ```
 
-Un run non modifica mai i file in `stems/` e `references/`, e non sovrascrive run precedenti.
+A run never modifies the files in `stems/` and `references/`, and never overwrites earlier runs.
 
-## 9. Milestone
+## 9. Milestones
 
-Otto milestone in sequenza: ognuna si chiude con i test verdi e una pausa per la revisione dell'autore, prima di iniziare la successiva.
+Eight milestones in sequence: each one closes with green tests and a pause for the author's review before the next one
+starts.
 
-1. **M0, fondamenta.** Repository, CLI vuota, caricamento di `project.yaml`, I/O audio, somma grezza.
-   - Accettazione: `mixpoc mix --baseline-only` su stem sintetici, senza ancora alcun piano, scrive `baseline.wav` entro −3 dBTP.
-2. **M1, analisi.** `analysis.json` completo per stem, mix e riferimenti (ANA-1 → ANA-13).
-   - Accettazione: un seno a 1 kHz cade nella banda 500–2k; il rumore rosa dà energia simile nelle bande di pari ampiezza in ottave; due stem identici danno il mascheramento massimo.
-3. **M2, render.** Applica un piano scritto a mano (REN-1 → REN-7).
-   - Accettazione: +6 dB di gain danno +6 LU misurati, ±0,1; pan a −1 azzera il canale destro; il passa-alto attenua sotto il taglio; due render dello stesso piano hanno lo stesso hash.
-4. **M3, decisione.** Schema, prompt, decisore finto, decisore reale, validazione e nuovi tentativi (DEC-1 → DEC-8).
-   - Accettazione: il flusso completo gira offline con il decisore finto; con il modello reale esce un piano valido e i log sono completi.
-5. **M4, ciclo di verifica.** Valutazione, criteri di stop, piano migliore, report (EVA-1 → EVA-6, REP-1).
-   - Accettazione: il report confronta la distanza della somma grezza con quella di ogni iterazione; il piano marcato come migliore ha la distanza minima tra quelli validi; `report.md` viene generato.
-6. **M5, revisione a parole.** Comando `revise` (REV-1 → REV-3).
-   - Accettazione: con la richiesta "voce più avanti" il report mostra un diff sui parametri della voce o degli stem che la coprono.
-7. **M6, master.** Comando `master` (MAS-1 → MAS-3).
-   - Accettazione: `master.wav` prodotto; `master_report.json` riporta LUFS, true peak e distanza dal riferimento.
-8. **M7, ascolto.** Comando `ab` (REP-2) e protocollo della sezione 10 su 3 brani reali.
-   - Accettazione: scheda di ascolto compilata e decisione go/no-go annotata nel README.
+1. **M0, foundations.** Repository, empty CLI, loading of `project.yaml`, audio I/O, raw sum.
+   - Acceptance: `mixpoc mix --baseline-only` on synthetic stems, without any plan yet, writes `baseline.wav` within −3 dBTP.
+2. **M1, analysis.** Complete `analysis.json` for stems, mix and references (ANA-1 → ANA-13).
+   - Acceptance: a 1 kHz sine falls in the 500–2k band; pink noise gives similar energy in bands of equal octave width; two
+     identical stems give maximum masking.
+3. **M2, render.** Applies a hand-written plan (REN-1 → REN-7).
+   - Acceptance: +6 dB of gain give +6 measured LU, ±0.1; a pan at −1 zeroes the right channel; the high-pass attenuates
+     below the cutoff; two renders of the same plan have the same hash.
+4. **M3, decision.** Schema, prompt, fake decider, real decider, validation and retries (DEC-1 → DEC-8).
+   - Acceptance: the full flow runs offline with the fake decider; with the real model a valid plan comes out and the logs
+     are complete.
+5. **M4, verification loop.** Evaluation, stop criteria, best plan, report (EVA-1 → EVA-6, REP-1).
+   - Acceptance: the report compares the raw-sum distance with that of each iteration; the plan marked as best has the
+     minimum distance among the valid ones; `report.md` is generated.
+6. **M5, revision in words.** The `revise` command (REV-1 → REV-3).
+   - Acceptance: with the request "voce più avanti" ("vocal further forward"), the report shows a diff on the parameters of
+     the vocal or of the stems that cover it.
+7. **M6, master.** The `master` command (MAS-1 → MAS-3).
+   - Acceptance: `master.wav` produced; `master_report.json` reports LUFS, true peak and distance from the reference.
+8. **M7, listening.** The `ab` command (REP-2) and the protocol of section 10 on 3 real tracks.
+   - Acceptance: listening sheet completed and the go/no-go decision noted in the README.
 
-Regole di lavoro per Claude Code:
+Working rules for Claude Code:
 
-- Una milestone alla volta. A fine milestone: riepilogo di cosa è stato fatto, cosa è stato deciso e cosa resta dubbio.
-- Niente funzionalità fuori scope, nemmeno "già che ci siamo".
-- Se un requisito è ambiguo o una libreria non fa ciò che serve, fermarsi e chiedere invece di aggirare il problema.
-- Nessun test chiama la rete. I test con il modello reale stanno dietro un marker e non girano di default.
+- One milestone at a time. At the end of a milestone: a summary of what was done, what was decided and what remains doubtful.
+- No out-of-scope features, not even "while we're at it".
+- If a requirement is ambiguous or a library does not do what is needed, stop and ask instead of working around the problem.
+- No test calls the network. Tests with the real model sit behind a marker and do not run by default.
 
-## 10. Test e valutazione
+## 10. Tests and evaluation
 
-I test automatici verificano che l'engine faccia ciò che dichiara; solo l'ascolto dice se il risultato è buono.
+The automated tests verify that the engine does what it declares; only listening says whether the result is good.
 
-### 10.1 Test automatici
+### 10.1 Automated tests
 
-- **Segnali sintetici generati nei test:** seni, rumore rosa, impulsi, silenzio. Nessun file audio nel repository.
-- **Analisi:** valori attesi noti per ogni misura, con tolleranze esplicite.
-- **Render:** un test per ogni blocco della catena e un test di determinismo sull'hash.
-- **Schema:** piani validi accettati, piani fuori limite corretti o rifiutati, risposte non JSON gestite.
-- **Flusso completo:** `analyze`, `mix`, `revise`, `master` con il decisore finto, su un progetto sintetico creato in una cartella temporanea.
+- **Synthetic signals generated in the tests:** sines, pink noise, impulses, silence. No audio file in the repository.
+- **Analysis:** known expected values for each measure, with explicit tolerances.
+- **Render:** one test per block of the chain and a determinism test on the hash.
+- **Schema:** valid plans accepted, out-of-limit plans corrected or rejected, non-JSON responses handled.
+- **Full flow:** `analyze`, `mix`, `revise`, `master` with the fake decider, on a synthetic project created in a temporary folder.
 
-### 10.2 Protocollo di ascolto
+### 10.2 Listening protocol
 
-1. Scegliere 3 brani dell'autore, diversi per arrangiamento, da 4 a 12 stem ciascuno, con almeno un riferimento a testa.
-2. Per ogni brano eseguire `mix` e poi `ab`. I file a confronto sono: somma grezza, mix AI migliore e, se esiste, mix manuale dell'autore.
-3. `ab` porta tutti i file allo stesso loudness e li rinomina a caso. Senza questo passo vince sempre il file più forte.
-4. Ascoltare su almeno due sistemi, per esempio cuffie e casse.
-5. Per ogni file annotare un voto da 1 a 5 su bilanciamento, chiarezza, basse e spazio, più i difetti evidenti. Poi indicare il preferito.
-6. Aprire la chiave solo dopo aver votato.
-7. Su ciascun brano provare almeno due richieste con `revise` e annotare se il cambio va nella direzione chiesta.
+1. Choose 3 of the author's tracks, different in arrangement, from 4 to 12 stems each, with at least one reference each.
+2. For each track run `mix` and then `ab`. The files to compare are: the raw sum, the best AI mix and, if it exists, the
+   author's manual mix.
+3. `ab` brings all the files to the same loudness and renames them at random. Without this step the louder file always wins.
+4. Listen on at least two systems, for example headphones and speakers.
+5. For each file, note a score from 1 to 5 on balance, clarity, low end and space, plus any obvious defects. Then indicate
+   the preferred one.
+6. Open the key only after voting.
+7. On each track, try at least two requests with `revise` and note whether the change goes in the requested direction.
 
-### 10.3 Decisione
+### 10.3 Decision
 
-- **Go:** le soglie H1 → H5 della sezione 2 sono rispettate.
-- **Go con riserva:** H3 fallisce ma i difetti annotati puntano a una causa precisa, per esempio una misura mancante.
-- **No-go:** il mix AI non batte la somma grezza e le motivazioni del modello non spiegano i difetti.
+- **Go:** the thresholds H1 → H5 of section 2 are met.
+- **Go with caveat:** H3 fails, but the noted defects point to a precise cause, for example a missing measure.
+- **No-go:** the AI mix does not beat the raw sum, and the model's reasons do not explain the defects.
 
-## 11. Rischi e domande aperte
+## 11. Risks and open questions
 
-Il rischio principale è che le misure non catturino ciò che rende buono un mix: in quel caso il modello decide bene su dati che non contano.
+The main risk is that the measures do not capture what makes a mix good: in that case the model decides well on data that
+does not matter.
 
-| Rischio | Effetto | Contromisura nella PoC |
+| Risk | Effect | Countermeasure in the PoC |
 | --- | --- | --- |
-| Le misure non descrivono ciò che l'orecchio giudica | Piani plausibili ma mix mediocri | Motivazioni per stem, ascolto cieco, set di misure facile da estendere |
-| Inseguire lo spettro del riferimento non equivale a un buon mix | Mix forzato verso un arrangiamento diverso | Il target guida il valutatore, ma la soglia H3 è l'ascolto |
-| Parametri statici, senza automazioni | Brani con forti differenze tra strofa e ritornello restano sbilanciati | Fuori scope: annotare il difetto, non risolverlo |
-| Il modello oscilla o esagera | Iterazioni che peggiorano | Limiti di variazione (DEC-5) e piano migliore (EVA-6) |
-| Compressore e riverbero di base | Risultato meno rifinito di una DAW | Accettato per la PoC |
-| Analisi e storia fanno crescere i token | Costo e latenza in aumento | Tetto di ANA-13, storia limitata alle ultime 2 iterazioni |
+| The measures do not describe what the ear judges | Plausible plans but mediocre mixes | Reasons per stem, blind listening, a measure set easy to extend |
+| Chasing the reference spectrum is not the same as a good mix | Mix forced toward a different arrangement | The target guides the evaluator, but the H3 threshold is listening |
+| Static parameters, without automation | Tracks with strong differences between verse and chorus stay unbalanced | Out of scope: note the defect, do not solve it |
+| The model oscillates or overdoes it | Iterations that get worse | Variation limits (DEC-5) and best plan (EVA-6) |
+| Basic compressor and reverb | Result less refined than a DAW | Accepted for the PoC |
+| Analysis and history make tokens grow | Rising cost and latency | ANA-13 cap, history limited to the last 2 iterations |
 
-Da decidere prima di partire:
+To decide before starting:
 
-- [ ] Gli stem escono dalla DAW grezzi o con il bilanciamento dei fader? Decide il default di `pre_normalize`.
-- [ ] Quale modello usare come default su OpenRouter.
-- [ ] Sistema operativo e macchina su cui gira la PoC.
-- [ ] I 3 brani per l'ascolto, e per quali esiste un mix manuale.
-- [ ] Nome definitivo del pacchetto al posto di `mixpoc`.
+- [ ] Do the stems come out of the DAW raw or with the fader balance? Decides the default of `pre_normalize`.
+- [ ] Which model to use as the default on OpenRouter.
+- [ ] Operating system and machine on which the PoC runs.
+- [ ] The 3 tracks for listening, and for which of them a manual mix exists.
+- [ ] Final package name in place of `mixpoc`.
 
-Rimandato a dopo un eventuale go: automazioni per sezione, sidechain tra cassa e basso, bilanciamenti presi dai riferimenti separandoli in stem, plugin VST, export di un progetto DAW, master guidato a parole.
+Deferred until after a possible go: per-section automation, sidechain between kick and bass, balances taken from the
+references by separating them into stems, VST plugins, DAW project export, master guided by words.

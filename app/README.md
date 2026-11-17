@@ -67,4 +67,4 @@ make disk         # disk space used by the repository; make clean-stale to clean
   runs the main flows on the real engine and audio device and writes a report.
 - **What needs ears, a real key or a signature** is in [docs/app/VALIDATION.md](../docs/app/VALIDATION.md).
 
-The specification, the decisions and the progress log are in [`../docs`](../docs/FOUNDATION.md), in Italian.
+The specification, the decisions and the progress log are in [`../docs`](../docs/FOUNDATION.md).

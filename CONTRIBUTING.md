@@ -57,20 +57,19 @@ These rules hold the app together. A pull request that breaks one will not be me
 
 ### Conventions
 
-- Code, comments, commit messages and the interface are in English.
+- Everything is in English: code, comments, commit messages, the interface and the documents.
 - Types are defined in Rust; the JSON Schemas and the TypeScript types are generated with `make schemas`, never
   edited by hand. The interface holds no domain logic of its own.
 - Every test names the requirement it verifies (`/// req: ENG-4` in Rust, `// req: UI-5` in TypeScript). The
-  requirements are numbered in [docs/FOUNDATION.md](docs/FOUNDATION.md), section 3. That document is in Italian:
-  if you cannot find the right one, say so in the pull request and it will be sorted out in review.
+  requirements are numbered in [docs/FOUNDATION.md](docs/FOUNDATION.md), section 3. If you
+  cannot find the right one, say so in the pull request and it will be sorted out in review.
 - Never weaken a test to make it pass. If a test is wrong, say why in the pull request.
 - Small commits, each with a message that says what changed.
 
-### About the Italian documents
+### About the project documents
 
-The specification and the project log in `docs/` are in Italian, the author's language. You do not need to read
-them to fix a bug, and you are not expected to write in Italian. If a change needs the specification updated, the
-maintainer will do that part.
+You do not need to read the specification and the project log in `docs/` to fix a bug. If a change needs the
+specification updated, the maintainer will do that part.
 
 ## Licence of contributions
 

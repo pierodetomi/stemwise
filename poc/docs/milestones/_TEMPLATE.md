@@ -1,75 +1,75 @@
-# Mx — <nome della milestone>
+# Mx — <milestone name>
 
-- Stato: 🟦 in corso | 🟨 in revisione autore | ✅ approvata
+- Status: 🟦 in progress | 🟨 in author review | ✅ approved
 - Branch: `milestone/mx-<slug>`
-- Requisiti PRD: <es. ANA-1 → ANA-13>
-- Sezioni PRD lette: <es. §5.2, §6.2, §9, §10.1>
+- PRD requirements: <e.g. ANA-1 → ANA-13>
+- PRD sections read: <e.g. §5.2, §6.2, §9, §10.1>
 
-## Piano (scritto all'avvio, approvato dall'autore prima di scrivere codice)
+## Plan (written at the start, approved by the author before writing code)
 
-### Requisiti → test previsti
+### Requirements → planned tests
 
-| Id | Cosa verificare | Test previsto | Tolleranza |
+| Id | What to verify | Planned test | Tolerance |
 | --- | --- | --- | --- |
-| ANA-1 | … | `tests/analysis/test_stem.py::test_…` | ±0,1 LU |
+| ANA-1 | … | `tests/analysis/test_stem.py::test_…` | ±0.1 LU |
 
-### Criteri di accettazione → test
+### Acceptance criteria → tests
 
-| Criterio (PRD §9) | Test |
+| Criterion (PRD §9) | Test |
 | --- | --- |
 | … | `…` (`@pytest.mark.acceptance("Mx")`) |
 
-### Passi
+### Steps
 
 1. …
 
-### Ambiguità e domande
+### Ambiguities and questions
 
-- Nessuna / Q-x in [DECISIONS.md](../DECISIONS.md)
+- None / Q-x in [DECISIONS.md](../DECISIONS.md)
 
-## Chiusura
+## Closing
 
-### Fatto
-
-- …
-
-### Deciso
-
-- D-xxx … (dettagli in DECISIONS.md)
-
-### Dubbi e rischi
+### Done
 
 - …
 
-### Fuori scope segnalato
+### Decided
 
-- Nessuno / …
+- D-xxx … (details in DECISIONS.md)
 
-### Verifica automatica
+### Doubts and risks
+
+- …
+
+### Flagged out of scope
+
+- None / …
+
+### Automated check
 
 ```text
-<output sintetico di `make check` e `make reqs M=Mx`>
+<brief output of `make check` and `make reqs M=Mx`>
 ```
 
-Requisiti senza test automatico e motivo: …
+Requirements without an automatic test and the reason: …
 
-Esito `milestone-reviewer`: <sintesi dei rilievi e come sono stati gestiti>
+Outcome of `milestone-reviewer`: <summary of the findings and how they were handled>
 
-### Validazione manuale (per l'autore)
+### Manual validation (for the author)
 
-Prerequisiti: …
+Prerequisites: …
 
-1. Comando:
+1. Command:
    ```bash
    uv run stemwise …
    ```
-   Cosa controllare / ascoltare: …
-   Esito atteso: …
+   What to check / listen to: …
+   Expected outcome: …
 
-### Esito revisione autore
+### Author review outcome
 
-_Compilato dall'autore._
+_Filled in by the author._
 
-- Data:
-- Validazione manuale: ok / problemi: …
-- Decisione: approvata / da rivedere: …
+- Date:
+- Manual validation: ok / problems: …
+- Decision: approved / to revise: …

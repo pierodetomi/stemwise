@@ -1,33 +1,32 @@
 ---
-description: Avvia una milestone della PoC (piano + checkpoint con l'autore, nessun codice)
+description: Start a PoC milestone (plan + checkpoint with the author, no code)
 argument-hint: <M0..M7>
 ---
 
-Avvia la milestone **$ARGUMENTS**. In questa fase **non scrivi codice di produzione**: produci il piano e ti
-fermi per l'approvazione dell'autore.
+Start the milestone **$ARGUMENTS**. In this phase you **do not write production code**: you produce the plan and stop for
+the author's approval.
 
-1. **Precondizioni.** Leggi `poc/docs/PROGRESS.md`. Verifica che tutte le milestone precedenti siano ✅ e che
-   nessun'altra sia 🟦. Verifica `git status` pulito. Se una condizione non vale, fermati e spiegalo.
-2. **Lettura della specifica.** Leggi in `poc/docs/PRD.md`: §1–§3 (principi e scope), la sezione dei requisiti
-   della milestone (§5.x), i contratti dati coinvolti (§6), §7, la voce della milestone in §9 e §10.1. Leggi
-   `poc/docs/DECISIONS.md` e i report delle milestone precedenti in `poc/docs/milestones/` (soprattutto "Dubbi" e
-   "Esito revisione autore").
-3. **Domande bloccanti.** Controlla in DECISIONS.md le domande aperte che bloccano $ARGUMENTS. Elenca
-   ogni nuova ambiguità trovata (requisito interpretabile in più modi, libreria che forse non fa ciò che
-   serve, conflitto con lo scope). Aggiungile come `Q-n` in DECISIONS.md con le alternative possibili.
-4. **Branch.** `git switch -c milestone/<mx>-<slug>` (es. `milestone/m1-analysis`).
-5. **Piano.** Crea `poc/docs/milestones/$ARGUMENTS.md` dal modello `poc/docs/milestones/_TEMPLATE.md` e compila solo
-   la sezione "Piano":
-   - tabella requisiti → test previsti, con tolleranze esplicite e motivate;
-   - tabella criteri di accettazione → test `acceptance`;
-   - passi piccoli e ordinati, ciascuno chiudibile con `make -C poc check` verde e un commit;
-   - eventuali nuove dipendenze (solo stack PRD §7) e documenti da aggiornare (`poc/docs/analysis.md`, `poc/schemas/`).
-6. Aggiorna `poc/docs/PROGRESS.md`: stato 🟦, link al report, milestone attiva.
+1. **Preconditions.** Read `poc/docs/PROGRESS.md`. Verify that all previous milestones are ✅ and that none is 🟦. Verify
+   that `git status` is clean. If a condition does not hold, stop and explain.
+2. **Reading the specification.** Read in `poc/docs/PRD.md`: §1–§3 (principles and scope), the section with the requirements of
+   the milestone (§5.x), the data contracts involved (§6), §7, the milestone entry in §9 and §10.1. Read `poc/docs/DECISIONS.md`
+   and the reports of the previous milestones in `poc/docs/milestones/` (especially "Doubts and risks" and "Author review
+   outcome").
+3. **Blocking questions.** Check in DECISIONS.md the open questions that block $ARGUMENTS. List each new ambiguity found
+   (a requirement that can be read in more than one way, a library that may not do what is needed, a conflict with the scope).
+   Add them as `Q-n` in DECISIONS.md with the possible alternatives.
+4. **Branch.** `git switch -c milestone/<mx>-<slug>` (e.g. `milestone/m1-analysis`).
+5. **Plan.** Create `poc/docs/milestones/$ARGUMENTS.md` from the template `poc/docs/milestones/_TEMPLATE.md` and fill in only the
+   "Plan" section:
+   - table of requirements → planned tests, with explicit and justified tolerances;
+   - table of acceptance criteria → `acceptance` tests;
+   - small, ordered steps, each one closable with `make -C poc check` green and a commit;
+   - any new dependencies (only the PRD §7 stack) and documents to update (`poc/docs/analysis.md`, `poc/schemas/`).
+6. Update `poc/docs/PROGRESS.md`: status 🟦, link to the report, active milestone.
 7. Commit: `$ARGUMENTS: plan`.
-8. **Checkpoint.** Presenta all'autore, in italiano e in modo sintetico: passi, test chiave, domande aperte
-   con le alternative e la tua raccomandazione. **Fermati e attendi** l'ok o le risposte. Non iniziare il
-   primo passo nello stesso turno.
+8. **Checkpoint.** Present to the author, concisely: steps, key tests, open questions with the alternatives and
+   your recommendation. **Stop and wait** for the OK or the answers. Do not start the first step in the same turn.
 
-Dopo l'ok: esegui i passi uno alla volta (test prima, implementazione, `make -C poc check` verde, commit
-`$ARGUMENTS: <cosa> (<ID requisiti>)`). Se durante lo sviluppo emerge un'ambiguità nuova, registrala e chiedi
-invece di aggirarla. Quando tutti i passi sono chiusi, usa `/milestone-close`.
+After the OK: carry out the steps one at a time (tests first, implementation, `make -C poc check` green, commit
+`$ARGUMENTS: <what> (<requirement IDs>)`). If during development a new ambiguity emerges, record it and ask instead of working
+around it. When all the steps are closed, use `/milestone-close`.

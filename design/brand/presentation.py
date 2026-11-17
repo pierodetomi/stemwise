@@ -97,16 +97,16 @@ def build(out, g):
         f'<rect x="0" y="0" width="100" height="100" fill="{C["bg"]}"/>{grid}'
         f'<g opacity=".55">{g.mark_groups(B, g.LIME, g.LILAC, ids=False)}</g>{guides}{vguides}{spine}{ctrl}'
         + lbl(-2, B["top"][0] + 1, "20", "end")
-        + lbl(-2, B["top"][1] + 1, "45,5", "end")
-        + lbl(-2, B["bot"][1] + 1, "54,5", "end")
+        + lbl(-2, B["top"][1] + 1, "45.5", "end")
+        + lbl(-2, B["bot"][1] + 1, "54.5", "end")
         + lbl(-2, B["bot"][0] + 1, "80", "end")
         + lbl(B["x0"], 104, "9", "middle")
         + lbl(B["x1"], 104, "53", "middle")
         + lbl(B["pill"][0], 104, "65", "middle")
         + lbl(B["pill"][2], 104, "95", "middle")
-        + lbl(59, 33, "varco 7,5", "middle")
+        + lbl(59, 33, "gap 7.5", "middle")
         + lbl(80, 34, "30 × 26, r 10", "middle")
-        + lbl(14, 14, "tratto 9", "middle")
+        + lbl(14, 14, "stroke 9", "middle")
         + "</svg>"
     )
 
@@ -182,32 +182,32 @@ td:first-child{{color:{C["dim"]};width:30px}}
 
     defects = [
         (
-            "Si legge come l'icona generica “merge”.",
-            "Le due linee non finiscono più in una freccia comune: si accostano e consegnano il brano a una forma piena, separata. Il segno è una parentesi che raccoglie, seguita da una stanza.",
+            "It reads as the generic “merge” icon.",
+            "The two lines no longer end in a common arrow: they come close and hand the song to a separate, solid shape. The mark is a bracket that gathers, followed by a room.",
         ),
         (
-            "Le due linee arrivano insieme, come due ingressi alla pari.",
-            "Le due traiettorie sono ora entrambe il Mix (lime): molte parti che si riuniscono. Il Master (lilla) viene dopo, oltre un varco, e si legge da sinistra a destra.",
+            "The two lines arrive together, like two equal inputs.",
+            "The two trajectories are now both the Mix (lime): many parts that come together. The Master (lilac) comes after, beyond a gap, and reads from left to right.",
         ),
         (
-            "La punta di freccia è un cliché e a 32 px diventa una macchia.",
-            "La freccia è tolta. Al suo posto la stanza del Master, un rettangolo arrotondato pieno, staccato dalle linee da un varco di 7,5/100.",
+            "The arrowhead is a cliché and at 32 px it becomes a blotch.",
+            "The arrow is removed. In its place the Master room, a solid rounded rectangle, separated from the lines by a gap of 7.5/100.",
         ),
         (
-            "Il segno occupa metà dell'altezza.",
-            "Il segno va da 15,5 a 84,5 in altezza e da 4,5 a 95 in larghezza: due terzi del quadrato, invece di metà.",
+            "The mark occupies half the height.",
+            "The mark spans 15.5 to 84.5 in height and 4.5 to 95 in width: two thirds of the square, instead of half.",
         ),
         (
-            "In monocromia le due stanze spariscono.",
-            "Il Mix è fatto di linee, il Master è una forma piena: due stanze riconoscibili anche in un colore solo. In barra la stanza della fase corrente si accende.",
+            "In monochrome the two rooms disappear.",
+            "The Mix is made of lines, the Master is a solid shape: two rooms recognizable even in a single color. In the bar the room of the current phase lights up.",
         ),
         (
-            "Il lettering del lockup non è Bricolage Grotesque.",
-            "Il nome è Bricolage Grotesque 600, tracking −0,01 em, convertito in tracciati dallo stesso file del font che l'app include.",
+            "The lockup lettering is not Bricolage Grotesque.",
+            "The name is Bricolage Grotesque 600, tracking −0.01 em, converted to outlines from the same font file the app includes.",
         ),
         (
-            "Il fondo dell'icona non è uno squircle.",
-            "Il fondo è lo squircle ad angoli continui di macOS: corpo di 824 px centrato sul quadrato di 1024, con l'ombra nel margine.",
+            "The icon background is not a squircle.",
+            "The background is the macOS continuous-corner squircle: an 824 px body centered on the 1024 square, with the shadow in the margin.",
         ),
     ]
 
@@ -246,7 +246,7 @@ td:first-child{{color:{C["dim"]};width:30px}}
         return (
             f'<figure><div class="px" style="width:{s}px;height:{s}px">{img(name, s)}'
             f'<div class="pg" style="background-size:{k}px {k}px"></div></div>'
-            f"<figcaption>{label} · {px} px, ingrandito {k}×</figcaption></figure>"
+            f"<figcaption>{label} · {px} px, magnified {k}×</figcaption></figure>"
         )
 
     m20_lime = read("mark-20.svg").replace("currentColor", g.LIME)
@@ -261,13 +261,13 @@ td:first-child{{color:{C["dim"]};width:30px}}
         + f'<rect x="{4.5 - x}" y="44" width="{x}" height="12" fill="{C["lilac"]}" fill-opacity=".18"/>'
         f'<text x="{4.5 - x / 2}" y="52" font-size="4" text-anchor="middle" fill="{C["dim"]}" font-family="Figtree">x</text>'
         f'<rect x="65" y="{15.5 - x}" width="30" height="{x}" fill="{C["lilac"]}" fill-opacity=".18"/>'
-        f'<text x="80" y="{15.5 - x / 2 + 1.4}" font-size="4" text-anchor="middle" fill="{C["dim"]}" font-family="Figtree">x = ½ stanza</text>'
+        f'<text x="80" y="{15.5 - x / 2 + 1.4}" font-size="4" text-anchor="middle" fill="{C["dim"]}" font-family="Figtree">x = ½ room</text>'
         "</svg>"
     )
 
     def tile(content, bg, cap, good):
         cls = "ok" if good else "no"
-        sign = "Sì" if good else "No"
+        sign = "Yes" if good else "No"
         return (
             f'<figure><div class="t" style="background:{bg}">{content}</div>'
             f'<figcaption><b class="{cls}">{sign}</b> · {cap}</figcaption></figure>'
@@ -279,58 +279,58 @@ td:first-child{{color:{C["dim"]};width:30px}}
     )
     dos = "".join(
         [
-            tile(mk(), C["bg"], "a colori sul melanzana", True),
-            tile(mk(), C["bgm"], "a colori sull'indaco", True),
-            tile(mk(C["text"], C["text"]), C["well"], "monocromo chiaro sullo scuro", True),
-            tile(mk(C["bg"], C["bg"]), "#E9E4EA", "monocromo scuro sul chiaro", True),
-            tile(mk(style="transform:rotate(-18deg)"), C["bg"], "non ruotare", False),
-            tile(mk("#F28A3C", "#3C9AF2"), C["bg"], "non ricolorare con altre tinte", False),
+            tile(mk(), C["bg"], "in color on aubergine", True),
+            tile(mk(), C["bgm"], "in color on indigo", True),
+            tile(mk(C["text"], C["text"]), C["well"], "light monochrome on dark", True),
+            tile(mk(C["bg"], C["bg"]), "#E9E4EA", "dark monochrome on light", True),
+            tile(mk(style="transform:rotate(-18deg)"), C["bg"], "do not rotate", False),
+            tile(mk("#F28A3C", "#3C9AF2"), C["bg"], "do not recolor with other hues", False),
             tile(
-                mk(style="transform:scaleX(1.45)"), C["bg"], "non allungare né schiacciare", False
+                mk(style="transform:scaleX(1.45)"), C["bg"], "do not stretch or squash", False
             ),
-            tile(mk(), "#F2C744", "non mettere a colori su fondi chiari o colorati", False),
+            tile(mk(), "#F2C744", "do not use in color on light or colored backgrounds", False),
         ]
     )
 
     html = f"""<!doctype html>
-<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Stemwise — marchio</title>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stemwise — mark</title>
 <link rel="icon" href="{uri(read("favicon-32.svg"))}">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
 <style>{css}</style></head><body><main>
 
 <div class="hero"><div>
-<p class="eyebrow">Stemwise · marchio · direzione D rifinita</p>
-<h1>Due stanze</h1>
-<p class="dim" style="margin-top:16px">Le due traiettorie della proposta D sono il Mix: molte parti che si avvicinano e si riuniscono. Oltre un varco c'è il Master, una sola forma piena: il brano finito. Prima le linee, poi la stanza; prima il lime, poi il lilla.</p>
-<p class="dim">Il segno è fatto di due parti separabili, <code>room-mix</code> e <code>room-master</code>: nella barra in alto si accende la stanza della fase in cui sei.</p>
+<p class="eyebrow">Stemwise · mark · refined direction D</p>
+<h1>Two rooms</h1>
+<p class="dim" style="margin-top:16px">The two trajectories of proposal D are the Mix: many parts that approach and come together. Beyond a gap is the Master, a single solid shape: the finished song. First the lines, then the room; first the lime, then the lilac.</p>
+<p class="dim">The mark is made of two separable parts, <code>room-mix</code> and <code>room-master</code>: in the top bar the room of the phase you are in lights up.</p>
 </div><div class="lock">{img("lockup.svg", 420, 71, alt="Stemwise")}</div></div>
 
-<section><p class="eyebrow">1 · Dalla proposta alla rifinitura</p><h2>Stesse traiettorie, un altro racconto</h2>
-<p class="dim">Le curve sono quelle della D: corsa orizzontale, curva, diagonale dritta, curva, corsa orizzontale, con tangenti continue. Cambia quello che fanno: si accostano senza fondersi, e la freccia lascia il posto alla seconda stanza.</p>
+<section><p class="eyebrow">1 · From proposal to refinement</p><h2>Same trajectories, another story</h2>
+<p class="dim">The curves are those of D: horizontal run, curve, straight diagonal, curve, horizontal run, with continuous tangents. What changes is what they do: they come close without merging, and the arrow gives way to the second room.</p>
 <div class="before-after" style="margin:22px 0 26px">
-<figure><div class="well"><img src="{uri(ORIGINAL)}" width="200" height="200" alt=""></div><figcaption>Proposta di partenza</figcaption></figure>
+<figure><div class="well"><img src="{uri(ORIGINAL)}" width="200" height="200" alt=""></div><figcaption>Starting proposal</figcaption></figure>
 <div class="arrowtxt">→</div>
-<figure><div class="well">{img("mark.svg", 200)}</div><figcaption>Rifinitura</figcaption></figure></div>
-<table><tr><th></th><th>Il difetto</th><th>Come è risolto</th></tr>
+<figure><div class="well">{img("mark.svg", 200)}</div><figcaption>Refinement</figcaption></figure></div>
+<table><tr><th></th><th>The flaw</th><th>How it is solved</th></tr>
 {"".join(f"<tr><td>{i + 1}</td><td>{a}</td><td>{b}</td></tr>" for i, (a, b) in enumerate(defects))}
 </table></section>
 
-<section><p class="eyebrow">2 · Costruzione</p><h2>Griglia di 100, tratto 9</h2>
+<section><p class="eyebrow">2 · Construction</p><h2>100 grid, stroke 9</h2>
 <div class="grid2" style="align-items:start"><div class="card">{construction}</div><div>
-<h3 style="margin-top:0">Le due linee del Mix</h3>
-<p class="dim">Partono a 20 e a 80 e arrivano a 45,5 e 54,5: alla fine si toccano senza sovrapporsi (tratto 9, estremità e giunzioni arrotondate). Ogni curva ha i punti di controllo a x = 31 e x = 45; il tratto diagonale prende il 40 % centrale del percorso tra i due punti di controllo.</p>
-<h3>La stanza del Master</h3>
-<p class="dim">Un rettangolo pieno di 30 × 26 con raggio 10, centrato sull'asse: più alto delle due linee affiancate (18) di quasi un tratto, perché a colpo d'occhio pesi quanto il Mix. Il raggio è morbido come quello delle schede dell'app. Il varco tra le linee e la stanza è 7,5.</p>
-<h3>Ingombro</h3>
-<p class="dim">Da 4,5 a 95 in larghezza, da 15,5 a 84,5 in altezza: il segno è centrato nel quadrato, più largo che alto come la lettura da sinistra a destra che racconta.</p>
-<h3>Versioni ottiche</h3>
-<p class="dim">A 20, 32 e 16 px il segno è ridisegnato sulla griglia dei pixel: corse orizzontali su righe intere, tratto di 2 px (1,5 a 16), varco di almeno 1,5 px, stanza con raggio di 2 px.</p>
+<h3 style="margin-top:0">The two Mix lines</h3>
+<p class="dim">They start at 20 and 80 and arrive at 45.5 and 54.5: at the end they touch without overlapping (stroke 9, rounded caps and joins). Each curve has its control points at x = 31 and x = 45; the diagonal segment takes the central 40 % of the path between the two control points.</p>
+<h3>The Master room</h3>
+<p class="dim">A solid rectangle of 30 × 26 with radius 10, centered on the axis: taller than the two lines side by side (18) by almost one stroke, so that at a glance it weighs as much as the Mix. The radius is soft like that of the app's cards. The gap between the lines and the room is 7.5.</p>
+<h3>Footprint</h3>
+<p class="dim">From 4.5 to 95 in width, from 15.5 to 84.5 in height: the mark is centered in the square, wider than tall like the left-to-right reading it tells.</p>
+<h3>Optical versions</h3>
+<p class="dim">At 20, 32 and 16 px the mark is redrawn on the pixel grid: horizontal runs on whole rows, 2 px stroke (1.5 at 16), gap of at least 1.5 px, room with a 2 px radius.</p>
 </div></div></section>
 
-<section><p class="eyebrow">3 · Icona dell'app</p><h2>Squircle ad angoli continui, corpo di 824</h2>
-<p class="dim">Dimensioni in pixel dello schermo: su un Mac Retina l'icona da 1024 occupa 512 punti, quella da 512 ne occupa 256.</p>
+<section><p class="eyebrow">3 · App icon</p><h2>Continuous-corner squircle, 824 body</h2>
+<p class="dim">Sizes in screen pixels: on a Retina Mac the 1024 icon takes 512 points, the 512 one takes 256.</p>
 <div class="grid2" style="align-items:end;margin-top:18px">
 <figure class="card big-icon" style="text-align:center">{img("icon-1024.svg", 512)}<figcaption>1024 px (512 pt)</figcaption></figure>
 <div class="card"><div class="sizes">
@@ -339,19 +339,19 @@ td:first-child{{color:{C["dim"]};width:30px}}
 <figure>{img("icon-1024.svg", 32)}<figcaption>32</figcaption></figure>
 <figure>{img("icon-1024.svg", 16)}<figcaption>16</figcaption></figure>
 </div></div></div>
-<h3>Nel Dock</h3>{dock}<p class="cap">Dock a 64 pt (l'icona a 128 px su Retina), tra quattro icone neutre.</p>
-<h3>Disegnati per le piccole dimensioni</h3>
+<h3>In the Dock</h3>{dock}<p class="cap">Dock at 64 pt (the icon at 128 px on Retina), among four neutral icons.</p>
+<h3>Designed for small sizes</h3>
 <div class="zoom card">{zoom("favicon-32.svg", 32, 8, "favicon-32")}{zoom("favicon-16.svg", 16, 12, "favicon-16")}
-<figure><div class="px" style="width:160px;height:160px"><img src="{uri(m20_lime)}" width="160" height="160" alt=""><div class="pg" style="background-size:8px 8px"></div></div><figcaption>mark-20 · 20 px, ingrandito 8×</figcaption></figure>
-<figure style="display:flex;flex-direction:column;align-items:center;gap:14px">{img("favicon-32.svg", 32)}{img("favicon-16.svg", 16)}<figcaption>alla dimensione reale</figcaption></figure>
+<figure><div class="px" style="width:160px;height:160px"><img src="{uri(m20_lime)}" width="160" height="160" alt=""><div class="pg" style="background-size:8px 8px"></div></div><figcaption>mark-20 · 20 px, magnified 8×</figcaption></figure>
+<figure style="display:flex;flex-direction:column;align-items:center;gap:14px">{img("favicon-32.svg", 32)}{img("favicon-16.svg", 16)}<figcaption>at real size</figcaption></figure>
 </div></section>
 
-<section><p class="eyebrow">4 · Barra in alto</p><h2>Il marchio dice anche in quale fase sei</h2>
-<p class="dim">Il marchio a 20 px (<code>mark-20.svg</code>) ha due gruppi: l'app accende la stanza della fase corrente nel suo accento e porta l'altra al 40 %. Nel Mix sono accese le linee, nel Master la stanza piena: la fase si legge dalla posizione oltre che dal colore.</p>
-<div class="grid2" style="margin-top:18px"><div><p class="cap">Adottata: stanza accesa</p>{bar("mix")}{bar("master")}</div>
-<div><p class="cap">Ripiego: tutto il marchio nell'accento della fase</p>{bar("mix", False)}{bar("master", False)}</div></div></section>
+<section><p class="eyebrow">4 · Top bar</p><h2>The mark also says which phase you are in</h2>
+<p class="dim">The 20 px mark (<code>mark-20.svg</code>) has two groups: the app lights the room of the current phase in its accent and brings the other to 40 %. In the Mix the lines are lit, in the Master the solid room: the phase reads from position as well as from color.</p>
+<div class="grid2" style="margin-top:18px"><div><p class="cap">Adopted: lit room</p>{bar("mix")}{bar("master")}</div>
+<div><p class="cap">Fallback: the whole mark in the phase accent</p>{bar("mix", False)}{bar("master", False)}</div></div></section>
 
-<section><p class="eyebrow">5 · Schermata iniziale e pagina di collegamento</p><h2>Il lockup al lavoro</h2>
+<section><p class="eyebrow">5 · Start screen and connection page</p><h2>The lockup at work</h2>
 <div class="welcome" style="margin-top:18px"><div class="l">{mark(g.BASE, g.LIME, g.LILAC, 48, 100)}
 <div class="name">Stemwise</div>
 <div class="slogan">Mix and master the songs you have already recorded. An assistant proposes, you listen and decide.</div>
@@ -361,37 +361,37 @@ td:first-child{{color:{C["dim"]};width:30px}}
 <div class="recent"><span>Northbound</span><small>Master · yesterday</small></div>
 <div class="recent"><span>Glass Harbour</span><small>Mix · 3 days ago</small></div>
 <div class="recent"><span>Small Hours</span><small>Master · last week</small></div></div></div>
-<h3>Pagina nel browser per collegare l'assistente</h3>
+<h3>Browser page for connecting the assistant</h3>
 <div class="connect"><header>{mark(g.P20, g.LIME, g.LILAC, 20, 20)}Stemwise</header>
 <div>Stemwise is now connected to your OpenRouter account. You can close this tab and go back to the app.</div></div>
 </section>
 
-<section><p class="eyebrow">6 · Monocromie</p><h2>Due stanze anche in un colore solo</h2>
+<section><p class="eyebrow">6 · Monochromes</p><h2>Two rooms even in a single color</h2>
 <div class="mono" style="margin-top:18px">
-<div class="d"><div class="row">{img("mono-light.svg", 120)}{mark(g.P20, g.TEXT, g.TEXT, 20, 20)}</div>{img("lockup-mono-light.svg", 300, 51, cls="lk")}<span class="cap">#F5F0F6 sullo scuro</span></div>
-<div class="lt"><div class="row">{img("mono-dark.svg", 120)}{mark(g.P20, g.BG, g.BG, 20, 20)}</div>{img("lockup-mono-dark.svg", 300, 51, cls="lk")}<span class="cap">#19121B sul chiaro</span></div>
+<div class="d"><div class="row">{img("mono-light.svg", 120)}{mark(g.P20, g.TEXT, g.TEXT, 20, 20)}</div>{img("lockup-mono-light.svg", 300, 51, cls="lk")}<span class="cap">#F5F0F6 on dark</span></div>
+<div class="lt"><div class="row">{img("mono-dark.svg", 120)}{mark(g.P20, g.BG, g.BG, 20, 20)}</div>{img("lockup-mono-dark.svg", 300, 51, cls="lk")}<span class="cap">#19121B on light</span></div>
 </div></section>
 
-<section><p class="eyebrow">7 · Area di rispetto e dimensione minima</p><h2>Mezza stanza tutto intorno</h2>
+<section><p class="eyebrow">7 · Clear space and minimum size</p><h2>Half a room all around</h2>
 <div class="clear" style="margin-top:18px"><div class="card">{clear_svg}</div><div>
-<p class="dim">L'area di rispetto è <b>x</b>, metà dell'altezza della stanza del Master (13/100 del lato del marchio), misurata dal segno visibile. Nel lockup vale lo stesso x, misurato sul marchio; tra marchio e nome la distanza è fissa (15 unità con il nome a 40).</p>
-<h3>Dimensioni minime</h3>
-<table><tr><td></td><td>Marchio</td><td>16 px. Sotto i 24 px si usano i disegni ottici: <code>mark-20.svg</code> in barra, <code>favicon-32.svg</code> e <code>favicon-16.svg</code> nel browser.</td></tr>
-<tr><td></td><td>Lockup</td><td>110 px di larghezza (nome alto circa 12 px). Più piccolo: solo il marchio.</td></tr>
-<tr><td></td><td>Icona</td><td>Tutte le dimensioni macOS da 16 a 1024 dallo stesso <code>icon-1024.svg</code>.</td></tr></table>
+<p class="dim">The clear space is <b>x</b>, half the height of the Master room (13/100 of the mark's side), measured from the visible mark. In the lockup the same x applies, measured on the mark; between mark and name the distance is fixed (15 units with the name at 40).</p>
+<h3>Minimum sizes</h3>
+<table><tr><td></td><td>Mark</td><td>16 px. Under 24 px the optical drawings are used: <code>mark-20.svg</code> in the bar, <code>favicon-32.svg</code> and <code>favicon-16.svg</code> in the browser.</td></tr>
+<tr><td></td><td>Lockup</td><td>110 px wide (name about 12 px tall). Smaller: the mark only.</td></tr>
+<tr><td></td><td>Icon</td><td>All macOS sizes from 16 to 1024 from the same <code>icon-1024.svg</code>.</td></tr></table>
 </div></div></section>
 
-<section><p class="eyebrow">8 · Usi corretti e scorretti</p><h2>Due colori, una forma, nessuna variazione</h2>
+<section><p class="eyebrow">8 · Correct and incorrect uses</p><h2>Two colors, one shape, no variation</h2>
 <div class="dos" style="margin-top:18px">{dos}</div></section>
 
-<section><p class="eyebrow">9 · Verifica</p><h2>I sei criteri</h2>
+<section><p class="eyebrow">9 · Verification</p><h2>The six criteria</h2>
 <table class="crit">
-<tr><td>Riconoscibilità</td><td class="dim">Una parentesi lime che consegna una stanza lilla: due forme semplici e un varco, che si ricordano. A 16 px, nel favicon e nell'icona, restano visibili linee, varco e stanza.</td></tr>
-<tr><td>Pertinenza</td><td class="dim">Racconta le due fasi in ordine: molte parti che si riuniscono (Mix), poi una sola cosa piena (Master). Non usa simboli dell'audio.</td></tr>
-<tr><td>Senza colore</td><td class="dim">Linee contro forma piena: le due stanze restano due anche in monocromia, e la barra in alto le distingue per posizione.</td></tr>
-<tr><td>Coerenza</td><td class="dim">Tratto arrotondato come le icone dell'app, raggi morbidi come schede e clip, accenti della fase, Bricolage Grotesque nel nome.</td></tr>
-<tr><td>Calma</td><td class="dim">Due colori sul melanzana, nessun bianco o nero pieni, nessun effetto; la sfumatura vive solo nel fondo dell'icona.</td></tr>
-<tr><td>Durata</td><td class="dim">Geometria essenziale, senza riferimenti a mode o a tecnologie: regge finché il prodotto ha due fasi.</td></tr>
+<tr><td>Recognizability</td><td class="dim">A lime bracket that hands over a lilac room: two simple shapes and a gap, which are remembered. At 16 px, in the favicon and in the icon, lines, gap and room remain visible.</td></tr>
+<tr><td>Relevance</td><td class="dim">It tells the two phases in order: many parts that come together (Mix), then a single solid thing (Master). It uses no audio symbols.</td></tr>
+<tr><td>Without color</td><td class="dim">Lines against a solid shape: the two rooms remain two even in monochrome, and the top bar tells them apart by position.</td></tr>
+<tr><td>Consistency</td><td class="dim">Rounded stroke like the app's icons, soft radii like cards and clips, phase accents, Bricolage Grotesque in the name.</td></tr>
+<tr><td>Calm</td><td class="dim">Two colors on aubergine, no pure white or black, no effects; the gradient lives only in the icon background.</td></tr>
+<tr><td>Durability</td><td class="dim">Essential geometry, with no references to fashions or technologies: it holds as long as the product has two phases.</td></tr>
 </table></section>
 
 </main></body></html>

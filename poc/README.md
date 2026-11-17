@@ -6,23 +6,23 @@
 > Italian. It is licensed under [GPL-3.0-or-later](LICENSE), unlike the rest of the repository, which is MIT. The
 > app is in [`../app`](../app/README.md).
 
-Proof of concept di un engine di mixing e mastering assistiti da AI: un modello linguistico riceve **solo
-misure numeriche** degli stem (mai audio) e restituisce un piano di mix in JSON, che l'engine applica in
-locale. Obiettivo: una decisione go/no-go sul costruire lo strumento completo.
+Proof of concept of an AI-assisted mixing and mastering engine: a language model receives **only numeric
+measurements** of the stems (never audio) and returns a mix plan in JSON, which the engine applies locally. Goal: a
+go/no-go decision on building the full tool.
 
-> **Il prodotto.** La PoC si è chiusa con un go. Il prodotto, Stemwise (DAW desktop per mix e master assistiti
-> da AI), è in [app/](../app/README.md): specifica in [docs/FOUNDATION.md](../docs/FOUNDATION.md), avanzamento in
-> [docs/app/PROGRESS.md](../docs/app/PROGRESS.md). Ciò che segue descrive la PoC, ora congelata.
+> **The product.** The PoC closed with a go. The product, Stemwise (a desktop DAW for AI-assisted mixing and
+> mastering), is in [app/](../app/README.md): specification in [docs/FOUNDATION.md](../docs/FOUNDATION.md), progress in
+> [docs/app/PROGRESS.md](../docs/app/PROGRESS.md). What follows describes the PoC, which is now frozen.
 
-- Specifica: [docs/PRD.md](docs/PRD.md)
-- Avanzamento: [docs/PROGRESS.md](docs/PROGRESS.md)
-- Decisioni e domande aperte: [docs/DECISIONS.md](docs/DECISIONS.md)
-- Istruzioni per l'agente: [POC-RULES.md](POC-RULES.md)
+- Specification: [docs/PRD.md](docs/PRD.md)
+- Progress: [docs/PROGRESS.md](docs/PROGRESS.md)
+- Decisions and open questions: [docs/DECISIONS.md](docs/DECISIONS.md)
+- Instructions for the agent: [POC-RULES.md](POC-RULES.md)
 
-## Requisiti
+## Requirements
 
-- macOS o Linux, Python 3.11–3.13, [uv](https://docs.astral.sh/uv/)
-- Solo per il decisore reale: una chiave OpenRouter in `OPENROUTER_API_KEY` (vedi `.env.example`)
+- macOS or Linux, Python 3.11–3.13, [uv](https://docs.astral.sh/uv/)
+- Only for the real decider: an OpenRouter key in `OPENROUTER_API_KEY` (see `.env.example`)
 
 ## Setup
 
@@ -31,207 +31,201 @@ make setup
 make check
 ```
 
-## Uso
+## Usage
 
-Un brano è una cartella con `project.yaml` (formato in [PRD §6.1](docs/PRD.md); schema in
-[schemas/project.schema.json](schemas/project.schema.json)), gli stem e gli eventuali riferimenti. Stem WAV
-(PCM 16/24, float 32) o FLAC (16/24), mono o stereo, tutti alla stessa frequenza; `sample_rate: auto` la
-ricava dagli stem.
+A track is a folder with `project.yaml` (format in [PRD §6.1](docs/PRD.md); schema in
+[schemas/project.schema.json](schemas/project.schema.json)), the stems and any references. WAV stems (PCM 16/24, float 32)
+or FLAC (16/24), mono or stereo, all at the same sample rate; `sample_rate: auto` derives it from the stems.
 
 ```bash
 uv run stemwise mix <cartella-del-brano> --baseline-only
 ```
 
-Scrive la somma grezza degli stem (`baseline.wav`, WAV 24 bit stereo, true peak ≤ −3 dBTP) in una nuova
-cartella `runs/<data-ora>/` del brano.
+Writes the raw sum of the stems (`baseline.wav`, 24-bit stereo WAV, true peak ≤ −3 dBTP) into a new folder
+`runs/<data-ora>/` of the track.
 
 ```bash
 uv run stemwise analyze <cartella-del-brano>
 ```
 
-Misura stem, somma grezza e riferimenti e scrive `analysis.json` in una nuova cartella `runs/<data-ora>/`:
-loudness, picchi, dinamica, energia in 8 bande, centroide, transienti, stereo, igiene per ogni stem; le stesse
-misure sulla somma; quote per banda, le 10 collisioni di mascheramento più forti e il profilo medio dei
-riferimenti. Contratto in [schemas/analysis.schema.json](schemas/analysis.schema.json), formule in
-[docs/analysis.md](docs/analysis.md).
+Measures the stems, the raw sum and the references, and writes `analysis.json` into a new folder `runs/<data-ora>/`:
+loudness, peaks, dynamics, energy in 8 bands, centroid, transients, stereo, hygiene for each stem; the same measures on
+the sum; band shares, the 10 strongest masking collisions and the average profile of the references. Contract in
+[schemas/analysis.schema.json](schemas/analysis.schema.json), formulas in [docs/analysis.md](docs/analysis.md).
 
 ```bash
 uv run stemwise mix <cartella-del-brano> [--decider llm|mock] [--max-iter 1-3] [--model <id>] \
     [--temperature <t>] [--reasoning-effort low|medium|high|xhigh] [--export-stems]
 ```
 
-Il ciclo di verifica: analisi e somma grezza, poi fino a 3 iterazioni di decisione, render e valutazione
-(`--max-iter` prevale su `options.max_iterations` di `project.yaml`). Scrive in una nuova cartella
-`runs/<data-ora>/`:
+The verification loop: analysis and raw sum, then up to 3 decision iterations, render and evaluation (`--max-iter` takes
+precedence over `options.max_iterations` in `project.yaml`). Writes into a new folder `runs/<data-ora>/`:
 
-- `analysis.json`, `baseline.wav` e `baseline_evaluation.json` (la somma grezza valutata come termine di
-  confronto);
-- per ogni iterazione `iter_NN/` con `plan.json`, `mix.wav`, `evaluation.json` (distanza spettrale dal profilo
-  dei riferimenti, scarti per banda, di ampiezza stereo e di dinamica, collisioni residue, vincoli tecnici,
-  misure del mix), `llm_request.json` (tutto ciò che è stato inviato, tentativo per tentativo) e
-  `llm_response.json` (risposte, token, costo, durata);
-- `best.json` (l'iterazione migliore: distanza minima tra quelle che rispettano i vincoli) e `report.md`
-  (tabella della somma grezza e di ogni iterazione, motivazioni del piano migliore, collisioni, costo).
+- `analysis.json`, `baseline.wav` and `baseline_evaluation.json` (the raw sum evaluated as a comparison term);
+- for each iteration, `iter_NN/` with `plan.json`, `mix.wav`, `evaluation.json` (spectral distance from the reference
+  profile, per-band, stereo-width and dynamics deviations, residual collisions, technical constraints, measures of the
+  mix), `llm_request.json` (everything that was sent, attempt by attempt) and `llm_response.json` (responses, tokens,
+  cost, duration);
+- `best.json` (the best iteration: minimum distance among those that meet the constraints) and `report.md` (table of the
+  raw sum and of each iteration, reasons for the best plan, collisions, cost).
 
-Il ciclo si ferma quando la distanza scende sotto 1,5 dB, quando migliora meno di 0,2 dB sull'iterazione
-precedente o al massimo delle iterazioni; senza riferimenti, alla prima iterazione che rispetta i vincoli.
-Dalla seconda iterazione il modello riceve le ultime 2 iterazioni con le loro valutazioni; gain e bande di EQ
-non possono cambiare più di ±4 e ±3 dB da un'iterazione all'altra. Al modello vanno solo misure, id, ruoli e
-note degli stem e il brief: niente audio, nomi di file o titolo. Se un piano è invalido viene rimandato al
-modello con gli errori fino a 2 volte; se fallisce anche così alla prima iterazione, il comando esce con errore
-e la cartella del run resta con i log; a un'iterazione successiva il ciclo si ferma e tiene il risultato. Se
-nessuna iterazione rispetta i vincoli tecnici il comando esce con errore (i file restano). Contratti in
-[schemas/evaluation.schema.json](schemas/evaluation.schema.json) e [schemas/best.schema.json](schemas/best.schema.json),
-formule in [docs/analysis.md](docs/analysis.md), sezione "Valutazione".
+The loop stops when the distance falls below 1.5 dB, when it improves by less than 0.2 dB over the previous iteration, or
+at the maximum number of iterations; without references, at the first iteration that meets the constraints. From the
+second iteration the model receives the last 2 iterations with their evaluations; gain and EQ bands cannot change by more
+than ±4 and ±3 dB from one iteration to the next. The model receives only measurements, ids, roles and notes of the stems,
+and the brief: no audio, file names or title. If a plan is invalid, it is sent back to the model with the errors up to 2
+times; if it also fails that way at the first iteration, the command exits with an error and the run folder keeps the
+logs; at a later iteration the loop stops and keeps the result. If no iteration meets the technical constraints, the
+command exits with an error (the files remain). Contracts in [schemas/evaluation.schema.json](schemas/evaluation.schema.json)
+and [schemas/best.schema.json](schemas/best.schema.json), formulas in [docs/analysis.md](docs/analysis.md), section
+"Evaluation".
 
-- `--decider llm` (default): il modello reale via OpenRouter. Configurazione da variabili d'ambiente o da
-  `.env` nella cartella corrente (modello in `.env.example`): `OPENROUTER_API_KEY`, `STEMWISE_MODEL`
-  (obbligatoria, nessun modello di default nel codice), `STEMWISE_REASONING_EFFORT`, `STEMWISE_TEMPERATURE`
-  (default 0,2), `STEMWISE_BASE_URL`. Le opzioni della riga di comando vincono. Temperatura, seed e sforzo di
-  ragionamento si mandano solo se il modello li accetta (altrimenti un warning).
-- `--decider mock`: regole fisse per ruolo, senza rete, deterministico; dalla seconda iterazione corregge con
-  un'EQ la banda più lontana dal target. Scrive comunque `llm_request.json` con i messaggi che il modello
-  riceverebbe, così il prompt si legge gratis.
+- `--decider llm` (default): the real model via OpenRouter. Configuration from environment variables or from `.env` in the
+  current folder (model in `.env.example`): `OPENROUTER_API_KEY`, `STEMWISE_MODEL` (required, no default model in the
+  code), `STEMWISE_REASONING_EFFORT`, `STEMWISE_TEMPERATURE` (default 0.2), `STEMWISE_BASE_URL`. Command-line options take
+  precedence. Temperature, seed and reasoning effort are sent only if the model accepts them (otherwise a warning).
+- `--decider mock`: fixed rules per role, no network, deterministic; from the second iteration it corrects, with an EQ, the
+  band furthest from the target. It still writes `llm_request.json` with the messages the model would receive, so the
+  prompt can be read for free.
 
 ```bash
 uv run stemwise mix <cartella-del-brano> --plan <mix_plan.json> [--export-stems]
 ```
 
-Applica e valuta un piano di mix scritto a mano, senza il modello (formato in [PRD §6.3](docs/PRD.md); schema
-in [schemas/mix_plan.schema.json](schemas/mix_plan.schema.json)): gli stessi file di `mix` con una sola
-iterazione `iter_00/`. Con `--export-stems` anche gli stem processati in `iter_NN/stems/` e il ritorno del
-riverbero in `iter_NN/reverb_return.wav`. Catena e formule in [docs/analysis.md](docs/analysis.md), sezione
-"Render".
+Applies and evaluates a hand-written mix plan, without the model (format in [PRD §6.3](docs/PRD.md); schema in
+[schemas/mix_plan.schema.json](schemas/mix_plan.schema.json)): the same files as `mix`, with a single iteration `iter_00/`.
+With `--export-stems`, also the processed stems in `iter_NN/stems/` and the reverb return in `iter_NN/reverb_return.wav`.
+Chain and formulas in [docs/analysis.md](docs/analysis.md), section "Render".
 
 ```bash
 uv run stemwise report <cartella-del-brano> [--run <cartella-del-run>]
 ```
 
-Rigenera `report.md` dai soli file del run, anche di una revisione: l'ultimo run con `best.json`, oppure quello
-indicato (nome della cartella in `runs/` o percorso).
+Regenerates `report.md` from the run files alone, including those of a revision: the last run with `best.json`, or the one
+indicated (the name of the folder in `runs/` or a path).
 
 ```bash
 uv run stemwise revise <cartella-del-brano> "<richiesta>" [--run <cartella-del-run>] [--decider llm|mock] \
     [--model <id>] [--temperature <t>] [--reasoning-effort low|medium|high|xhigh] [--export-stems]
 ```
 
-Una revisione a parole (per esempio `"voce più avanti, meno riverbero sulle chitarre"`, da 1 a 1.000 caratteri):
-una sola iterazione che parte dal piano migliore dell'ultimo run (quello di `best.json`; dopo un `mix`, il piano
-migliore del mix) oppure del run indicato con `--run`, con la richiesta come priorità. Scrive un nuovo run e non
-tocca quello di partenza:
+A revision in words (for example `"voce più avanti, meno riverbero sulle chitarre"`, from 1 to 1,000 characters): a single
+iteration starting from the best plan of the last run (the one in `best.json`; after a `mix`, the best plan of that mix)
+or of the run indicated with `--run`, with the request as the priority. Writes a new run and does not touch the starting
+one:
 
-- `revision.json` (run e piano di partenza, richiesta), `source_plan.json` e `source_evaluation.json` (copie del
-  piano di partenza e della sua valutazione);
-- `analysis.json`, `baseline.wav` e `baseline_evaluation.json` copiati dal run di partenza: l'analisi non si rifà,
-  si rimisurano solo i riferimenti. Se nel frattempo stem o riferimenti sono cambiati (id, ruoli, canali, durata,
-  picco, profilo dei riferimenti) il comando si ferma e chiede un nuovo `mix`. Le `options` di `project.yaml`
-  (`pre_normalize`, `mix_true_peak_db`) non sono salvate nel run e non vengono controllate: se le cambi, rifai
-  `mix` prima di rivedere, altrimenti il diff non descrive tutto il cambio;
-- `iter_00/` come per `mix`, `best.json` e `report.md` con il confronto somma grezza · piano di partenza · piano
-  rivisto, il **diff dei parametri** e le motivazioni degli stem cambiati.
+- `revision.json` (starting run and plan, request), `source_plan.json` and `source_evaluation.json` (copies of the starting
+  plan and of its evaluation);
+- `analysis.json`, `baseline.wav` and `baseline_evaluation.json` copied from the starting run: the analysis is not redone,
+  only the references are re-measured. If in the meantime stems or references have changed (ids, roles, channels,
+  duration, peak, reference profile), the command stops and asks for a new `mix`. The `options` of `project.yaml`
+  (`pre_normalize`, `mix_true_peak_db`) are not saved in the run and are not checked: if you change them, redo `mix` before
+  revising, otherwise the diff does not describe the whole change;
+- `iter_00/` as for `mix`, and `best.json` and `report.md` with the comparison raw sum · starting plan · revised plan, the
+  **parameter diff** and the reasons for the changed stems.
 
-Il modello riceve il piano di partenza con la sua valutazione e la richiesta; i limiti di variazione (±4 dB di
-gain, ±3 dB per banda di EQ) valgono rispetto al piano di partenza, quindi un cambio grande può chiedere due
-revisioni. Non c'è rollback: il piano rivisto è il "migliore" del nuovo run qualunque sia la distanza dal
-riferimento, purché rispetti i vincoli tecnici; se ne viola uno il comando esce con errore e i file restano per
-l'ascolto. Poiché la revisione diventa l'ultimo run, una `revise` dopo l'altra parte dal piano già rivisto; per
-ripartire da un piano precedente si usa `--run`. Col decisore finto la richiesta si interpreta con poche parole
-chiave (soggetto: voce, basso, chitarre, batteria…; direzione: più avanti/indietro, alza/abbassa, più/meno
-riverbero). Contratto in [schemas/revision.schema.json](schemas/revision.schema.json).
+The model receives the starting plan with its evaluation and the request; the variation limits (±4 dB of gain, ±3 dB per EQ
+band) apply relative to the starting plan, so a large change may need two revisions. There is no rollback: the revised plan
+is the "best" of the new run whatever its distance from the reference, provided it meets the technical constraints; if it
+violates one, the command exits with an error and the files remain for listening. Since the revision becomes the last run,
+a `revise` after another one starts from the already revised plan; to start from an earlier plan, use `--run`. With the fake
+decider, the request is interpreted through a few keywords (subject: voce [vocal], basso [bass], chitarre [guitars],
+batteria [drums]…; direction: più avanti/indietro [further forward/back], alza/abbassa [raise/lower], più/meno riverbero
+[more/less reverb]). Contract in [schemas/revision.schema.json](schemas/revision.schema.json).
 
 ```bash
 uv run stemwise master <cartella-del-brano> [--run <cartella-del-run>] [--mix <file>] \
     [--reference ref1|ref2|ref3|<file>] [--pcm16]
 ```
 
-Il master per il confronto con un riferimento (obbligatorio): il mix viene portato su loudness e spettro medio
-del riferimento con Matchering, poi passa dal suo limiter. Non usa il modello. Di default prende il `mix.wav` del
-piano migliore dell'ultimo run (anche di una revisione) e il primo riferimento di `project.yaml`; `--run` sceglie
-un altro run, `--reference` un altro riferimento (`ref2`, `ref3` o un file), `--mix` un file qualunque (per
-esempio un tuo mix fatto a mano) alla frequenza del progetto. Scrive:
+The master for comparison with a reference (mandatory). The mix is brought to the loudness and average spectrum of the
+reference with Matchering, then passes through its limiter. It does not use the model. By default it takes the `mix.wav` of
+the best plan of the last run (including a revision) and the first reference of `project.yaml`; `--run` chooses another
+run, `--reference` another reference (`ref2`, `ref3` or a file), and `--mix` any file (for example a mix you made by hand) at
+the project's sample rate. Writes:
 
-- `master/master.wav` (WAV 24 bit, alla frequenza del progetto) dentro il run; un secondo master dello stesso run
-  va in `master_02/`, poi `master_03/`…: nessun file esistente cambia. Con `--mix` si crea un run nuovo che
-  contiene solo `master/` e che non diventa "ultimo run" per `report` e `revise`;
-- con `--pcm16` anche `master_16.wav` (16 bit, senza dither);
-- `master_report.json`: loudness e true peak del master, del mix di partenza e del riferimento, distanza spettrale
-  dal riferimento usato prima e dopo il master. Contratto in
+- `master/master.wav` (24-bit WAV, at the project's sample rate) inside the run; a second master of the same run goes into
+  `master_02/`, then `master_03/`…: no existing file changes. With `--mix`, a new run is created that contains only
+  `master/` and that does not become the "last run" for `report` and `revise`;
+- with `--pcm16`, also `master_16.wav` (16 bit, no dither);
+- `master_report.json`: loudness and true peak of the master, of the starting mix and of the reference, and the spectral
+  distance from the reference used before and after the master. Contract in
   [schemas/master_report.schema.json](schemas/master_report.schema.json).
 
-Se il true peak supera −1 dBTP il comando lo segnala con un warning ma non corregge: il limiter di Matchering
-lavora sul picco di campione, quindi con riferimenti commerciali forti il warning è normale. Il master serve ad
-ascoltare il mix contro il riferimento a livello e tonalità simili, non è un master finale.
+If the true peak exceeds −1 dBTP, the command flags it with a warning but does not correct it: Matchering's limiter works on
+the sample peak, so with strong commercial references the warning is normal. The master serves to listen to the mix against
+the reference at similar level and tonality; it is not a final master.
 
-Il comando `ab` (ascolto cieco, REP-2) non è stato implementato: l'autore ha chiuso la PoC senza il protocollo di
-ascolto cieco (D-079). Il comando esiste e risponde "not implemented".
+The `ab` command (blind listening, REP-2) has not been implemented: the author closed the PoC without the blind listening
+protocol (D-079). The command exists and replies "not implemented".
 
-## Sviluppo con Claude Code
+## Development with Claude Code
 
-Lo sviluppo procede per milestone (PRD §9), una alla volta, ciascuna con due checkpoint con l'autore:
+Development proceeds by milestone (PRD §9), one at a time, each with two checkpoints with the author:
 
-1. `/milestone-start M0` — l'agente legge il PRD, scrive il piano in `docs/milestones/M0.md` e si ferma
-   per l'ok e per le domande aperte.
-2. Sviluppo a passi piccoli, ognuno con test e `make check` verde.
-3. `/milestone-close` — verifiche automatiche, revisione indipendente (subagent `milestone-reviewer`), report
-   con istruzioni di validazione manuale. L'agente si ferma.
-4. L'autore valida, annota l'esito nel report e approva: merge su `main` e tag della milestone.
+1. `/milestone-start M0`: the agent reads the PRD, writes the plan in `docs/milestones/M0.md` and stops for the OK and for
+   the open questions.
+2. Development in small steps, each with tests and `make check` green.
+3. `/milestone-close`: automated checks, independent review (subagent `milestone-reviewer`), report with instructions for
+   manual validation. The agent stops.
+4. The author validates, records the outcome in the report and approves: merge into `main` and the milestone tag.
 
-Conviene una sessione Claude Code nuova per ogni milestone: lo stato vive nei file in `docs/`, non nella chat.
+It is advisable to use a new Claude Code session for each milestone: the state lives in the files under `docs/`, not in the
+chat.
 
-Il materiale audio reale per la validazione manuale va in `local/` (ignorata da git).
+The real audio material for manual validation goes in `local/` (ignored by git).
 
-## Licenze
+## Licenses
 
-La PoC è distribuita sotto [GPL-3.0-or-later](LICENSE), perché dipende da `pedalboard` e `matchering`, che sono
-GPLv3. Il resto del repository, prodotto compreso, è sotto licenza MIT e non usa né la PoC né queste due librerie:
-dalla PoC prende solo i numeri dell'oracolo (`app/fixtures/oracle`), calcolati con NumPy, SciPy e librosa.
+The PoC is distributed under [GPL-3.0-or-later](LICENSE), because it depends on `pedalboard` and `matchering`, which are
+GPLv3. The rest of the repository, product included, is under the MIT license and uses neither the PoC nor these two
+libraries: from the PoC it takes only the oracle numbers (`app/fixtures/oracle`), computed with NumPy, SciPy and librosa.
 
-## Esito della PoC
+## PoC outcome
 
-**Decisione: go** (2026-11-10, D-080). Si passa allo sviluppo del prodotto.
+**Decision: go** (2026-11-10, D-080). Development of the product proceeds.
 
-Domanda della PoC: un modello che riceve solo misure numeriche degli stem sa decidere parametri di mix che suonano
-meglio della somma grezza? Sul materiale provato, sì. Il modello di default è `openai/gpt-6.1-sol` a sforzo medio
-(D-047).
+PoC question: can a model that receives only numeric measurements of the stems decide mix parameters that sound better than
+the raw sum? On the material tested, yes. The default model is `openai/gpt-6.1-sol` at medium reasoning effort (D-047).
 
-### Ipotesi (PRD §2)
+### Hypotheses (PRD §2)
 
-| Ipotesi | Soglia | Misurato | Esito |
+| Hypothesis | Threshold | Measured | Outcome |
 | --- | --- | --- | --- |
-| H1. Le misure bastano al modello per decidere | 100% di piani validi entro 2 nuovi tentativi | 8 chiamate reali su "Confidence" (13 stem, 3 modelli) e i test `llm` sintetici: tutte valide al primo tentativo | ✅ |
-| H2. Il ciclo di verifica converge | Distanza in calo tra prima e migliore iterazione su ≥ 2 brani su 3 | "Confidence": Sol 2,1 → 0,7 dB, Terra 1,7 → 1,2 dB (somma grezza 3,7 dB) | ✅ su 1 brano |
-| H3. Suona meglio della somma grezza | Mix AI preferito in ≥ 2 brani su 3, ascolto cieco a pari loudness | "Confidence": il mix migliore si distingue in meglio da somma grezza e prima iterazione; master giudicato senza problemi | ✅ secondo l'autore, ascolto non cieco |
-| H4. Le richieste a parole producono il cambio chiesto | ≥ 4 su 5 nella direzione giusta | 3 su 3 (una sintetica, due reali su "Confidence") | ✅ su 3 richieste |
-| H5. Il costo è trascurabile | < 0,20 USD per brano | ~0,22 USD: `mix` a 2 iterazioni 0,11, due `revise` 0,06 + 0,05 | ✅ con lo scostamento accettato (D-068) |
+| H1. Measurements are enough for the model to decide | 100% of valid plans within 2 new attempts | 8 real calls on "Confidence" (13 stems, 3 models) and the synthetic `llm` tests: all valid on the first attempt | ✅ |
+| H2. The verification loop converges | Distance decreasing between the first and the best iteration on ≥ 2 tracks out of 3 | "Confidence": Sol 2.1 → 0.7 dB, Terra 1.7 → 1.2 dB (raw sum 3.7 dB) | ✅ on 1 track |
+| H3. The result sounds better than the raw sum | AI mix preferred on ≥ 2 tracks out of 3, blind listening at loudness-matched levels | "Confidence": the best mix stands out better than the raw sum and the first iteration; master judged without problems | ✅ according to the author, non-blind listening |
+| H4. Requests in words produce the requested change | ≥ 4 out of 5 in the right direction | 3 out of 3 (one synthetic, two real on "Confidence") | ✅ on 3 requests |
+| H5. The cost is negligible | < 0.20 USD per track | ~0.22 USD: `mix` at 2 iterations 0.11, two `revise` 0.06 + 0.05 | ✅ with the deviation accepted (D-068) |
 
-Vincoli tecnici: i mix restano entro −3 dBTP senza limiter e il render è deterministico (stesso piano e stessi stem
-⇒ stesso hash), entrambi coperti dai test automatici.
+Technical constraints: the mixes stay within −3 dBTP without a limiter, and the render is deterministic (same plan and same
+stems ⇒ same hash); both are covered by automated tests.
 
-### Limiti della verifica
+### Limits of the verification
 
-La PoC si è chiusa senza il protocollo di ascolto di PRD §10.2 (D-079): un solo brano invece di tre, ascolto non
-cieco e non a pari loudness, 3 richieste a parole invece di 5. Lo sbilanciamento di livello giocava contro il mix AI
-(la somma grezza era circa 4 dB più forte, −17,3 contro −21,2 LUFS) che è stato comunque preferito. Il confronto con
-un mix fatto a mano dall'autore non è stato fatto.
+The PoC closed without the listening protocol of PRD §10.2 (D-079): one track instead of three, non-blind listening and not
+loudness-matched, 3 requests in words instead of 5. The level imbalance worked against the AI mix (the raw sum was about
+4 dB louder, −17.3 against −21.2 LUFS), and the AI mix was still preferred. The comparison with a mix made by hand by the
+author was not done.
 
-### Indicazioni per il prodotto
+### Guidance for the product
 
-- **Parametri per sezione (automazioni): must-have** (D-048). Con parametri statici le chitarre distorte del chorus
-  di "Confidence" restano poco udibili. Insieme alle sezioni conviene dare al modello misure nel tempo compatte, per
-  esempio il loudness di ogni stem per sezione (mai audio).
-- **Master con parametri scelti e motivati dal modello** (D-077): quanto imitare il riferimento o come pesarne più
-  d'uno, loudness e true peak secondo la destinazione, ampiezza e compressione secondo genere e mood. Valore atteso
-  minore che nel mix. Il limiter di Matchering guarda il picco di campione, quindi il master supera spesso −1 dBTP
+- **Parameters per section (automation): must-have** (D-048). With static parameters, the distorted guitars of the chorus of
+  "Confidence" remain barely audible. Together with the sections, it is advisable to give the model compact measures over
+  time, for example the loudness of each stem per section (never audio).
+- **Master with parameters chosen and justified by the model** (D-077): how much to imitate the reference or how to weigh
+  more than one, loudness and true peak according to the destination, width and compression according to genre and mood.
+  Expected value lower than in the mix. Matchering's limiter looks at the sample peak, so the master often exceeds −1 dBTP
   (D-074).
-- **La distanza spettrale non misura la qualità**: il decisore finto ottiene distanze minori del primo piano del
-  modello. Va bene come guida del ciclo, non come giudizio.
-- **Batteria in molti stem**: le collisioni più forti sono quasi sempre tra i microfoni della stessa batteria e
-  coprono quelle utili. Serve un raggruppamento per famiglia di strumenti nelle misure e nel prompt.
-- **Compressore per canale** (D-034): su stem stereo sbilanciati l'immagine può spostarsi. Serve un compressore
-  collegato, fuori da `pedalboard`.
-- **Tempo di calcolo**: 3–7 minuti per un `mix` di 13 stem, di cui ~1,5 di chiamate al modello. Da ottimizzare
-  (spettri calcolati una volta sola, parallelismo).
-- **Piccole cose**: l'avviso sulla `temperature` non supportata si ripete a ogni chiamata; manca un ripiego se un
-  provider rifiuta lo schema `strict` (Q-40); va confrontato un mix AI con un mix manuale, a pari loudness.
-- **Portabilità** (PRD §7.1): contratti in `schemas/` e formule in `docs/analysis.md` sopravvivono a un cambio di
-  linguaggio; un port della catena di render va rivalidato all'ascolto.
+- **Spectral distance does not measure quality**: the fake decider obtains smaller distances than the model's first plan. It
+  is fine as a guide for the loop, not as a judgment.
+- **Drums in many stems**: the strongest collisions are almost always between the microphones of the same drum kit, and they
+  cover the useful ones. A grouping by instrument family is needed in the measures and in the prompt.
+- **Compressor per channel** (D-034): on unbalanced stereo stems the image can shift. A linked compressor is needed, outside
+  `pedalboard`.
+- **Compute time**: 3–7 minutes for a `mix` of 13 stems, of which ~1.5 are model calls. To optimize (spectra computed only
+  once, parallelism).
+- **Small things**: the warning about an unsupported `temperature` repeats on each call; there is no fallback if a provider
+  rejects the `strict` schema (Q-40); an AI mix should be compared with a manual mix, at loudness-matched levels.
+- **Portability** (PRD §7.1): the contracts in `schemas/` and the formulas in `docs/analysis.md` survive a change of language;
+  a port of the render chain must be re-validated by ear.

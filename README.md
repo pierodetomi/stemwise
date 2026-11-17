@@ -243,8 +243,8 @@ the open:
 - [docs/app/dsp.md](docs/app/dsp.md): how each audio processor works and which properties are tested;
 - [CLAUDE.md](CLAUDE.md): the rules the agent works under.
 
-These documents are **in Italian**, the author's language: they are the project's working log, not user
-documentation. Code, comments, commit messages and the interface are in English.
+These documents are the project's working log, not user documentation. Like everything else in the repository,
+they are in English.
 
 ## Contributing
 
