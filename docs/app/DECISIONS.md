@@ -2488,7 +2488,38 @@ request.
 test on a clean Windows (installer, listening, file drag with scaling, minimum window of 1280×720 on a laptop at 150%:
 VALIDATION 64–66); benchmark on Windows; Authenticode signing.
 
-### A-105 — English everywhere in the repository (2026-11-17, requested by the author)
+### A-105 — Release 0.1.2 with the packages built by CI (2026-11-17, requested by the author)
+
+**Context.** The author retried the build on macOS after the Windows changes and asked to close the
+`feature/multi-platform-build` branch into `main` and to publish 0.1.2 for macOS and Windows, with the site aligned. A
+single computer cannot build the packages of both systems: the `.dmg` needs macOS, the NSIS installer needs Windows.
+
+**Alternatives.** (a) A draft release with the `.dmg` only and the installer built and uploaded by hand by the author;
+(b) the packages built by GitHub CI; (c) 0.1.2 for macOS only. **The author's choice: (b).**
+
+**How.** `.github/workflows/release.yml` starts on the push of a `vX.Y.Z` tag (or by hand on an existing tag). A first
+job checks that the tag is the version in `tauri.conf.json` and creates the release **as a draft**; two jobs run
+`make build` from the tagged commit on `macos-15` (Apple Silicon, ad hoc signature verified by `codesign`, A-103) and on
+`windows-latest` (NSIS installer for the current user, unsigned) and attach the package; the last one downloads the two
+packages and attaches `SHA256SUMS.txt`. The draft is published by hand, after writing the notes and trying the
+downloaded packages: a package built by CI has not been through the self-test. The branch enters `main` as a
+fast-forward (`main` was the direct ancestor).
+
+**First run (tag `v0.1.2`).** Windows built and attached (7.4 MB NSIS installer); the macOS job cancelled by GitHub
+after 15 minutes without a free Apple Silicon runner, rerun and passed. Packages downloaded: the sums in
+`SHA256SUMS.txt` match, the `.dmg` has a valid ad hoc signature (`adhoc,runtime`), version 0.1.2, `LICENSE` and the
+third-party licenses inside, `arm64` executable. Self-test in the CI `.dmg` on a demo project from the CLI, with the Mac
+in use (load 5, a virtual machine running): 58 out of 59 twice, with signal on the bus; only the cold start fails,
+8.5 s on the first launch of the freshly copied binary and 3.9 s on the second, against the 2 s threshold. A first
+attempt had stopped after the export (as in A-103); the second restarted from that project with the leftover lock. Whether
+the slow start depends on the machine or on the package is not established: to be repeated with the Mac idle
+(VALIDATION 63).
+
+**Gate of `main`.** On the macOS runner the accessibility test (axe-core on every screen) exceeded its 30 s timeout: it
+took 19 s on the same CI at the previous commit and 25 s on Windows. It now has a 90 s timeout, like the tour tests; the
+checks do not change.
+
+### A-106 — English everywhere in the repository (2026-11-17, requested by the author)
 With the repository public and the app open source, the documentation written in Italian (FOUNDATION, DECISIONS,
 PROGRESS, VALIDATION, dsp.md, the design and brand documents, the PoC documents) shut out anyone arriving from
 outside. Alternatives: keep Italian for the working log and English only for what newcomers read (the rule until now);

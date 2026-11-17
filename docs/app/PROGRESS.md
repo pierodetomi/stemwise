@@ -28,8 +28,8 @@ Legend: ⬜ not started · 🟦 in progress · ✅ closed (gate green) · ⚠️
 | F18 Explain this mix | ⚠️ | 2026-11-15 · P-019 · boards 17a–17j approved by the author (A-092), then implemented: `Explain` view in the Mix (⌘E) with the signal map (tracks by family → groups → buses, sends, sidechain, collapsible groups, section strip) and the same mix in words, for the whole mix, per element and per section; rule-based text, glossary, copy as text; **no model**; levels per family and per section measured by the core in the background (`mix_levels`) · ANA-20, UI-14 → UI-16 covered (1 Rust test, 15 Vitest, 6 Playwright; 103 in all) · caveats: not tried in the Tauri app nor in the package · A-093 · disk 12.28 GB |
 | F19 Guided tour | ✅ | 2026-11-15 · P-020, issue #5 · boards 18a–18w and C8 approved by the author (A-095), a single app menu with Help (UI-20, A-096), then implemented: demo song built and synthesized by the core (`stemwise_core::demo`, 12 stems, 68 s, three sections, same document and same hash at every build), ephemeral session in the app cache (no recents, autosave, save, export; deleted at the end and at startup), fake decider proposal in the background even with a key and outside the cost registry, "shown" mark in the app data, tour with spotlight and callout and the fifteen steps, link in the Welcome, reduced system menu and ⌘N/⌘O in the app · PRJ-9, UI-17 → UI-20 covered (7 Rust tests, 6 Vitest, 9 Playwright on the tour; 113 Playwright in all) · timings: song open and playable in 1.1 s (threshold 3 s), fake decider proposal 36 s in the background, mixdown and master 5 s, cold start 0.6–1.6 s · package rebuilt, self-test in the packaged app 59/59 · fixed three store updates during rendering (track and Master rack, new project references, A-098) · A-097 · disk 10.5 GB after `clean-stale` |
 
-Phases F0 → F19 closed. Repository public since 2026-11-16 (A-101). Windows is the second system (A-104, branch
-`feature/multi-platform-build`). Next step: the author's validation.
+Phases F0 → F19 closed. Repository public since 2026-11-16 (A-101). Windows is the second system (A-104), in `main`
+since 2026-11-17 with 0.1.2, whose packages are built by CI (A-105). Next step: the author's validation.
 
 ## Where to resume
 
@@ -181,7 +181,14 @@ Phases F0 → F19 closed. Repository public since 2026-11-16 (A-101). Windows is
   bar on macOS only, shortcuts and texts per system, license list for three targets (497 libraries). CI also on
   `windows-latest` (job `make ci (Windows)`, never run yet: it starts at the first PR). To be tried by hand:
   VALIDATION 64–66. Linux and Authenticode signing remain · disk 7.85 GB.
-- **English everywhere (A-105, 2026-11-17, requested by the author).** All the documentation (FOUNDATION, DECISIONS,
+- **0.1.2 for macOS and Windows (A-105, 2026-11-17).** Windows branch in `main` as a fast-forward, version 0.1.2,
+  `make check` green. New `release.yml` workflow: on the push of a `vX.Y.Z` tag it builds the `.dmg` and the NSIS
+  installer on GitHub and attaches them with `SHA256SUMS.txt` to a draft release, published by hand. Packages
+  downloaded and verified (sums, signature, version); self-test in the CI `.dmg` 58 out of 59 with the Mac in use, with
+  the cold start above threshold (3.9–8.5 s): to be repeated with the Mac idle. Accessibility test with a 90 s timeout
+  (it exceeded 30 s on the macOS runner). README with the Windows install; site aligned in `stemwise-promo` · disk
+  14.8 GB.
+- **English everywhere (A-106, 2026-11-17, requested by the author).** All the documentation (FOUNDATION, DECISIONS,
   PROGRESS, VALIDATION, dsp.md, design, brand, PoC) translated from Italian; the language rule in CLAUDE.md and
   FOUNDATION §9 now asks for English in every file, commit, issue and pull request. Branch `feature/english-docs`.
 - Next step: in parallel the author's validation (docs/app/VALIDATION.md, in the recommended order), at least one auto

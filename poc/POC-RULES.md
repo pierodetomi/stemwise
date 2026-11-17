@@ -28,7 +28,7 @@ Current milestone status (always read it at the start of a session):
 - **Technical constraints always valid**: mix ≤ −3 dBTP without a limiter; deterministic render.
 - **Language**: code, comments, docstrings and CLI messages in **English**. The `rationale` field in the language of the brief.
   Process documentation (`docs/`, milestone reports) and communication with the author in **Italian** (the documents
-  were translated to English after the repository became public, A-105).
+  were translated to English after the repository became public, A-106).
 - **Secrets**: the key is in `OPENROUTER_API_KEY` (env / `.env`, never committed, never read by the agent).
 - A run never modifies `stems/` and `references/` and never overwrites previous runs.
 

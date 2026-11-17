@@ -147,6 +147,8 @@ test("an empty project says what each panel is for", async ({ page }) => {
 
 // req: UI-7
 test("accessibility: AA contrast, names on controls, keyboard on continuous controls", async ({ page }) => {
+  // An axe-core pass on every screen: 19–25 s on the CI runners, past the default 30 s when a runner is loaded.
+  test.setTimeout(90_000);
   const check = async (where: string) => {
     const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
     const bad = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");

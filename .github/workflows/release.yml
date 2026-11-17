@@ -1,0 +1,120 @@
+name: Release
+
+# The packages of a release, built on GitHub from the tagged commit (A-105): the macOS disk image on Apple Silicon
+# and the Windows installer, both with `make build`, attached to a *draft* release with their SHA-256 sums. The
+# draft is published by hand, after the release notes are written and the packages tried.
+#
+# Started by pushing a tag `vX.Y.Z` whose number is the version in `tauri.conf.json`, or by hand on an existing tag.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to package (vX.Y.Z)"
+        required: true
+
+concurrency:
+  group: release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  TAG: ${{ inputs.tag || github.ref_name }}
+  GH_TOKEN: ${{ github.token }}
+
+jobs:
+  draft:
+    name: Draft release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+      - name: Tag matches the app version
+        id: version
+        run: |
+          version=$(jq -r .version app/src-tauri/tauri.conf.json)
+          if [ "v$version" != "$TAG" ]; then
+            echo "::error::tag $TAG does not match the app version $version in tauri.conf.json"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - name: Create the draft
+        run: |
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo "release $TAG already exists: the packages are replaced"
+          else
+            gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --draft --verify-tag \
+              --title "Stemwise ${{ steps.version.outputs.version }}" \
+              --notes "Release notes to be written before publishing."
+          fi
+
+  package:
+    name: Package (${{ matrix.name }})
+    needs: draft
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS
+            os: macos-15
+            asset: dmg/Stemwise_${{ needs.draft.outputs.version }}_aarch64.dmg
+          - name: Windows
+            os: windows-latest
+            asset: nsis/Stemwise_${{ needs.draft.outputs.version }}_x64-setup.exe
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: bash
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: app
+          key: release
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: app/ui/pnpm-lock.yaml
+      - name: GNU make
+        if: runner.os == 'Windows'
+        run: command -v make || choco install make --no-progress -y
+      - name: Dependencies
+        run: |
+          cargo fetch --locked
+          pnpm --dir ui install --frozen-lockfile
+      - name: Package
+        run: make build
+      - name: Attach to the release
+        run: |
+          file="target/release/bundle/${{ matrix.asset }}"
+          test -f "$file"
+          gh release upload "$TAG" "$file" --repo "$GITHUB_REPOSITORY" --clobber
+
+  checksums:
+    name: SHA-256 sums
+    needs: [draft, package]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sum the attached packages
+        run: |
+          mkdir packages && cd packages
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" \
+            --pattern "*.dmg" --pattern "*-setup.exe"
+          sha256sum * | tee SHA256SUMS.txt
+          gh release upload "$TAG" SHA256SUMS.txt --repo "$GITHUB_REPOSITORY" --clobber

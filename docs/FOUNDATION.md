@@ -1340,7 +1340,7 @@ They apply to the implementation session and are reproduced in `CLAUDE.md`.
 9. Git: work on the `product/v1` branch; small commits with the phase prefix (`F3: add automation ramps (AUT-4)`);
    one local tag per closed phase (`f3`). Never `push`, `merge` into `main`, `reset --hard`, `rebase`.
 10. Language: everything in the repository is in English — code, comments, messages, interface, documents in `docs/`,
-    `design/` and `poc/`, decisions, progress, commits, issues and pull requests (A-105). Only `rationale` and
+    `design/` and `poc/`, decisions, progress, commits, issues and pull requests (A-106). Only `rationale` and
     `summary` follow the language of the brief (AI-13).
 
 **Coordination and subagents**

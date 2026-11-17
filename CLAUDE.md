@@ -25,7 +25,7 @@ listed in `app/src-tauri/resources/THIRD-PARTY-LICENSES.txt`: after every depend
 
 Everything written into the repository is in **English**: code, comments, messages, the interface, documents
 (`docs/`, `design/`, `poc/`), decisions, progress notes, validation steps, agent and command definitions, commit
-messages, tags, issues and pull requests. This applies to new text and to every edit of existing text (A-105). The
+messages, tags, issues and pull requests. This applies to new text and to every edit of existing text (A-106). The
 only exception is product data: the model's `rationale` and `summary` are written in the language of the brief, and
 test fixtures may contain other languages on purpose. Conversation with the author in chat follows the author's
 language; anything that lands in a file does not.
@@ -36,7 +36,7 @@ The repository also contains the Python PoC, closed with a go outcome, confined 
 `poc/src/stemwise/`, `poc/tests/`, `poc/schemas/`, with its own `pyproject.toml` and `Makefile`; documents in
 `poc/docs/`: `PRD.md`, `analysis.md`, `DECISIONS.md`, `PROGRESS.md`, `milestones/`). It is **read-only**: it serves
 as an archive and as a numeric oracle (FOUNDATION §5.7). It is not modified (its documents were translated to English
-once, A-105); it is run only to generate the oracle fixtures. Its working rules are archived in
+once, A-106); it is run only to generate the oracle fixtures. Its working rules are archived in
 [poc/POC-RULES.md](poc/POC-RULES.md) and **do not apply to the product**: in particular "one milestone at a time with
 approval", "ambiguity ⇒ stop and ask" and the `/milestone-start` and `/milestone-close` commands do not apply.
 
